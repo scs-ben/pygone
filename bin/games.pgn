@@ -1,0 +1,211 @@
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "1"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Nxe4 6. Qe1 d5 7. Nxe5 Bd7
+8. Nxd7 Qxd7 9. Nc3 O-O-O 10. Nxe4 dxe4 11. Qxe4 f5 12. Qf3 g5 13. Rd1 Bg7
+14. c3 f4 15. d4 Kb8 16. Qe4 Qg4 17. f3 Qd7 18. Kh1 Rhe8 19. Qxh7 g4 20. Rf1
+gxf3 21. gxf3 Re2 22. Bxc6 bxc6 23. Bxf4 Kb7 24. Bxc7 Qxc7 25. h3 Qh2# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "1"]
+[White "sf12"]
+[Black "pygone"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. Nc3 d5 6. Nxe5 Ke7 7. Bxc6 Qe8
+8. Bxe8 Nh5 9. Nxd5+ Ke6 10. Qxh5 Bd6 11. Bxf7# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "2"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 b5 5. Bb3 Nf6 6. O-O Nxe4 7. Qe1 d5 8. d3
+Bb4 9. c3 Nc5 10. cxb4 Nxb3 11. axb3 f6 12. Qc3 Qd7 13. Qc5 e4 14. dxe4 Kf7
+15. exd5 Ne5 16. Nxe5+ fxe5 17. Nc3 Rd8 18. Bg5 Re8 19. Ra5 Kg8 20. Re1 h6
+21. Be3 Rd8 22. f3 Qd6 23. Qxd6 Rxd6 24. h4 Bf5 25. h5 Bc2 26. Bc5 Rdd8 27. Rxe5
+Bxb3 28. Re7 Bxd5 29. Rxg7+ Kxg7 30. Bd4+ Kh7 31. Nxd5 Rxd5 32. b3 Rxd4 33. Rxb5
+axb5 34. Kh2 Rxb4 35. Kh3 Rxb3 36. Kh4 b4 37. Kh3 c5 38. Kg3 c4 39. Kh3 c3
+40. Kg4 Rg8+ 41. Kf5 Rxg2 42. Kf6 Rc2 43. Ke6 Kg7 44. Kd6 Kf6 45. Kc7 Rc1
+46. Kc6 c2 47. f4 Rc3+ 48. Kb6 b3 49. Kb7 b2 50. Kb8 b1=Q+ 51. Ka8 Ra3# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "2"]
+[White "sf12"]
+[Black "pygone"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 b5 5. Bb3 Qg5 6. Nxg5 Kd8 7. Nxf7+ Ke8
+8. Nxh8 Kd8 9. Bxg8 Ke7 10. Bxh7 Kd8 11. Ng6 Ba3 12. Nxa3 Nb8 13. Nxe5 Nc6
+14. Nd3 Ke8 15. f3 g6 16. Bxg6+ Ke7 17. b3 Kd6 18. c3 Ra7 19. g3 Nb8 20. h4 a5
+21. Nxb5+ Kc6 22. Nxa7+ Kd6 23. Ba3+ Ke6 24. Nxc8 c5 25. Bxc5 d6 26. Nxd6 Ke7
+27. a4 Nc6 28. g4 Na7 29. Nc4+ Ke6 30. Nxa5 Nc8 31. Bf5+ Kf6 32. Bxc8 Kg6 33. b4
+Kh7 34. c4 Kh6 35. f4 Kh7 36. b5 Kh6 37. e5 Kg6 38. e6 Kg7 39. f5 Kf6 40. e7 Kg7
+41. e8=Q Kh7 42. Qg6+ Kh8 43. Bd4# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "3"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nge7 5. O-O Ng6 6. Nc3 Bc5 7. d4 Nxd4
+8. Nxd4 exd4 9. Nd5 O-O 10. c4 d6 11. Qb3 c6 12. Bxc6 bxc6 13. Nb4 Ne5 14. Nxc6
+Nxc6 15. Qa4 Nb8 16. Qb3 Nc6 17. Qa4 Nb8 18. Qb3 Re8 19. Rd1 Rxe4 20. Rf1 Nc6
+21. Qa4 Ne5 22. Kh1 d3 23. Qb3 Rxc4 24. Bd2 a5 25. Rae1 a4 26. Qb5 f6 27. f4 Bg4
+28. fxe5 Rc2 29. Bf4 dxe5 30. Bg3 Qd5 31. Rf3 Qxf3 32. gxf3 Bxf3# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "3"]
+[White "sf12"]
+[Black "pygone"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nge7 5. Bxc6 Nf5 6. Bd5 Qg5 7. Nxg5 Kd8
+8. Nxf7+ Ke8 9. Nxh8 Kd8 10. Nf7+ Ke8 11. exf5 Bd6 12. Bxb7 c6 13. Nxd6+ Kd8
+14. Bxa8 Bb7 15. Bxb7 Ke7 16. Nc8+ Kf6 17. g4 d6 18. Nxd6 e4 19. Nxe4+ Ke5
+20. d4+ Kxe4 21. Bxc6# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "4"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 d6 5. O-O Qf6 6. Bxc6+ bxc6 7. d4 exd4
+8. Nbd2 Ne7 9. e5 dxe5 10. Re1 Bg4 11. Nc4 Bxf3 12. Qd3 e4 13. Qa3 Qg6 14. Bg5
+Qxg5 15. Nd6+ cxd6 16. Qxd6 Qxg2# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "4"]
+[White "sf12"]
+[Black "pygone"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 d6 5. d4 Qg5 6. Bxg5 b6 7. Bxc6+ Bd7
+8. Bxa8 Bc6 9. Bxc6# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "5"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 f5 5. exf5 e4 6. Ng1 Nf6 7. Nc3 d5 8. Bxc6+
+bxc6 9. d4 Bxf5 10. Bg5 Bd6 11. Nge2 O-O 12. h4 Bg4 13. Bxf6 Qxf6 14. Nxe4 dxe4
+15. f3 exf3 16. gxf3 Qxf3 17. Rg1 Rae8 18. Rxg4 Qxg4 19. Qd3 Qf4 20. Qc4+ Kh8
+21. Kd1 Qf3 22. Kc1 Qe3+ 23. Kb1 Rf1+ 24. Nc1 Rxc1# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "5"]
+[White "sf12"]
+[Black "pygone"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 f5 5. d4 Qg5 6. Bxg5 d6 7. exf5 b6 8. Bxc6+
+Bd7 9. Bxa8 Bc6 10. Bxc6+ Kf7 11. dxe5 d5 12. Qxd5# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "6"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Bxc6 dxc6 5. O-O Bg4 6. Qe1 Bxf3 7. d4 Bxg2
+8. Kxg2 exd4 9. Kh1 Bd6 10. Qd1 c5 11. f3 Qd7 12. Re1 O-O-O 13. Bg5 Qh3 14. Bxd8
+Qxh2# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "6"]
+[White "sf12"]
+[Black "pygone"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Bxc6 dxc6 5. Nxe5 Qd5 6. exd5 Kd8 7. Nxf7+ Kd7
+8. dxc6+ Ke6 9. Nxh8 Kd6 10. cxb7 Kd5 11. bxa8=Q+ Ke6 12. Qxc8+ Kd6 13. Qxf8+
+Ke6 14. Qe2+ Kd5 15. Qf5+ Kd6 16. Qee6# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "7"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. Qe1 d5 6. Nxe5 Bd7 7. Nxd7 Qxd7
+8. Nc3 O-O-O 9. Nxe4 dxe4 10. Qxe4 f5 11. Qc4 h6 12. Rd1 g6 13. d4 Bb4 14. Be3
+Qd6 15. f4 Rhe8 16. Bxc6 Rxe3 17. Bxb7+ Kxb7 18. Qb5+ Kc8 19. Rf1 Re6 20. Kh1
+Rde8 21. Rad1 Kd8 22. Qb8+ Ke7 23. Qxa7 Kf6 24. Qb7 Kg7 25. a3 Ba5 26. c4 Re2
+27. b4 Bb6 28. d5 R8e3 29. b5 Bc5 30. a4 Re4 31. a5 h5 32. a6 Ra2 33. a7 Rxa7
+34. Qc8 Rxc4 35. Qe8 Re4 36. Qc8 Rxf4 37. Rxf4 Qxf4 38. Qd7+ Kh6 39. Qf7 Qg4
+40. Rc1 Ra2 41. Rxc5 Qxg2# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "7"]
+[White "sf12"]
+[Black "pygone"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. Re1 Qg5 6. Nxg5 d6 7. Nxe4 b6
+8. Bxc6+ Bd7 9. Bxa8 Bc6 10. Bxc6+ Ke7 11. f3 Ke6 12. a3 g5 13. Nxg5+ Ke7 14. b3
+Kd8 15. Nxf7+ Ke7 16. Nxh8 Kd8 17. a4 b5 18. axb5 e4 19. Bxe4 Ke8 20. Bc6+ Kd8
+21. Re8# 1-0
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "8"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O d6 5. Bxc6+ bxc6 6. d3 Be7 7. Re1 c5
+8. Nc3 O-O 9. Nb5 a6 10. Nc3 Ng4 11. Qe2 Be6 12. Bd2 f5 13. exf5 Bxf5 14. d4
+cxd4 15. Nd5 Bxc2 16. Nxe7+ Kh8 17. Nc6 Qf6 18. Ncxe5 Nxe5 19. Kh1 Nxf3 20. Ba5
+Nxe1 21. Rxe1 d3 22. Qe4 d2 23. Bxd2 Bxe4 24. Rxe4 Qxb2 25. Be1 Qxa2 26. Re7 c5
+27. Rd7 d5 28. h3 Kg8 29. g3 Qc4 30. Kg1 d4 31. Bc3 Qxc3 32. g4 Qe1+ 33. Kg2
+Rxf2+ 34. Kg3 Rf1+ 35. Kg2 Qf2# 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.10"]
+[Round "8"]
+[White "sf12"]
+[Black "pygone"]
+[Result "1-0"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O d6 5. d4 b6 6. Bxc6+ Qd7 7. Bxd7+ Kxd7
+8. Nxe5+ Ke7 9. Nc6+ Ke6 10. f3 Nd5 11. exd5+ Kd7 12. c4 Rb8 13. Nxb8+ Kd8
+14. Nc6+ Kd7 15. Nxa7 Ke7 16. Nxc8+ Kf6 17. Qe2 Be7 18. Qxe7+ Kf5 19. Qxf7# 1-0
+

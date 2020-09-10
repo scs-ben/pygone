@@ -1,0 +1,76 @@
+Warning: 2 opening repetitions vs 1 games per encounter
+3 >pygone(0): uci
+5 >sf12(1): uci
+5 <sf12(1): Stockfish 040920 by the Stockfish developers (see AUTHORS file)
+Warning: pygone doesn't have option Contempt
+31 <pygone(0): prin
+Warning: pygone doesn't have option Hash
+Warning: pygone doesn't have option Threads
+31 <pygone(0): pygone 1.0 by rcostheta
+31 <pygone(0): uciok
+31 >pygone(0): isready
+31 <pygone(0): prin
+32 <pygone(0): readyok
+32 <pygone(0): prin
+196 <sf12(1): id name Stockfish 040920
+196 <sf12(1): id author the Stockfish developers (see AUTHORS file)
+196 <sf12(1): option name Debug Log File type string default
+196 <sf12(1): option name Contempt type spin default 24 min -100 max 100
+196 <sf12(1): option name Analysis Contempt type combo default Both var Off var White var Black var Both
+196 <sf12(1): option name Threads type spin default 1 min 1 max 512
+196 <sf12(1): option name Hash type spin default 16 min 1 max 33554432
+196 <sf12(1): option name Clear Hash type button
+196 <sf12(1): option name Ponder type check default false
+196 <sf12(1): option name MultiPV type spin default 1 min 1 max 500
+196 <sf12(1): option name Skill Level type spin default 20 min 0 max 20
+196 <sf12(1): option name Move Overhead type spin default 10 min 0 max 5000
+196 <sf12(1): option name Slow Mover type spin default 100 min 10 max 1000
+196 <sf12(1): option name nodestime type spin default 0 min 0 max 10000
+196 <sf12(1): option name UCI_Chess960 type check default false
+197 <sf12(1): option name UCI_AnalyseMode type check default false
+197 <sf12(1): option name UCI_LimitStrength type check default false
+197 <sf12(1): option name UCI_Elo type spin default 1350 min 1350 max 2850
+197 <sf12(1): option name UCI_ShowWDL type check default false
+197 <sf12(1): option name SyzygyPath type string default <empty>
+197 <sf12(1): option name SyzygyProbeDepth type spin default 1 min 1 max 100
+197 <sf12(1): option name Syzygy50MoveRule type check default true
+197 <sf12(1): option name SyzygyProbeLimit type spin default 7 min 0 max 7
+197 <sf12(1): option name Use NNUE type check default true
+197 <sf12(1): option name EvalFile type string default nn-308d71810dff.nnue
+197 <sf12(1): uciok
+197 >sf12(1): setoption name Contempt value 0
+197 >sf12(1): setoption name Hash value 16
+197 >sf12(1): setoption name Threads value 1
+197 >sf12(1): isready
+213 <sf12(1): readyok
+Started game 1 of 100 (pygone vs sf12)
+213 >pygone(0): ucinewgame
+213 >pygone(0): position startpos
+213 >sf12(1): ucinewgame
+213 >sf12(1): setoption name Ponder value false
+213 >sf12(1): position startpos
+213 >pygone(0): isready
+213 <pygone(0): new
+213 <pygone(0): prin
+213 <pygone(0): moves set
+213 <pygone(0): prin
+213 <pygone(0): readyok
+213 >pygone(0): go depth 1
+213 <pygone(0): prin
+219 <pygone(0): info depth 3 score cp 0 time 0.0 nodes 0 pv e2e4
+219 <pygone(0): bestmove e2e4
+219 >sf12(1): position startpos moves e2e4
+219 >sf12(1): isready
+219 <pygone(0): prin
+219 <sf12(1): readyok
+219 >sf12(1): go depth 1
+219 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+219 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp -39 nodes 26 nps 26000 tbhits 0 time 1 pv e7e5
+219 <sf12(1): bestmove e7e5
+220 >pygone(0): position startpos moves e2e4 e7e5
+220 >pygone(0): isready
+220 <pygone(0): moves set
+220 <pygone(0): prin
+220 <pygone(0): readyok
+220 >pygone(0): go depth 1
+220 <pygone(0): prin

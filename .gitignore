@@ -1,0 +1,4 @@
+pygone
+bin/cutechess*
+bin/stockfish*
+src/__pycache__*
