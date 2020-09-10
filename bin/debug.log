@@ -1,147 +1,63 @@
-17 >pygone(0): uci
-24 >sf12(1): uci
-34 <sf12(1): Stockfish 040920 by the Stockfish developers (see AUTHORS file)
-47 <pygone(0): pygone 1.0 by rcostheta
-48 <pygone(0): uciok
-48 >pygone(0): isready
-48 <pygone(0): readyok
-614 <sf12(1): id name Stockfish 040920
-614 <sf12(1): id author the Stockfish developers (see AUTHORS file)
-614 <sf12(1): option name Debug Log File type string default 
-614 <sf12(1): option name Contempt type spin default 24 min -100 max 100
-614 <sf12(1): option name Analysis Contempt type combo default Both var Off var White var Black var Both
-614 <sf12(1): option name Threads type spin default 1 min 1 max 512
-614 <sf12(1): option name Hash type spin default 16 min 1 max 33554432
-615 <sf12(1): option name Clear Hash type button
-615 <sf12(1): option name Ponder type check default false
-615 <sf12(1): option name MultiPV type spin default 1 min 1 max 500
-615 <sf12(1): option name Skill Level type spin default 20 min 0 max 20
-615 <sf12(1): option name Move Overhead type spin default 10 min 0 max 5000
-615 <sf12(1): option name Slow Mover type spin default 100 min 10 max 1000
-615 <sf12(1): option name nodestime type spin default 0 min 0 max 10000
-615 <sf12(1): option name UCI_Chess960 type check default false
-615 <sf12(1): option name UCI_AnalyseMode type check default false
-615 <sf12(1): option name UCI_LimitStrength type check default false
-615 <sf12(1): option name UCI_Elo type spin default 1350 min 1350 max 2850
-615 <sf12(1): option name UCI_ShowWDL type check default false
-615 <sf12(1): option name SyzygyPath type string default <empty>
-615 <sf12(1): option name SyzygyProbeDepth type spin default 1 min 1 max 100
-615 <sf12(1): option name Syzygy50MoveRule type check default true
-615 <sf12(1): option name SyzygyProbeLimit type spin default 7 min 0 max 7
-616 <sf12(1): option name Use NNUE type check default true
-616 <sf12(1): option name EvalFile type string default nn-308d71810dff.nnue
-616 <sf12(1): uciok
-616 >sf12(1): setoption name Contempt value 0
-616 >sf12(1): setoption name Hash value 16
-616 >sf12(1): setoption name Threads value 1
-616 >sf12(1): isready
-628 <sf12(1): readyok
+3 >pygone(0): uci
+5 >sf12(1): uci
+5 <sf12(1): Stockfish 040920 by the Stockfish developers (see AUTHORS file)
+29 <pygone(0): pygone 1.0 by rcostheta
+29 <pygone(0): uciok
+29 >pygone(0): isready
+30 <pygone(0): readyok
+192 <sf12(1): id name Stockfish 040920
+192 <sf12(1): id author the Stockfish developers (see AUTHORS file)
+192 <sf12(1): option name Debug Log File type string default 
+192 <sf12(1): option name Contempt type spin default 24 min -100 max 100
+192 <sf12(1): option name Analysis Contempt type combo default Both var Off var White var Black var Both
+192 <sf12(1): option name Threads type spin default 1 min 1 max 512
+192 <sf12(1): option name Hash type spin default 16 min 1 max 33554432
+193 <sf12(1): option name Clear Hash type button
+193 <sf12(1): option name Ponder type check default false
+193 <sf12(1): option name MultiPV type spin default 1 min 1 max 500
+193 <sf12(1): option name Skill Level type spin default 20 min 0 max 20
+193 <sf12(1): option name Move Overhead type spin default 10 min 0 max 5000
+193 <sf12(1): option name Slow Mover type spin default 100 min 10 max 1000
+193 <sf12(1): option name nodestime type spin default 0 min 0 max 10000
+193 <sf12(1): option name UCI_Chess960 type check default false
+193 <sf12(1): option name UCI_AnalyseMode type check default false
+193 <sf12(1): option name UCI_LimitStrength type check default false
+193 <sf12(1): option name UCI_Elo type spin default 1350 min 1350 max 2850
+193 <sf12(1): option name UCI_ShowWDL type check default false
+193 <sf12(1): option name SyzygyPath type string default <empty>
+193 <sf12(1): option name SyzygyProbeDepth type spin default 1 min 1 max 100
+193 <sf12(1): option name Syzygy50MoveRule type check default true
+193 <sf12(1): option name SyzygyProbeLimit type spin default 7 min 0 max 7
+193 <sf12(1): option name Use NNUE type check default true
+193 <sf12(1): option name EvalFile type string default nn-308d71810dff.nnue
+193 <sf12(1): uciok
+193 >sf12(1): setoption name Contempt value 0
+193 >sf12(1): setoption name Hash value 16
+193 >sf12(1): setoption name Threads value 1
+193 >sf12(1): isready
+206 <sf12(1): readyok
 Started game 1 of 200 (pygone vs sf12)
-628 >pygone(0): ucinewgame
-628 >pygone(0): position startpos
-628 >sf12(1): ucinewgame
-628 >sf12(1): setoption name Ponder value false
-628 >sf12(1): position startpos
-629 >pygone(0): position startpos moves e2e4
-629 >sf12(1): position startpos moves e2e4
-629 >sf12(1): position startpos moves e2e4 e7e5
-629 >pygone(0): position startpos moves e2e4 e7e5
-629 >pygone(0): position startpos moves e2e4 e7e5 g1f3
-629 >sf12(1): position startpos moves e2e4 e7e5 g1f3
-629 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6
-629 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6
-629 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-629 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-629 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
-629 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
-629 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
-629 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
-629 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
-629 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
-629 >pygone(0): isready
-629 <pygone(0): readyok
-629 >pygone(0): go depth 1
-18990 <pygone(0): info depth 1 score cp 392 time 19 nodes 3723 nps 196 pv e1g1
-18990 <pygone(0): bestmove e1g1
-18990 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1
-18990 >sf12(1): isready
-18990 <pygone(0): r - b q k b - r 
-18990 <pygone(0): - p p p - p p p 
-18990 <pygone(0): p - n - - n - - 
-18990 <pygone(0): - - - - p - - - 
-18990 <pygone(0): B - - - P - - - 
-18990 <pygone(0): - - - - - N - - 
-18990 <pygone(0): P P P P - P P P 
-18990 <pygone(0): R N B Q K - - R 
-18991 <sf12(1): readyok
-18991 >sf12(1): go depth 1
-18991 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-18994 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 28 nodes 30 nps 6000 tbhits 0 time 5 pv f6e4
-18995 <sf12(1): bestmove f6e4
-18995 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f6e4
-18995 >pygone(0): isready
-18995 <pygone(0): readyok
-18995 >pygone(0): go depth 1
-38967 <pygone(0): info depth 1 score cp 439 time 20 nodes 3944 nps 198 pv f1e1
-38967 <pygone(0): bestmove f1e1
-38967 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f6e4 f1e1
-38967 >sf12(1): isready
-38967 <pygone(0): r - b q k b - r 
-38967 <pygone(0): - p p p - p p p 
-38967 <pygone(0): p - n - - - - - 
-38968 <pygone(0): - - - - p - - - 
-38968 <pygone(0): B - - - n - - - 
-38968 <pygone(0): - - - - - N - - 
-38968 <pygone(0): P P P P - P P P 
-38968 <pygone(0): R N B Q - R K - 
-38968 <sf12(1): readyok
-38968 >sf12(1): go depth 1
-38968 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-38968 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 60 nodes 56 nps 56000 tbhits 0 time 1 pv d7d5
-38968 <sf12(1): bestmove d7d5
-38968 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f6e4 f1e1 d7d5
-38968 >pygone(0): isready
-38968 <pygone(0): readyok
-38969 >pygone(0): go depth 1
-61459 <pygone(0): info depth 1 score cp 298 time 23 nodes 3908 nps 170 pv f3e5
-61459 <pygone(0): bestmove f3e5
-61459 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f6e4 f1e1 d7d5 f3e5
-61459 >sf12(1): isready
-61460 <pygone(0): r - b q k b - r 
-61460 <pygone(0): - p p - - p p p 
-61460 <pygone(0): p - n - - - - - 
-61460 <pygone(0): - - - p p - - - 
-61460 <pygone(0): B - - - n - - - 
-61460 <pygone(0): - - - - - N - - 
-61460 <pygone(0): P P P P - P P P 
-61460 <pygone(0): R N B Q R - K - 
-61460 <sf12(1): readyok
-61460 >sf12(1): go depth 1
-61460 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-61460 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp -96 nodes 194 nps 97000 tbhits 0 time 2 pv f8c5 a4c6 e8f8
-61460 <sf12(1): bestmove f8c5 ponder a4c6
-61460 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f6e4 f1e1 d7d5 f3e5 f8c5
-61460 >pygone(0): isready
-61460 <pygone(0): readyok
-61461 >pygone(0): go depth 1
-93104 <pygone(0): info depth 1 score cp 238 time 32 nodes 4544 nps 142 pv d2d4
-93104 <pygone(0): bestmove d2d4
-93104 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f6e4 f1e1 d7d5 f3e5 f8c5 d2d4
-93104 >sf12(1): isready
-93104 <pygone(0): r - b q k - - r 
-93104 <pygone(0): - p p - - p p p 
-93104 <pygone(0): p - n - - - - - 
-93104 <pygone(0): - - b p N - - - 
-93104 <pygone(0): B - - - n - - - 
-93104 <pygone(0): - - - - - - - - 
-93104 <pygone(0): P P P P - P P P 
-93104 <pygone(0): R N B Q R - K - 
-93105 <sf12(1): readyok
-93105 >sf12(1): go depth 1
-93105 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-93105 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp -170 nodes 373 nps 373000 tbhits 0 time 1 pv d8h4 a4c6 b7c6
-93105 <sf12(1): bestmove d8h4 ponder a4c6
-93105 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 e1g1 f6e4 f1e1 d7d5 f3e5 f8c5 d2d4 d8h4
-93105 >pygone(0): isready
-93105 <pygone(0): readyok
-93105 >pygone(0): go depth 1
+206 >pygone(0): ucinewgame
+206 >pygone(0): position startpos
+206 >sf12(1): ucinewgame
+206 >sf12(1): setoption name Ponder value false
+207 >sf12(1): position startpos
+207 >pygone(0): position startpos moves e2e4
+207 >sf12(1): position startpos moves e2e4
+207 >sf12(1): position startpos moves e2e4 e7e5
+207 >pygone(0): position startpos moves e2e4 e7e5
+207 >pygone(0): position startpos moves e2e4 e7e5 g1f3
+207 >sf12(1): position startpos moves e2e4 e7e5 g1f3
+207 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6
+207 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6
+207 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
+207 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
+207 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
+207 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
+207 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
+207 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
+208 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
+208 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
+208 >pygone(0): isready
+208 <pygone(0): readyok
+208 >pygone(0): go depth 1

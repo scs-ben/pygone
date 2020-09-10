@@ -293,17 +293,9 @@ class Z:
      if k:
       A5+=B[z.lower()]
       A5+=J[z.lower()][t][u]
-      if(self.R in self.O):
-       A5+=(B[z.lower()]/10)
      else:
       A5-=B[z]
       A5-=(-1*J[z][abs(t-7)][abs(u-7)])
-      if(self.Q in self.P):
-       A5-=(B[z.lower()]/10)
-  for z in self.f:
-   A5+=C[z.lower()]
-  for z in self.g:
-   A5-=C[z.lower()]
   return A5
  def A6(self,depth,AK,AO,maxTime):
   A8=AK.w(AK.L%2==0)
@@ -320,7 +312,10 @@ class Z:
    A9=A8
   if(len(A9)==1):
    return[AK.A4(),A9[0],'',1]
-  n=-9999999
+  if(AO):
+   n=-9999999
+  else:
+   n=9999999
   m=A9[0]
   AA=[x[:]for x in AK.K]
   calcDepth=1
@@ -328,26 +323,36 @@ class Z:
    AK.nodes+=1
    AK.X(move)
    AB=time.perf_counter()+maxTime
-   value=max(n,self.A7(depth-1,-19999999,19999999,AK,not AO,AB,move)) 
+   retMove=self.A7(depth-1,-19999999,19999999,AK,not AO,AB,move)
+   if(AO):
+    value=max(n,retMove)
+   else:
+    value=min(n,retMove)
+   print(move,retMove,AO)
    AK.W([x[:]for x in AA])
    AK.L-=1
-   if(value>n):
-    n=value
-    m=move
+   if(AO):
+    if(value>n):
+     n=value
+     m=move
+   else:
+    if(value<n):
+     n=value
+     m=move
   gameZ.T=m
   return[n,m,'',calcDepth]
  def A7(self,depth,AM,AN,AK,AO,AG,T):
   AK.e()
-  A9=AK.w(AK.L%2==0)
+  A9=AK.w(AO)
   AB=time.perf_counter()
   if depth==0 or AB>=AG:
-   offset=0
+   AP=0
    if(T==gameZ.T):
     if(AK.L%2==0):
-     offset=-30.0
+     AP=-30.0
     else:
-     offset=30.0
-   return AK.A4()+offset
+     AP=30.0
+   return AK.A4()+AP
   AA=[x[:]for x in AK.K]
   if(AO):
    n=-9999999
@@ -389,11 +394,11 @@ while True:
    print("readyok")
   elif l.startswith("position"):
    m=l.split()
-   offsetMoves=gameZ.L+3
-   for move in m[offsetMoves:]:
+   APMoves=gameZ.L+3
+   for move in m[APMoves:]:
     gameZ.X(move)
-    offsetMoves+=1
-   gameZ.L=(offsetMoves-3)
+    APMoves+=1
+   gameZ.L=(APMoves-3)
   elif l.startswith("go"):
    goZ=Z()
    goZ.W([x[:]for x in gameZ.K])
@@ -404,10 +409,10 @@ while True:
    else:
     moveTime=10/len(goZ.N)
    AB=time.perf_counter()
-   (score,move,pv,calcDepth)=goZ.A6(4,goZ,(gameZ.L%2==0),moveTime)
+   (score,move,pv,calcDepth)=goZ.A6(3,goZ,(gameZ.L%2==0),moveTime)
    elapsedTime=math.ceil(time.perf_counter()-AB)
    nps=math.ceil(goZ.nodes/elapsedTime)
-   if(gameZ.L%2==0):
+   if(gameZ.L%2!=0):
     score=score*-1
    print("info depth "+str(calcDepth)+" score cp "+str(math.ceil(score))+" time "+str(elapsedTime)+" nodes "+str(goZ.nodes)+" nps "+str(nps)+" pv "+move)
    print("bestmove "+move)

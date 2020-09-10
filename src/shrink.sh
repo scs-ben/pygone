@@ -82,6 +82,7 @@ sed -i -e 's/localBoard/AK/g' pygone-shrink.py
 sed -i -e 's/alpha/AM/g' pygone-shrink.py
 sed -i -e 's/beta/AN/g' pygone-shrink.py
 sed -i -e 's/isMaximizing/AO/g' pygone-shrink.py
+sed -i -e 's/offset/AP/g' pygone-shrink.py
 sed -i -e 's/key/x/g' pygone-shrink.py
 sed -i -e 's/piece/z/g' pygone-shrink.py
 sed -i -e 's/Board/Z/g' pygone-shrink.py
