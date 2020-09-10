@@ -1,4 +1,4 @@
-/home/vagrant/code/gogone/bin/cutechess-cli \
+/home/vagrant/code/pygone/bin/cutechess-cli \
     -wait 2000 \
     -debug \
     -engine \

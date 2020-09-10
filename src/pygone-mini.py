@@ -1,577 +1,417 @@
 #!/usr/bin/env python3
 import math,os,sys,subprocess,time
-opBk={'e2e4':'e7e5','d2d4':'d7d5','c2c4':'c7c5','g1f3':'c7c5'}
-pPts={'p':100.0,'r':479.0,'n':280.0,'b':320.0,'q':929.0,'k':60000.0}
-aPts={'p':10.0,'r':50.0,'n':30.0,'b':30.0,'q':100.0,'k':500.0}
-pVT=[[0,0,0,0,0,0,0,0],[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0,0,0,0,0,0,0,0]]
-nVT=[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,27,62,-2],[24,24,45,37,33,41,25,17],[-1,5,31,21,22,35,2,0],[-18,10,13,22,18,15,11,-14],[-23,-15,2,0,2,0,-23,-20],[-74,-23,-26,-24,-19,-35,-22,-69]]
-bVT=[[-59,-78,-82,-76,-23,-107,-37,-50],[-11,20,35,-42,-39,31,2,-22],[-9,39,-32,41,52,-10,28,-14],[25,17,20,34,26,25,15,10],[13,10,17,23,17,16,0,7],[14,25,24,15,8,25,20,15],[19,20,11,6,7,6,20,16],[-7,2,-15,-12,-14,-15,-10,-10]]
-rVT=[[35,29,33,4,37,33,56,50],[55,29,56,67,55,62,34,60],[19,35,28,33,45,27,25,15],[0,5,16,13,18,-4,-9,-6],[-28,-35,-16,-21,-13,-29,-46,-30],[-42,-28,-42,-25,-25,-35,-26,-46],[-53,-38,-31,-26,-29,-43,-44,-53],[-30,-24,-18,5,-2,-18,-31,-32]]
-qVT=[[6,1,-8,-104,69,24,88,26],[14,32,60,-10,20,76,57,24],[-2,43,32,60,72,63,43,2],[1,-16,22,17,25,20,-13,-6],[-14,-15,-2,-5,-1,-10,-20,-22],[-30,-6,-13,-11,-16,-11,-16,-27],[-36,-18,0,-19,-15,-15,-21,-38],[-39,-30,-31,-13,-31,-36,-34,-42]]
-kVT=[[4,54,47,-99,-99,60,83,-62],[-32,10,55,56,56,55,10,3],[-62,12,-57,44,-67,28,37,-31],[-55,50,11,-4,-19,13,0,-49],[-55,-43,-52,-28,-51,-47,-8,-50],[-47,-42,-43,-79,-64,-32,-29,-32],[-4,3,-14,-50,-57,-18,13,4],[17,30,-3,-14,6,-1,40,18]]
-pPV={'p':pVT,'n':nVT,'b':bVT,'r':rVT,'q':qVT,'k':kVT}
-class Board:
- bdSt=[]
- plMvCt=0
- wVMv=[]
- bVMv=[]
- wALoc=''
- bALoc=''
- whKLoc='e1'
- blKLoc='e8'
- moveList=[]
- lastMove=''
- pv=''
+A={'e2e4':'e7e5','d2d4':'d7d5','c2c4':'c7c5','g1f3':'c7c5'}
+B={'p':100.0,'r':479.0,'n':280.0,'b':320.0,'q':929.0,'k':60000.0}
+C={'p':10.0,'r':50.0,'n':30.0,'b':30.0,'q':100.0,'k':500.0}
+D=[[0,0,0,0,0,0,0,0],[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0,0,0,0,0,0,0,0]]
+E=[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,27,62,-2],[24,24,45,37,33,41,25,17],[-1,5,31,21,22,35,2,0],[-18,10,13,22,18,15,11,-14],[-23,-15,2,0,2,0,-23,-20],[-74,-23,-26,-24,-19,-35,-22,-69]]
+F=[[-59,-78,-82,-76,-23,-107,-37,-50],[-11,20,35,-42,-39,31,2,-22],[-9,39,-32,41,52,-10,28,-14],[25,17,20,34,26,25,15,10],[13,10,17,23,17,16,0,7],[14,25,24,15,8,25,20,15],[19,20,11,6,7,6,20,16],[-7,2,-15,-12,-14,-15,-10,-10]]
+G=[[35,29,33,4,37,33,56,50],[55,29,56,67,55,62,34,60],[19,35,28,33,45,27,25,15],[0,5,16,13,18,-4,-9,-6],[-28,-35,-16,-21,-13,-29,-46,-30],[-42,-28,-42,-25,-25,-35,-26,-46],[-53,-38,-31,-26,-29,-43,-44,-53],[-30,-24,-18,5,-2,-18,-31,-32]]
+H=[[6,1,-8,-104,69,24,88,26],[14,32,60,-10,20,76,57,24],[-2,43,32,60,72,63,43,2],[1,-16,22,17,25,20,-13,-6],[-14,-15,-2,-5,-1,-10,-20,-22],[-30,-6,-13,-11,-16,-11,-16,-27],[-36,-18,0,-19,-15,-15,-21,-38],[-39,-30,-31,-13,-31,-36,-34,-42]]
+I=[[4,54,47,-99,-99,60,83,-62],[-32,10,55,56,56,55,10,3],[-62,12,-57,44,-67,28,37,-31],[-55,50,11,-4,-19,13,0,-49],[-55,-43,-52,-28,-51,-47,-8,-50],[-47,-42,-43,-79,-64,-32,-29,-32],[-4,3,-14,-50,-57,-18,13,4],[17,30,-3,-14,6,-1,40,18]]
+J={'p':D,'n':E,'b':F,'r':G,'q':H,'k':I}
+class Z:
+ K=[]
+ L=0
+ M=[]
+ N=[]
+ O=''
+ P=''
+ Q='e1'
+ R='e8'
+ S=[]
+ T=''
  nodes=0
- depth=0
  def __init__(self):
-  self.setDfBdSt()
-  self.plMvCt=0
- def setDfBdSt(self):
-  self.bdSt=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['-','-','-','-','-','-','-','-'],['-','-','-','-','-','-','-','-'],['-','-','-','-','-','-','-','-'],['-','-','-','-','-','-','-','-'],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R'],]
- def setBdSt(self,state):
-  self.bdSt=state
- def stMvCt(self,moves):
-  self.plMvCt=moves
- def mkMv(self,uCo):
-  fromCrd=uCo[0:2];
-  toCrd=uCo[2:4]
-  fromLet=fromCrd[0]
-  toLet=toCrd[0]
-  fromLetNumber=self.l2N(fromLet)
-  fromNumber=abs(int(fromCrd[1])-8)
-  toLetNumber=self.l2N(toLet)
-  toNumber=abs(int(toCrd[1])-8)
-  fromPc=self.bdSt[fromNumber][fromLetNumber]
-  toPc=self.bdSt[toNumber][toLetNumber]
-  promote=''
-  if(len(uCo)>4):
-   promote=uCo[4:5]
-  if(fromPc.lower()=='p' and toPc=='-' and fromLet!=toLet):
-   self.bdSt[fromNumber][fromLetNumber]='-'
-   self.bdSt[toNumber][toLetNumber]=fromPc
-   self.bdSt[fromNumber][toLetNumber]='-'
-  elif(self.bdSt[fromNumber][fromLetNumber].lower()=='k' and(uCo=='e1g1' or uCo=='e1c1' or uCo=='e8g8' or uCo=='e8c8')):
-   self.bdSt[fromNumber][fromLetNumber]='-'
-   if(uCo[2]=='g'):
-    self.bdSt[toNumber][toLetNumber+1]='-'
-    if(self.plMvCt%2==0):
-     self.bdSt[fromNumber][fromLetNumber+1]='R'
+  self.V()
+  self.L=0
+ def V(self):
+  self.K=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['-','-','-','-','-','-','-','-'],['-','-','-','-','-','-','-','-'],['-','-','-','-','-','-','-','-'],['-','-','-','-','-','-','-','-'],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R'],]
+ def W(self,AH):
+  self.K=AH
+ def X(self,Y):
+  D1=Y[0:2];
+  D2=Y[2:4]
+  D5=D1[0]
+  D7=D2[0]
+  D3=self.b(D5)
+  D6=abs(int(D1[1])-8)
+  D4=self.b(D7)
+  D8=abs(int(D2[1])-8)
+  D9=self.K[D6][D3]
+  D0=self.K[D8][D4]
+  a=''
+  if(len(Y)>4):
+   a=Y[4:5]
+  if(D9.lower()=='p' and D0=='-' and D5!=D7):
+   self.K[D6][D3]='-'
+   self.K[D8][D4]=D9
+   self.K[D6][D4]='-'
+  elif(self.K[D6][D3].lower()=='k' and(Y=='e1g1' or Y=='e1c1' or Y=='e8g8' or Y=='e8c8')):
+   self.K[D6][D3]='-'
+   if(Y[2]=='g'):
+    self.K[D8][D4+1]='-'
+    if(self.L%2==0):
+     self.K[D6][D3+1]='R'
     else:
-     self.bdSt[fromNumber][fromLetNumber+1]='r'
+     self.K[D6][D3+1]='r'
    else:
-    self.bdSt[fromNumber][toLetNumber-2]='-'
-    if(self.plMvCt%2==0):
-     self.bdSt[fromNumber][fromLetNumber-1]='R'
+    self.K[D6][D4-2]='-'
+    if(self.L%2==0):
+     self.K[D6][D3-1]='R'
     else:
-     self.bdSt[fromNumber][fromLetNumber-1]='r'
-   if(self.plMvCt%2==0):
-    self.bdSt[fromNumber][toLetNumber]='K'
+     self.K[D6][D3-1]='r'
+   if(self.L%2==0):
+    self.K[D6][D4]='K'
    else:
-    self.bdSt[fromNumber][toLetNumber]='k'
+    self.K[D6][D4]='k'
   else:
-   fromState=self.bdSt[fromNumber][fromLetNumber]
-   toState=self.bdSt[toNumber][toLetNumber]
-   self.bdSt[fromNumber][fromLetNumber]='-'
-   if(len(promote)>0):
-    if(self.plMvCt%2==0):
-     self.bdSt[toNumber][toLetNumber]=promote.upper()
+   fromState=self.K[D6][D3]
+   toState=self.K[D8][D4]
+   self.K[D6][D3]='-'
+   if(len(a)>0):
+    if(self.L%2==0):
+     self.K[D8][D4]=a.upper()
     else:
-     self.bdSt[toNumber][toLetNumber]=promote
+     self.K[D8][D4]=a
    else:
-    self.bdSt[toNumber][toLetNumber]=fromState
-  self.moveList.append(uCo)
-  self.plMvCt+=1
- def l2N(self,letter):
+    self.K[D8][D4]=fromState
+  self.S.append(Y)
+  self.L+=1
+ def b(self,letter):
   return abs((ord(letter)-96)-1)
- def n2L(self,number):
+ def c(self,number):
   return chr(number+96)
- def shBd(self):
+ def d(self):
   for i in range(8): 
    for j in range(8):
-    print(self.bdSt[i][j],end=" ")
+    print(self.K[i][j],end=" ")
    print()
- def gVMv(self):
-  wVMv=[]
-  bVMv=[]
-  wAMv=[]
-  bAMv=[]
-  self.wALoc=''
-  self.bALoc=''
-  evlSt=self.bdSt.copy()
-  for row in range(8): 
-   for column in range(8):
-    piece=evlSt[row][column]
-    if(piece!="-"):
-     wSC=self.n2L(column+1)+str(abs(row-8))
-     bSC=self.n2L(column+1)+str(abs(row-8))
-     if((piece=='k' or piece=='K')):
-      if(piece=='K'):
-       isWhite=True
-       self.whKLoc=wSC
+ def e(self):
+  M=[]
+  N=[]
+  f=[]
+  g=[]
+  self.O=''
+  self.P=''
+  h=self.K.copy()
+  for t in range(8): 
+   for u in range(8):
+    z=h[t][u]
+    if(z!="-"):
+     i=self.c(u+1)+str(abs(t-8))
+     j=self.c(u+1)+str(abs(t-8))
+     if((z=='k' or z=='K')):
+      if(z=='K'):
+       k=True
+       self.Q=i
       else:
-       isWhite=False
-       self.blKLoc=bSC
-      kMoves={1:{'column':(column+0),'row':(row+1)},2:{'column':(column+0),'row':(row-1)},3:{'column':(column+1),'row':(row+0)},4:{'column':(column-1),'row':(row+0)},5:{'column':(column+1),'row':(row+1)},6:{'column':(column+1),'row':(row-1)},7:{'column':(column-1),'row':(row+1)},8:{'column':(column-1),'row':(row-1)},}
-      if isWhite:
-       if wSC=='e1' and evlSt[7][5]=='-' and evlSt[7][6]=='-' and evlSt[7][7]=='R':
-        wVMv.append(wSC+'g1')
-       if wSC=='e1' and evlSt[7][1]=='-' and evlSt[7][2]=='-' and evlSt[7][3]=='-' and evlSt[7][0]=='R':
-        wVMv.append(wSC+'c1')
+       k=False
+       self.R=j
+      l={1:{'u':(u+0),'t':(t+1)},2:{'u':(u+0),'t':(t-1)},3:{'u':(u+1),'t':(t+0)},4:{'u':(u-1),'t':(t+0)},5:{'u':(u+1),'t':(t+1)},6:{'u':(u+1),'t':(t-1)},7:{'u':(u-1),'t':(t+1)},8:{'u':(u-1),'t':(t-1)},}
+      if k:
+       if i=='e1' and h[7][5]=='-' and h[7][6]=='-' and h[7][7]=='R':
+        M.append(i+'g1')
+       if i=='e1' and h[7][1]=='-' and h[7][2]=='-' and h[7][3]=='-' and h[7][0]=='R':
+        M.append(i+'c1')
       else:
-       if bVMv=='e8' and evlSt[0][1]=='-' and evlSt[0][1]=='-' and evlSt[0][2]=='-' and evlSt[0][0]=='r':
-        bstMv.append(bSC+'c8')
-       if bVMv=='e8' and evlSt[0][5]=='-' and evlSt[0][6]=='-' and evlSt[0][7]=='r':
-        bstMv.append(bSC+'g8')
-      for key,nMove in kMoves.items():
-       if(nMove['column']>=0 and nMove['column']<=7 and nMove['row']>=0 and nMove['row']<=7):
-        evalPiece=evlSt[nMove['row']][nMove['column']]
-        if(isWhite):
-         canCapture=(evalPiece!='-' and evalPiece.islower())
+       if N=='e8' and h[0][1]=='-' and h[0][1]=='-' and h[0][2]=='-' and h[0][0]=='r':
+        n.append(j+'c8')
+       if N=='e8' and h[0][5]=='-' and h[0][6]=='-' and h[0][7]=='r':
+        n.append(j+'g8')
+      for x,AJ in l.items():
+       if(AJ['u']>=0 and AJ['u']<=7 and AJ['t']>=0 and AJ['t']<=7):
+        v=h[AJ['t']][AJ['u']]
+        if(k):
+         o=(v!='-' and v.islower())
         else:
-         canCapture=(evalPiece!='-' and not evalPiece.islower())
-        dest=self.n2L(nMove['column']+1)+str(abs(nMove['row']-8))
-        if(evalPiece=='-' or canCapture):
-         if(isWhite):
-          wVMv.append(wSC+dest)
+         o=(v!='-' and not v.islower())
+        dest=self.c(AJ['u']+1)+str(abs(AJ['t']-8))
+        if(v=='-' or o):
+         if(k):
+          M.append(i+dest)
          else:
-          bVMv.append(bSC+dest)
-        if(canCapture):
-         if(isWhite):
-          wAMv.append(evalPiece)
-          self.wALoc+=dest
+          N.append(j+dest)
+        if(o):
+         if(k):
+          f.append(v)
+          self.O+=dest
          else:
-          bAMv.append(evalPiece)
-          self.bALoc+=dest
-     if((piece=='p' or piece=='P')):
-      if(piece=='P'):
-       if(row>1 and evlSt[row-1][column]=='-'):
-        wVMv.append(wSC+self.n2L(column+1)+str(abs(row-9)))
-       if(row==6 and evlSt[row-1][column]=='-' and evlSt[row-2][column]=='-'):
-        wVMv.append(wSC+self.n2L(column+1)+str(abs(row-10)))
-       if(row==1 and evlSt[row-1][column]=='-'):
-        wVMv.append(wSC+self.n2L(column+1)+str(abs(row-9))+'q')
-       if(((column-1)>=0 and(row-1)>=0)or((column+1)<8 and(row-1)>=0)):
+          g.append(v)
+          self.P+=dest
+     if((z=='p' or z=='P')):
+      if(z=='P'):
+       if(t>1 and h[t-1][u]=='-'):
+        M.append(i+self.c(u+1)+str(abs(t-9)))
+       if(t==6 and h[t-1][u]=='-' and h[t-2][u]=='-'):
+        M.append(i+self.c(u+1)+str(abs(t-10)))
+       if(t==1 and h[t-1][u]=='-'):
+        M.append(i+self.c(u+1)+str(abs(t-9))+'q')
+       if(((u-1)>=0 and(t-1)>=0)or((u+1)<8 and(t-1)>=0)):
         prom=''
-        if(row==1):
+        if(t==1):
          prom='q'
-        if((column-1)>=0 and evlSt[row-1][column-1]!='-' and evlSt[row-1][column-1].islower()):
-         wVMv.append(wSC+self.n2L(column)+str(abs(row-9))+prom)
-         self.wALoc+=self.n2L(column)+str(abs(row-9))
-         wAMv.append(evlSt[row-1][column-1])
-        if((column+1)<8 and evlSt[row-1][column+1]!='-' and evlSt[row-1][column+1].islower()):
-         wVMv.append(wSC+self.n2L(column+2)+str(abs(row-9))+prom)
-         self.wALoc+=self.n2L(column+2)+str(abs(row-9))
-         wAMv.append(evlSt[row-1][column+1])
+        if((u-1)>=0 and h[t-1][u-1]!='-' and h[t-1][u-1].islower()):
+         M.append(i+self.c(u)+str(abs(t-9))+prom)
+         self.O+=self.c(u)+str(abs(t-9))
+         f.append(h[t-1][u-1])
+        if((u+1)<8 and h[t-1][u+1]!='-' and h[t-1][u+1].islower()):
+         M.append(i+self.c(u+2)+str(abs(t-9))+prom)
+         self.O+=self.c(u+2)+str(abs(t-9))
+         f.append(h[t-1][u+1])
       else:
-       if(row<6 and evlSt[row+1][column]=='-'):
-        bVMv.append(bSC+self.n2L(column+1)+str(abs(row-7)))
-       if(row==1 and evlSt[row+1][column]=='-' and evlSt[row+2][column]=='-'):
-        bVMv.append(bSC+self.n2L(column+1)+str(abs(row-6)))
-       if(row==6 and evlSt[row+1][column]=='-'):
-        bVMv.append(bSC+self.n2L(column+1)+str(abs(row-7))+'q')
-       if(((column-1)>=0 and(row+1)<8)or((column+1)<8 and(row+1)<8)):
+       if(t<6 and h[t+1][u]=='-'):
+        N.append(j+self.c(u+1)+str(abs(t-7)))
+       if(t==1 and h[t+1][u]=='-' and h[t+2][u]=='-'):
+        N.append(j+self.c(u+1)+str(abs(t-6)))
+       if(t==6 and h[t+1][u]=='-'):
+        N.append(j+self.c(u+1)+str(abs(t-7))+'q')
+       if(((u-1)>=0 and(t+1)<8)or((u+1)<8 and(t+1)<8)):
         prom=''
-        if(row==6):
+        if(t==6):
          prom='q'
-        if((column+1)<8 and evlSt[row+1][column+1]!='-' and not evlSt[row+1][column+1].islower()):
-         bVMv.append(bSC+self.n2L(column+2)+str(abs(row-7))+prom)
-         self.bALoc+=self.n2L(column+2)+str(abs(row-7))
-         bAMv.append(evlSt[row+1][column+1])
-        if((column-1)>=0 and evlSt[row+1][column-1]!='-' and not evlSt[row+1][column-1].islower()):
-         bVMv.append(bSC+self.n2L(column)+str(abs(row-7))+prom)
-         self.bALoc+=self.n2L(column)+str(abs(row-7))
-         bAMv.append(evlSt[row+1][column-1])
-     if((piece=='n' or piece=='N')):
-      isWhite=(piece=='N')
-      nMoves={1:{'column':(column+1),'row':(row-2)},2:{'column':(column-1),'row':(row-2)},3:{'column':(column+2),'row':(row-1)},4:{'column':(column-2),'row':(row-1)},5:{'column':(column+1),'row':(row+2)},6:{'column':(column-1),'row':(row+2)},7:{'column':(column+2),'row':(row+1)},8:{'column':(column-2),'row':(row+1)},}
-      for key,nMove in nMoves.items():
-       if(nMove['column']>=0 and nMove['column']<=7 and nMove['row']>=0 and nMove['row']<=7):
-        evalPiece=evlSt[nMove['row']][nMove['column']]
-        if(isWhite):
-         canCapture=(evalPiece!='-' and evalPiece.islower())
+        if((u+1)<8 and h[t+1][u+1]!='-' and not h[t+1][u+1].islower()):
+         N.append(j+self.c(u+2)+str(abs(t-7))+prom)
+         self.P+=self.c(u+2)+str(abs(t-7))
+         g.append(h[t+1][u+1])
+        if((u-1)>=0 and h[t+1][u-1]!='-' and not h[t+1][u-1].islower()):
+         N.append(j+self.c(u)+str(abs(t-7))+prom)
+         self.P+=self.c(u)+str(abs(t-7))
+         g.append(h[t+1][u-1])
+     if((z=='n' or z=='N')):
+      k=(z=='N')
+      AJs={1:{'u':(u+1),'t':(t-2)},2:{'u':(u-1),'t':(t-2)},3:{'u':(u+2),'t':(t-1)},4:{'u':(u-2),'t':(t-1)},5:{'u':(u+1),'t':(t+2)},6:{'u':(u-1),'t':(t+2)},7:{'u':(u+2),'t':(t+1)},8:{'u':(u-2),'t':(t+1)},}
+      for x,AJ in AJs.items():
+       if(AJ['u']>=0 and AJ['u']<=7 and AJ['t']>=0 and AJ['t']<=7):
+        v=h[AJ['t']][AJ['u']]
+        if(k):
+         o=(v!='-' and v.islower())
         else:
-         canCapture=(evalPiece!='-' and not evalPiece.islower())
-        if(evalPiece=='-' or canCapture):
-         dest=self.n2L(nMove['column']+1)+str(abs(nMove['row']-8))
-         if(isWhite):
-          wVMv.append(wSC+dest)
-          if(canCapture):
-           self.wALoc+=dest
-           wAMv.append(evalPiece)
+         o=(v!='-' and not v.islower())
+        if(v=='-' or o):
+         dest=self.c(AJ['u']+1)+str(abs(AJ['t']-8))
+         if(k):
+          M.append(i+dest)
+          if(o):
+           self.O+=dest
+           f.append(v)
          else:
-          bVMv.append(bSC+dest)
-          if(canCapture):
-           self.bALoc+=dest
-           bAMv.append(evalPiece)
-     if((piece=='r' or piece=='R'))or((piece=='q' or piece=='Q')):
-      isWhite=(piece=='R' or piece=='Q')
-      tempRow=row-1
-      while(tempRow>=0):
-       evalPiece=evlSt[tempRow][column]
-       if(isWhite):
-        canCapture=(evalPiece!='-' and evalPiece.islower())
-       else:
-        canCapture=(evalPiece!='-' and not evalPiece.islower())
-       if(evalPiece=='-' or canCapture):
-        dest=self.n2L(column+1)+str(abs(tempRow-8))
-        if isWhite:
-         wVMv.append(wSC+dest)
-         if(canCapture):
-          self.wALoc+=dest
-          wAMv.append(evalPiece)
+          N.append(j+dest)
+          if(o):
+           self.P+=dest
+           g.append(v)
+     if((z=='r' or z=='R'))or((z=='q' or z=='Q')):
+      k=(z=='R' or z=='Q')
+      horizontalMoves={1:{'u':u,'t':(t-1),'s':0,'r':-1},2:{'u':u,'t':(t+1),'s':0,'r':1},3:{'u':(u-1),'t':t,'s':-1,'r':0},4:{'u':(u+1),'t':t,'s':1,'r':0}}
+      for _,hMove in horizontalMoves.items():
+       p=hMove['t']
+       q=hMove['u']
+       while(p>=0 and p<8 and q>=0 and q<8):
+        v=h[p][q]
+        o=(k and v!='-' and v.islower())or(not k and v!='-' and not v.islower())
+        if(v=='-' or o):
+         dest=self.c(q+1)+str(abs(p-8))
+         if k:
+          M.append(i+dest)
+          if(o):
+           self.O+=dest
+           f.append(v)
+         else:
+          N.append(j+dest)
+          if(o):
+           self.P+=dest
+           g.append(v)
+         if(o):
+          break
         else:
-         bVMv.append(bSC+dest)
-         if(canCapture):
-          self.bALoc+=dest
-          bAMv.append(evalPiece)
-        if(canCapture):
          break
-       else:
-        break
-       tempRow-=1
-      tempRow=row+1
-      while(tempRow<8):
-       evalPiece=evlSt[tempRow][column]
-       if(isWhite):
-        canCapture=(evalPiece!='-' and evalPiece.islower())
-       else:
-        canCapture=(evalPiece!='-' and not evalPiece.islower())
-       if(evalPiece=='-' or canCapture):
-        dest=self.n2L(column+1)+str(abs(tempRow-8))
-        if isWhite:
-         wVMv.append(wSC+dest)
-         if(canCapture):
-          self.wALoc+=dest
-          wAMv.append(evalPiece)
+        p+=hMove['r']
+        q+=hMove['s']
+     if((z=='b' or z=='B'))or((z=='q' or z=='Q')):
+      k=(z=='B' or z=='Q')
+      diagMoves={1:{'u':(u-1),'t':(t-1),'s':-1,'r':-1},2:{'u':(u+1),'t':(t+1),'s':1,'r':1},3:{'u':(u-1),'t':(t+1),'s':-1,'r':1},4:{'u':(u+1),'t':(t-1),'s':1,'r':-1}}
+      for _,dMove in diagMoves.items():
+       p=dMove['t']
+       q=dMove['u']
+       while(p>=0 and p<8 and q>=0 and q<8):
+        v=h[p][q]
+        o=(k and v!='-' and v.islower())or(not k and v!='-' and not v.islower())
+        if(v=='-' or o):
+         dest=self.c(q+1)+str(abs(p-8))
+         if(k):
+          M.append(i+dest)
+          if(o):
+           self.O+=dest
+           f.append(v)
+         else:
+          N.append(j+dest)
+          if(o):
+           self.P+=dest
+           g.append(v)
+         if(o):
+          break
         else:
-         bVMv.append(bSC+dest)
-         if(canCapture):
-          self.bALoc+=dest
-          bAMv.append(evalPiece)
-        if(canCapture):
          break
-       else:
-        break
-       tempRow+=1
-      tempCol=column+1
-      while(tempCol<8):
-       evalPiece=evlSt[row][tempCol]
-       if(isWhite):
-        canCapture=(evalPiece!='-' and evalPiece.islower())
-       else:
-        canCapture=(evalPiece!='-' and not evalPiece.islower())
-       if(evalPiece=='-' or canCapture):
-        dest=self.n2L(tempCol+1)+str(abs(row-8))
-        if isWhite:
-         wVMv.append(wSC+dest)
-         if(canCapture):
-          self.wALoc+=dest
-          wAMv.append(evalPiece)
-        else:
-         bVMv.append(bSC+dest)
-         if(canCapture):
-          self.bALoc+=dest
-          bAMv.append(evalPiece)
-        if(canCapture):
-         break
-       else:
-        break
-       tempCol+=1
-      tempCol=column-1
-      while(tempCol>=0):
-       evalPiece=evlSt[row][tempCol]
-       if(isWhite):
-        canCapture=(evalPiece!='-' and evalPiece.islower())
-       else:
-        canCapture=(evalPiece!='-' and not evalPiece.islower())
-       if(evalPiece=='-' or canCapture):
-        dest=self.n2L(tempCol+1)+str(abs(row-8))
-        if isWhite:
-         wVMv.append(wSC+dest)
-         if(canCapture):
-          self.wALoc+=dest
-          wAMv.append(evalPiece)
-        else:
-         bVMv.append(bSC+dest)
-         if(canCapture):
-          self.bALoc+=dest
-          bAMv.append(evalPiece)
-        if(canCapture):
-         break
-       else:
-        break
-       tempCol-=1
-     if((piece=='b' or piece=='B'))or((piece=='q' or piece=='Q')):
-      isWhite=(piece=='B' or piece=='Q')
-      tempRow=row-1
-      tempCol=column-1
-      while(tempRow>=0 and tempCol>=0):
-       evalPiece=evlSt[tempRow][tempCol]
-       if(isWhite):
-        canCapture=(evalPiece!='-' and evalPiece.islower())
-       else:
-        canCapture=(evalPiece!='-' and not evalPiece.islower())
-       if(evalPiece=='-' or canCapture):
-        dest=self.n2L(tempCol+1)+str(abs(tempRow-8))
-        if(isWhite):
-         wVMv.append(wSC+dest)
-         if(canCapture):
-          self.wALoc+=dest
-          wAMv.append(evalPiece)
-        else:
-         bVMv.append(bSC+dest)
-         if(canCapture):
-          self.bALoc+=dest
-          bAMv.append(evalPiece)
-        if(canCapture):
-         break
-       else:
-        break
-       tempRow-=1
-       tempCol-=1
-      tempRow=row+1
-      tempCol=column+1
-      while(tempRow<8 and tempCol<8):
-       evalPiece=evlSt[tempRow][tempCol]
-       if(isWhite):
-        canCapture=(evalPiece!='-' and evalPiece.islower())
-       else:
-        canCapture=(evalPiece!='-' and not evalPiece.islower())
-       if(evalPiece=='-' or canCapture):
-        dest=self.n2L(tempCol+1)+str(abs(tempRow-8))
-        if(isWhite):
-         wVMv.append(wSC+dest)
-         if(canCapture):
-          self.wALoc+=dest
-          wAMv.append(evalPiece)
-        else:
-         bVMv.append(bSC+dest)
-         if(canCapture):
-          self.bALoc+=dest
-          bAMv.append(evalPiece)
-        if(canCapture):
-         break
-       else:
-        break
-       tempRow+=1
-       tempCol+=1
-      tempRow=row-1
-      tempCol=column+1
-      while(tempRow>=0 and tempCol<8):
-       evalPiece=evlSt[tempRow][tempCol]
-       if(isWhite):
-        canCapture=(evalPiece!='-' and evalPiece.islower())
-       else:
-        canCapture=(evalPiece!='-' and not evalPiece.islower())
-       if(evalPiece=='-' or canCapture):
-        dest=self.n2L(tempCol+1)+str(abs(tempRow-8))
-        if(isWhite):
-         wVMv.append(wSC+dest)
-         if(canCapture):
-          self.wALoc+=dest
-          wAMv.append(evalPiece)
-        else:
-         bVMv.append(bSC+dest)
-         if(canCapture):
-          self.bALoc+=dest
-          bAMv.append(evalPiece)
-        if(canCapture):
-         break
-       else:
-        break
-       tempRow-=1
-       tempCol+=1
-      tempRow=row+1
-      tempCol=column-1
-      while(tempRow<8 and tempCol>=0):
-       evalPiece=evlSt[tempRow][tempCol]
-       if(isWhite):
-        canCapture=(evalPiece!='-' and evalPiece.islower())
-       else:
-        canCapture=(evalPiece!='-' and not evalPiece.islower())
-       if(evalPiece=='-' or canCapture):
-        dest=self.n2L(tempCol+1)+str(abs(tempRow-8))
-        if(isWhite):
-         wVMv.append(wSC+dest)
-         if(canCapture):
-          self.wALoc+=dest
-          wAMv.append(evalPiece)
-        else:
-         bVMv.append(bSC+dest)
-         if(canCapture):
-          self.bALoc+=dest
-          bAMv.append(evalPiece)
-        if(canCapture):
-         break
-       else:
-        break
-       tempRow+=1
-       tempCol-=1
-  self.wVMv=wVMv
-  self.bVMv=bVMv
-  self.wAMv=wAMv
-  self.bAMv=bAMv
-  return{'wVMv':wVMv,'bVMv':bVMv}
- def rmMv(self,isWhite):
-  if(isWhite):
-   moves=self.wVMv.copy()
+        p+=dMove['r']
+        q+=dMove['s']
+  self.M=M
+  self.N=N
+  self.f=f
+  self.g=g
+  return{'M':M,'N':N}
+ def w(self,k):
+  if(k):
+   AI=self.M.copy()
   else:
-   moves=self.bVMv.copy()
-  masterMoves=moves.copy()
-  for move in moves:
-   lglBd=Board()
-   lglBd.setBdSt([x[:]for x in self.bdSt.copy()])
-   lglBd.stMvCt(self.plMvCt)
-   lglBd.mkMv(move)
-   lglBd.gVMv()
-   if(isWhite):
-    kLoc=lglBd.whKLoc
-    availMvs=lglBd.bALoc
+   AI=self.N.copy()
+  A0=AI.copy()
+  for move in AI:
+   A1=Z()
+   A1.W([x[:]for x in self.K.copy()])
+   A1.L=self.L
+   A1.X(move)
+   A1.e()
+   if(k):
+    A2=A1.Q
+    A3=A1.P
    else:
-    kLoc=lglBd.blKLoc
-    availMvs=lglBd.wALoc
-   if(kLoc in availMvs):
+    A2=A1.R
+    A3=A1.O
+   if(A2 in A3):
     try:
-     masterMoves.remove(move)
+     A0.remove(move)
     except:
      continue
-  return masterMoves
- def bdEval(self):
-  bEval=0
-  for row in range(8):
-   for column in range(8):
-    piece=self.bdSt[row][column]
-    isWhite=not piece.islower()
-    if(piece!='-'):
-     if isWhite:
-      bEval+=pPts[piece.lower()]
-      bEval+=pPV[piece.lower()][row][column]
-      if(self.blKLoc in self.wALoc):
-       bEval+=(pPts[piece.lower()]/10)
+  return A0
+ def A4(self):
+  A5=0
+  for t in range(8):
+   for u in range(8):
+    z=self.K[t][u]
+    k=not z.islower()
+    if(z!='-'):
+     if k:
+      A5+=B[z.lower()]
+      A5+=J[z.lower()][t][u]
+      if(self.R in self.O):
+       A5+=(B[z.lower()]/10)
      else:
-      bEval-=pPts[piece]
-      bEval-=(-1*pPV[piece][abs(row-7)][abs(column-7)])
-      if(self.whKLoc in self.bALoc):
-       bEval-=(pPts[piece.lower()]/10)
-  for piece in self.wAMv:
-   bEval+=aPts[piece.lower()]
-  for piece in self.bAMv:
-   bEval-=aPts[piece.lower()]
-  return bEval
- def mmRt(self,depth,bd,isMax,maxTime):
-  lglMvs=bd.rmMv(bd.plMvCt%2==0)
-  if(bd.plMvCt==0):
-   possMvs=['e2e4','d2d4','c2c4','g1f3']
-   return[0,possMvs[0],'',1]
-  elif bd.plMvCt==1:
+      A5-=B[z]
+      A5-=(-1*J[z][abs(t-7)][abs(u-7)])
+      if(self.Q in self.P):
+       A5-=(B[z.lower()]/10)
+  for z in self.f:
+   A5+=C[z.lower()]
+  for z in self.g:
+   A5-=C[z.lower()]
+  return A5
+ def A6(self,depth,AK,AO,maxTime):
+  A8=AK.w(AK.L%2==0)
+  if(AK.L==0):
+   A9=['e2e4','d2d4','c2c4','g1f3']
+   return[0,A9[0],'',1]
+  elif AK.L==1:
    try:
-    move=opBk[bd.moveList[0]]
+    move=A[AK.S[0]]
     return[0,move,'',1]
    except:
-    possMvs=lglMvs
+    A9=A8
   else:
-   possMvs=lglMvs
-  if(len(possMvs)==1):
-   return[bd.bdEval(),possMvs[0],'',1]
-  bstMv=-9999999
-  bstMvFin=possMvs[0]
-  originalState=[x[:]for x in bd.bdSt]
+   A9=A8
+  if(len(A9)==1):
+   return[AK.A4(),A9[0],'',1]
+  n=-9999999
+  m=A9[0]
+  AA=[x[:]for x in AK.K]
   calcDepth=1
-  for move in possMvs:
-   bd.nodes+=1
-   bd.mkMv(move)
-   startTime=time.perf_counter()+maxTime
-   value=max(bstMv,self.mm(depth-1,-19999999,19999999,bd,not isMax,startTime,move)) 
-   bd.setBdSt([x[:]for x in originalState])
-   bd.plMvCt-=1
-   if(value>bstMv):
-    bstMv=value
-    bstMvFin=move
-  gBd.lastMove=bstMvFin
-  return[bstMv,bstMvFin,'',calcDepth]
- def mm(self,depth,alpha,beta,bd,isMax,endTime,lastMove):
-  bd.gVMv()
-  possMvs=bd.rmMv(bd.plMvCt%2==0)
-  startTime=time.perf_counter()
-  if depth==0 or startTime>=endTime:
+  for move in A9:
+   AK.nodes+=1
+   AK.X(move)
+   AB=time.perf_counter()+maxTime
+   value=max(n,self.A7(depth-1,-19999999,19999999,AK,not AO,AB,move)) 
+   AK.W([x[:]for x in AA])
+   AK.L-=1
+   if(value>n):
+    n=value
+    m=move
+  gameZ.T=m
+  return[n,m,'',calcDepth]
+ def A7(self,depth,AM,AN,AK,AO,AG,T):
+  AK.e()
+  A9=AK.w(AK.L%2==0)
+  AB=time.perf_counter()
+  if depth==0 or AB>=AG:
    offset=0
-   if(lastMove==gBd.lastMove):
-    if(bd.plMvCt%2==0):
+   if(T==gameZ.T):
+    if(AK.L%2==0):
      offset=-30.0
     else:
      offset=30.0
-   return bd.bdEval()+offset
-  originalState=[x[:]for x in bd.bdSt]
-  if(isMax):
-   bstMv=-9999999
-   for move in possMvs:
-    bd.nodes+=1
-    bd.mkMv(move)
-    bstMv=max(bstMv,self.mm(depth-1,alpha,beta,bd,not isMax,endTime,move))
-    bd.setBdSt([x[:]for x in originalState])
-    bd.plMvCt-=1
-    alpha=max(alpha,bstMv)
-    if(beta<=alpha):
-     return bstMv
-   return bstMv
+   return AK.A4()+offset
+  AA=[x[:]for x in AK.K]
+  if(AO):
+   n=-9999999
+   for move in A9:
+    AK.nodes+=1
+    AK.X(move)
+    n=max(n,self.A7(depth-1,AM,AN,AK,not AO,AG,move))
+    AK.W([x[:]for x in AA])
+    AK.L-=1
+    AM=max(AM,n)
+    if(AN<=AM):
+     return n
+   return n
   else:
-   bstMv=9999999
-   for move in possMvs:
-    bd.nodes+=1
-    bd.mkMv(move)
-    bstMv=min(bstMv,self.mm(depth-1,alpha,beta,bd,not isMax,endTime,move))
-    bd.setBdSt([x[:]for x in originalState])
-    bd.plMvCt-=1
-    beta=min(beta,bstMv)
-    if(beta<=alpha):
-     return bstMv
-   return bstMv
-gBd=Board()
+   n=9999999
+   for move in A9:
+    AK.nodes+=1
+    AK.X(move)
+    n=min(n,self.A7(depth-1,AM,AN,AK,not AO,AG,move))
+    AK.W([x[:]for x in AA])
+    AK.L-=1
+    AN=min(AN,n)
+    if(AN<=AM):
+     return n
+   return n
+gameZ=Z()
 while True:
  try:
   l=input()
   if l=="quit":
    sys.exit()
-  elif l=="print":
-   gBd.shBd()
   elif l=="uci":
    print("pygone 1.0 by rcostheta")
    print("uciok")
-  elif l=="valid":
-   gBd.gVMv()
-   print(gBd.rmMv(1))
-   print(gBd.rmMv(0))
   elif l=="ucinewgame":
-   gBd=Board()
-   gBd.stMvCt(moves=0)
+   gameZ=Z()
+   gameZ.L=0
   elif l=="isready":
    print("readyok")
   elif l.startswith("position"):
    m=l.split()
-   offsetMoves=gBd.plMvCt+3
+   offsetMoves=gameZ.L+3
    for move in m[offsetMoves:]:
-    gBd.mkMv(move)
+    gameZ.X(move)
     offsetMoves+=1
-   gBd.stMvCt(offsetMoves-3)
+   gameZ.L=(offsetMoves-3)
   elif l.startswith("go"):
-   goBoard=Board()
-   goBoard.setBdSt([x[:]for x in gBd.bdSt])
-   goBoard.stMvCt(gBd.plMvCt)
-   goBoard.gVMv()
-   if(gBd.plMvCt%2==0):
-    moveTime=10/len(goBoard.wVMv)
+   goZ=Z()
+   goZ.W([x[:]for x in gameZ.K])
+   goZ.L=gameZ.L
+   goZ.e()
+   if(gameZ.L%2==0):
+    moveTime=10/len(goZ.M)
    else:
-    moveTime=10/len(goBoard.bVMv)
-   startTime=time.perf_counter()
-   (score,move,pv,calcDepth)=goBoard.mmRt(4,goBoard,(gBd.plMvCt%2==0),moveTime)
-   elapsedTime=math.ceil(time.perf_counter()-startTime)
-   nps=math.ceil(goBoard.nodes/elapsedTime)
-   if(gBd.plMvCt%2==0):
+    moveTime=10/len(goZ.N)
+   AB=time.perf_counter()
+   (score,move,pv,calcDepth)=goZ.A6(4,goZ,(gameZ.L%2==0),moveTime)
+   elapsedTime=math.ceil(time.perf_counter()-AB)
+   nps=math.ceil(goZ.nodes/elapsedTime)
+   if(gameZ.L%2==0):
     score=score*-1
-   print("info depth "+str(calcDepth)+" score cp "+str(math.ceil(score))+" time "+str(elapsedTime)+" nodes "+str(goBoard.nodes)+" nps "+str(nps)+" pv "+move)
+   print("info depth "+str(calcDepth)+" score cp "+str(math.ceil(score))+" time "+str(elapsedTime)+" nodes "+str(goZ.nodes)+" nps "+str(nps)+" pv "+move)
    print("bestmove "+move)
-   goBoard.shBd()
+   goZ.d()
  except(KeyboardInterrupt,SystemExit):
   print('quit')
   sys.exit()
