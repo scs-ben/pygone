@@ -3,7 +3,7 @@ import math, os, sys, subprocess, time
 
 A = {'e2e4': 'e7e5', 'd2d4': 'd7d5', 'c2c4': 'c7c5', 'g1f3': 'c7c5'}
 B = {'p': 100.0, 'r': 479.0, 'n': 280.0, 'b': 320.0, 'q': 929.0, 'k': 60000.0}
-C = {'p': 10.0, 'r': 50.0, 'n': 30.0, 'b': 30.0, 'q': 100.0, 'k': 500.0}
+C = {'p': 50.0, 'r': 180.0, 'n': 100.0, 'b': 100.0, 'q': 200.0, 'k': 250.0}
 
 D = [[0,0,0,0,0,0,0,0],
   [78,83,86,73,102,82,85,90],
@@ -76,12 +76,12 @@ class Z:
 
   def V(self):
     self.K = [['r','n','b','q','k','b','n','r'],
-            ['p','p','p','p','p','p','p','p'],
-            ['-','-','-','-','-','-','-','-'],
-            ['-','-','-','-','-','-','-','-'],
-            ['-','-','-','-','-','-','-','-'],
-            ['-','-','-','-','-','-','-','-'],
-            ['P','P','P','P','P','P','P','P'],
+            ['p']*8,
+            ['-']*8,
+            ['-']*8,
+            ['-']*8,
+            ['-']*8,
+            ['P']*8,
             ['R','N','B','Q','K','B','N','R'],]
   def W(self, AH):
     self.K = AH
@@ -125,8 +125,6 @@ class Z:
       else:
         self.K[D6][D4] = 'k'
     else:
-      fromState = self.K[D6][D3]
-      toState = self.K[D8][D4]
       self.K[D6][D3] = '-'
       if (len(a) > 0):
         if (self.L % 2 == 0):
@@ -134,7 +132,7 @@ class Z:
         else:
           self.K[D8][D4] = a
       else:
-        self.K[D8][D4] = fromState
+        self.K[D8][D4] = D9
     self.S.append(Y)
     self.L += 1
 
@@ -208,10 +206,11 @@ class Z:
                     N.append(j + dest)
                 if (o):
                   if (k):
-                    f.append(v)
+                    f.append([v, z])
                     self.O += dest
                   else:
-                    g.append(v)
+                    g.append([v, z])
+                    print('AA1: ', v)
                     self.P += dest
           if ((z == 'p' or z == 'P')):
             if (z == 'P'):
@@ -228,11 +227,11 @@ class Z:
                 if ((u - 1) >= 0 and h[t - 1][u - 1] != '-' and h[t - 1][u - 1].islower()):
                   M.append(i + self.c(u) + str(abs(t - 9)) + prom)
                   self.O += self.c(u) + str(abs(t - 9))
-                  f.append(h[t - 1][u - 1])
+                  f.append([h[t - 1][u - 1], z])
                 if ((u + 1) < 8 and h[t - 1][u + 1] != '-' and h[t - 1][u + 1].islower()):
                   M.append(i + self.c(u + 2) + str(abs(t - 9)) + prom)
                   self.O += self.c(u + 2) + str(abs(t - 9))
-                  f.append(h[t - 1][u + 1])
+                  f.append([h[t - 1][u + 1], z])
             else:
               if (t < 6 and h[t + 1][u] == '-'):
                 N.append(j + self.c(u + 1) + str(abs(t - 7)))
@@ -248,11 +247,13 @@ class Z:
                 if ((u + 1) < 8 and h[t + 1][u + 1] != '-' and not h[t + 1][u + 1].islower()):
                   N.append(j + self.c(u + 2) + str(abs(t - 7)) + prom)
                   self.P += self.c(u + 2) + str(abs(t - 7))
-                  g.append(h[t + 1][u + 1])
+                  g.append([h[t + 1][u + 1], z])
+                  print('AA2: ', v)
                 if ((u - 1) >= 0 and h[t + 1][u - 1] != '-' and not h[t + 1][u - 1].islower()):
                   N.append(j + self.c(u) + str(abs(t - 7)) + prom)
                   self.P += self.c(u) + str(abs(t - 7))
-                  g.append(h[t + 1][u - 1])
+                  g.append([h[t + 1][u - 1], z])
+                  print('AA3: ', v)
           if ((z == 'n' or z == 'N')):
             k = (z == 'N')
             AJs = {
@@ -278,25 +279,26 @@ class Z:
                     M.append(i + dest)
                     if (o):
                       self.O += dest
-                      f.append(v)
+                      f.append([v, z])
                   else:
                     N.append(j + dest)
                     if (o):
                       self.P += dest
-                      g.append(v)
+                      g.append([v, z])
+                      print('AA4: ', v)
           if ((z == 'r' or z == 'R')) or ((z == 'q' or z == 'Q')):
             k = (z == 'R' or z == 'Q')
 
-            horizontalMoves = {
+            B0 = {
               1: {'u': u, 't': (t - 1), 's': 0, 'r': -1},
               2: {'u': u, 't': (t + 1), 's': 0, 'r': 1},
               3: {'u': (u - 1), 't': t, 's': -1, 'r': 0},
               4: {'u': (u + 1), 't': t, 's': 1, 'r': 0}
             }
 
-            for _, hMove in horizontalMoves.items():
-              p = hMove['t']
-              q = hMove['u']
+            for _, B1 in B0.items():
+              p = B1['t']
+              q = B1['u']
               while (p >= 0 and p < 8 and q >= 0 and q < 8):
                 v = h[p][q]
                 o = (k and v != '-' and v.islower()) or (not k and v != '-' and not v.islower())
@@ -307,32 +309,33 @@ class Z:
                     M.append(i + dest)
                     if (o):
                       self.O += dest
-                      f.append(v)
+                      f.append([v, z])
                   else:
                     N.append(j + dest)
                     if (o):
                       self.P += dest
-                      g.append(v)
+                      g.append([v, z])
+                      print('AA5: ', z, v)
                   if (o):
                     break
                 else:
                   break
-                p += hMove['r']
-                q += hMove['s']
+                p += B1['r']
+                q += B1['s']
 
           if ((z == 'b' or z == 'B')) or ((z == 'q' or z == 'Q')):
             k = (z == 'B' or z == 'Q')
 
-            diagMoves = {
+            B2 = {
               1: {'u': (u - 1), 't': (t - 1), 's': -1, 'r': -1},
               2: {'u': (u + 1), 't': (t + 1), 's': 1, 'r': 1},
               3: {'u': (u - 1), 't': (t + 1), 's': -1, 'r': 1},
               4: {'u': (u + 1), 't': (t - 1), 's': 1, 'r': -1}
             }
 
-            for _, dMove in diagMoves.items():
-              p = dMove['t']
-              q = dMove['u']
+            for _, B3 in B2.items():
+              p = B3['t']
+              q = B3['u']
               while (p >= 0 and p < 8 and q >= 0 and q < 8):
                 v = h[p][q]
                 o = (k and v != '-' and v.islower()) or (not k and v != '-' and not v.islower())
@@ -348,13 +351,14 @@ class Z:
                     N.append(j + dest)
                     if (o):
                       self.P += dest
-                      g.append(v)
+                      g.append([v, z])
+                      print('AA6: ', z, v)
                   if (o):
                     break
                 else:
                   break
-                p += dMove['r']
-                q += dMove['s']
+                p += B3['r']
+                q += B3['s']
             
     self.M = M
     self.N = N
@@ -363,7 +367,7 @@ class Z:
     return {'M': M, 'N': N}
 
   def w(self, k):
-    if (k):
+    if k:
       AI = self.M.copy()
     else:
       AI = self.N.copy()
@@ -375,14 +379,32 @@ class Z:
       A1.L = self.L
       A1.X(move)
       A1.e()
+      sep = ''
+      B4 = sep.join(A1.S)
       if (k):
         A2 = A1.Q
         A3 = A1.P
+        B5 = sep.join(A1.N)
       else:
         A2 = A1.R
         A3 = A1.O
+        B5 = sep.join(A1.M)
       
-      if (A2 in A3):
+      B6 = False
+      if (move == 'e1g1'):
+        if ('e1' in B5 or 'f1' in B5 or 'g1' in B5 or 'e1' in B4 or 'a1' in B4):
+          B6 = True
+      if (move == 'e1c1'):
+        if ('e1' in B5 or 'd1' in B5 or 'c1' in B5 or 'e1' in B4 or 'h1' in B4):
+          B6 = True
+      if (move == 'e8g8'):
+        if ('e8' in B5 or 'f8' in B5 or 'g8' in B5 or 'e8' in B4 or 'a8' in B4):
+          B6 = True
+      if (move == 'e8c8'):
+        if ('e8' in B5 or 'd8' in B5 or 'c8' in B5 or 'e8' in B4 or 'h8' in B4):
+          B6 = True
+
+      if (A2 in A3 or B6):
         try:
           A0.remove(move)
         except:
@@ -400,17 +422,20 @@ class Z:
             A5 += B[z.lower()] 
             A5 += J[z.lower()][t][u]
             # if (self.R in self.O):
-            #   A5 += (B[z.lower()] / 10)
+            #   A5 += C[z.lower()]
           else:
             A5 -= B[z]
-            A5 -= (-1 * J[z][abs(t-7)][abs(u-7)])
+            A5 -= J[z][abs(t-7)][u]
             # if (self.Q in self.P):
-            #   A5 -= (B[z.lower()] / 10)
+            #   A5 -= C[z.lower()]
 
-    # for z in self.f:
-    #   A5 += C[z.lower()]
-    # for z in self.g:
-    #   A5 -= C[z.lower()]
+    for (B7, B8) in self.f:
+      if B[B8.lower()] <= B[B7.lower()]:
+        A5 += C[z.lower()]
+    for (B7, B8) in self.g:
+      if B[B8.lower()] <= B[B7.lower()]:
+        A5 -= C[B7.lower()]
+
 
     return A5
 
@@ -510,6 +535,10 @@ while True:
     elif l=="ucinewgame":
       gameZ = Z()
       gameZ.L = 0
+    elif l=="eval":
+      gameZ.e()
+      print(gameZ.A4())
+      gameZ.d()
     elif l=="isready":
       print("readyok")
     elif l.startswith("position"):
@@ -525,11 +554,11 @@ while True:
       goZ.L = gameZ.L
       goZ.e()
       if (gameZ.L % 2 == 0):
-        moveTime = 10 / len(goZ.M)
+        moveTime = 3 / len(goZ.M)
       else:
-        moveTime = 10 / len(goZ.N)
+        moveTime = 3 / len(goZ.N)
       AB = time.perf_counter()
-      (score, move, pv, calcDepth) = goZ.A6(3, goZ, (gameZ.L % 2 == 0), moveTime)
+      (score, move, pv, calcDepth) = goZ.A6(2, goZ, (gameZ.L % 2 == 0), moveTime)
       elapsedTime = math.ceil(time.perf_counter() - AB)
       nps = math.ceil(goZ.nodes / elapsedTime)
       if (gameZ.L % 2 != 0):

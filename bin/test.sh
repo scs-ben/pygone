@@ -1,5 +1,4 @@
 /home/vagrant/code/pygone/bin/cutechess-cli \
-    -wait 2000 \
     -debug \
     -engine \
         name=pygone \
@@ -16,8 +15,6 @@
         depth=1 \
         restart=off \
         -openings file=book.pgn \
-        -draw movenumber=50 movecount=10 score=0 \
-        -resign movecount=10 score=750 \
         -repeat \
         -pgnout games.pgn \
-        min -games 2 -rounds 100 > debug.log
+         -games 2 -rounds 100 > debug.log

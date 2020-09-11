@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-import copy,math,os,sys,subprocess,time
-import cProfile,pstats,io
-from pstats import SortKey
+import math,os,sys,subprocess,time
 A={'e2e4':'e7e5','d2d4':'d7d5','c2c4':'c7c5','g1f3':'c7c5'}
 B={'p':100.0,'r':479.0,'n':280.0,'b':320.0,'q':929.0,'k':60000.0}
 C={'p':50.0,'r':180.0,'n':100.0,'b':100.0,'q':200.0,'k':250.0}
@@ -12,8 +10,6 @@ G=[[35,29,33,4,37,33,56,50],[55,29,56,67,55,62,34,60],[19,35,28,33,45,27,25,15],
 H=[[6,1,-8,-104,69,24,88,26],[14,32,60,-10,20,76,57,24],[-2,43,32,60,72,63,43,2],[1,-16,22,17,25,20,-13,-6],[-14,-15,-2,-5,-1,-10,-20,-22],[-30,-6,-13,-11,-16,-11,-16,-27],[-36,-18,0,-19,-15,-15,-21,-38],[-39,-30,-31,-13,-31,-36,-34,-42]]
 I=[[4,54,47,-99,-99,60,83,-62],[-32,10,55,56,56,55,10,3],[-62,12,-57,44,-67,28,37,-31],[-55,50,11,-4,-19,13,0,-49],[-55,-43,-52,-28,-51,-47,-8,-50],[-47,-42,-43,-79,-64,-32,-29,-32],[-4,3,-14,-50,-57,-18,13,4],[17,30,-3,-14,6,-1,40,18]]
 J={'p':D,'n':E,'b':F,'r':G,'q':H,'k':I}
-isupper=lambda c:'A'<=c<='Z'
-islower=lambda c:'a'<=c<='z'
 class Z:
  K=[]
  L=0
@@ -26,10 +22,6 @@ class Z:
  S=[]
  T=''
  nodes=0
- whiteCanCastleShort=True
- whiteCanCastleLong=True
- blackCanCastleShort=True
- blackCanCastleLong=True
  def __init__(self):
   self.V()
   self.L=0
@@ -38,20 +30,24 @@ class Z:
  def W(self,AH):
   self.K=AH
  def X(self,Y):
-  D3=self.b(Y[0:1])
-  D6=abs(int(Y[1:2])-8)
-  D4=self.b(Y[2:3])
-  D8=abs(int(Y[3:4])-8)
+  D1=Y[0:2];
+  D2=Y[2:4]
+  D5=D1[0]
+  D7=D2[0]
+  D3=self.b(D5)
+  D6=abs(int(D1[1])-8)
+  D4=self.b(D7)
+  D8=abs(int(D2[1])-8)
   D9=self.K[D6][D3]
   D0=self.K[D8][D4]
-  a=""
+  a=''
   if(len(Y)>4):
    a=Y[4:5]
-  if((D9=='P' or D9=='p')and D0=='-' and Y[0:1]!=Y[2:3]):
+  if(D9.lower()=='p' and D0=='-' and D5!=D7):
    self.K[D6][D3]='-'
    self.K[D8][D4]=D9
    self.K[D6][D4]='-'
-  elif((D9=='K' or D9=='k')and(Y=='e1g1' or Y=='e1c1' or Y=='e8g8' or Y=='e8c8')):
+  elif(self.K[D6][D3].lower()=='k' and(Y=='e1g1' or Y=='e1c1' or Y=='e8g8' or Y=='e8c8')):
    self.K[D6][D3]='-'
    if(Y[2]=='g'):
     self.K[D8][D4+1]='-'
@@ -71,27 +67,13 @@ class Z:
     self.K[D6][D4]='k'
   else:
    self.K[D6][D3]='-'
-   if(a!=""):
+   if(len(a)>0):
     if(self.L%2==0):
      self.K[D8][D4]=a.upper()
     else:
      self.K[D8][D4]=a
    else:
     self.K[D8][D4]=D9
-  if(Y[0:2]=='e1'):
-   self.whiteCanCastleShort=False
-   self.whiteCanCastleLong=False
-  if(Y[0:2]=='a1'):
-   self.whiteCanCastleLong=False
-  if(Y[0:2]=='h1'):
-   self.whiteCanCastleShort=False
-  if(Y[0:2]=='e8'):
-   self.blackCanCastleShort=False
-   self.blackCanCastleLong=False
-  if(Y[0:2]=='a8'):
-   self.blackCanCastleLong=False
-  if(Y[0:2]=='h8'):
-   self.blackCanCastleShort=False
   self.S.append(Y)
   self.L+=1
  def b(self,letter):
@@ -114,9 +96,7 @@ class Z:
   for t in range(8): 
    for u in range(8):
     z=h[t][u]
-    if(z=="-"):
-     continue
-    else:
+    if(z!="-"):
      i=self.c(u+1)+str(abs(t-8))
      j=self.c(u+1)+str(abs(t-8))
      if((z=='k' or z=='K')):
@@ -128,14 +108,14 @@ class Z:
        self.R=j
       l={1:{'u':(u+0),'t':(t+1)},2:{'u':(u+0),'t':(t-1)},3:{'u':(u+1),'t':(t+0)},4:{'u':(u-1),'t':(t+0)},5:{'u':(u+1),'t':(t+1)},6:{'u':(u+1),'t':(t-1)},7:{'u':(u-1),'t':(t+1)},8:{'u':(u-1),'t':(t-1)},}
       if k:
-       if self.whiteCanCastleShort and i=='e1' and h[7][5]=='-' and h[7][6]=='-' and h[7][7]=='R':
+       if i=='e1' and h[7][5]=='-' and h[7][6]=='-' and h[7][7]=='R':
         M.append(i+'g1')
-       if self.whiteCanCastleLong and i=='e1' and h[7][1]=='-' and h[7][2]=='-' and h[7][3]=='-' and h[7][0]=='R':
+       if i=='e1' and h[7][1]=='-' and h[7][2]=='-' and h[7][3]=='-' and h[7][0]=='R':
         M.append(i+'c1')
       else:
-       if self.blackCanCastleShort and N=='e8' and h[0][1]=='-' and h[0][1]=='-' and h[0][2]=='-' and h[0][0]=='r':
+       if N=='e8' and h[0][1]=='-' and h[0][1]=='-' and h[0][2]=='-' and h[0][0]=='r':
         n.append(j+'c8')
-       if self.blackCanCastleLong and N=='e8' and h[0][5]=='-' and h[0][6]=='-' and h[0][7]=='r':
+       if N=='e8' and h[0][5]=='-' and h[0][6]=='-' and h[0][7]=='r':
         n.append(j+'g8')
       for x,AJ in l.items():
        if(AJ['u']>=0 and AJ['u']<=7 and AJ['t']>=0 and AJ['t']<=7):
@@ -143,7 +123,7 @@ class Z:
         if(k):
          o=(v!='-' and v.islower())
         else:
-         o=(v!='-' and v.isupper())
+         o=(v!='-' and not v.islower())
         dest=self.c(AJ['u']+1)+str(abs(AJ['t']-8))
         if(v=='-' or o):
          if(k):
@@ -156,6 +136,7 @@ class Z:
           self.O+=dest
          else:
           g.append([v,z])
+          print('AA1: ',v)
           self.P+=dest
      if((z=='p' or z=='P')):
       if(z=='P'):
@@ -188,14 +169,16 @@ class Z:
         prom=''
         if(t==6):
          prom='q'
-        if((u+1)<8 and h[t+1][u+1]!='-' and h[t+1][u+1].isupper()):
+        if((u+1)<8 and h[t+1][u+1]!='-' and not h[t+1][u+1].islower()):
          N.append(j+self.c(u+2)+str(abs(t-7))+prom)
          self.P+=self.c(u+2)+str(abs(t-7))
          g.append([h[t+1][u+1],z])
-        if((u-1)>=0 and h[t+1][u-1]!='-' and h[t+1][u-1].isupper()):
+         print('AA2: ',v)
+        if((u-1)>=0 and h[t+1][u-1]!='-' and not h[t+1][u-1].islower()):
          N.append(j+self.c(u)+str(abs(t-7))+prom)
          self.P+=self.c(u)+str(abs(t-7))
          g.append([h[t+1][u-1],z])
+         print('AA3: ',v)
      if((z=='n' or z=='N')):
       k=(z=='N')
       AJs={1:{'u':(u+1),'t':(t-2)},2:{'u':(u-1),'t':(t-2)},3:{'u':(u+2),'t':(t-1)},4:{'u':(u-2),'t':(t-1)},5:{'u':(u+1),'t':(t+2)},6:{'u':(u-1),'t':(t+2)},7:{'u':(u+2),'t':(t+1)},8:{'u':(u-2),'t':(t+1)},}
@@ -205,7 +188,7 @@ class Z:
         if(k):
          o=(v!='-' and v.islower())
         else:
-         o=(v!='-' and v.isupper())
+         o=(v!='-' and not v.islower())
         if(v=='-' or o):
          dest=self.c(AJ['u']+1)+str(abs(AJ['t']-8))
          if(k):
@@ -218,6 +201,7 @@ class Z:
           if(o):
            self.P+=dest
            g.append([v,z])
+           print('AA4: ',v)
      if((z=='r' or z=='R'))or((z=='q' or z=='Q')):
       k=(z=='R' or z=='Q')
       B0={1:{'u':u,'t':(t-1),'s':0,'r':-1},2:{'u':u,'t':(t+1),'s':0,'r':1},3:{'u':(u-1),'t':t,'s':-1,'r':0},4:{'u':(u+1),'t':t,'s':1,'r':0}}
@@ -226,7 +210,7 @@ class Z:
        q=B1['u']
        while(p>=0 and p<8 and q>=0 and q<8):
         v=h[p][q]
-        o=(k and v!='-' and v.islower())or(not k and v!='-' and v.isupper())
+        o=(k and v!='-' and v.islower())or(not k and v!='-' and not v.islower())
         if(v=='-' or o):
          dest=self.c(q+1)+str(abs(p-8))
          if k:
@@ -239,6 +223,7 @@ class Z:
           if(o):
            self.P+=dest
            g.append([v,z])
+           print('AA5: ',z,v)
          if(o):
           break
         else:
@@ -253,19 +238,20 @@ class Z:
        q=B3['u']
        while(p>=0 and p<8 and q>=0 and q<8):
         v=h[p][q]
-        o=(k and v!='-' and v.islower())or(not k and v!='-' and v.isupper())
+        o=(k and v!='-' and v.islower())or(not k and v!='-' and not v.islower())
         if(v=='-' or o):
          dest=self.c(q+1)+str(abs(p-8))
          if(k):
           M.append(i+dest)
           if(o):
            self.O+=dest
-           f.append([v,z])
+           f.append(v)
          else:
           N.append(j+dest)
           if(o):
            self.P+=dest
            g.append([v,z])
+           print('AA6: ',z,v)
          if(o):
           break
         else:
@@ -290,29 +276,27 @@ class Z:
    A1.X(move)
    A1.e()
    sep=''
-   B5=''
+   B4=sep.join(A1.S)
    if(k):
     A2=A1.Q
     A3=A1.P
-    if(A1.whiteCanCastleShort or A1.whiteCanCastleLong):
-     B5=sep.join(A1.N)
+    B5=sep.join(A1.N)
    else:
     A2=A1.R
     A3=A1.O
-    if(A1.whiteCanCastleShort or A1.whiteCanCastleLong):
-     B5=sep.join(A1.M)
+    B5=sep.join(A1.M)
    B6=False
    if(move=='e1g1'):
-    if('e1' in B5 or 'f1' in B5 or 'g1' in B5 or not A1.whiteCanCastleShort):
+    if('e1' in B5 or 'f1' in B5 or 'g1' in B5 or 'e1' in B4 or 'a1' in B4):
      B6=True
    if(move=='e1c1'):
-    if('e1' in B5 or 'd1' in B5 or 'c1' in B5 or not A1.whiteCanCastleLong):
+    if('e1' in B5 or 'd1' in B5 or 'c1' in B5 or 'e1' in B4 or 'h1' in B4):
      B6=True
    if(move=='e8g8'):
-    if('e8' in B5 or 'f8' in B5 or 'g8' in B5 or not A1.blackCanCastleShort):
+    if('e8' in B5 or 'f8' in B5 or 'g8' in B5 or 'e8' in B4 or 'a8' in B4):
      B6=True
    if(move=='e8c8'):
-    if('e8' in B5 or 'd8' in B5 or 'c8' in B5 or not A1.blackCanCastleLong):
+    if('e8' in B5 or 'd8' in B5 or 'c8' in B5 or 'e8' in B4 or 'h8' in B4):
      B6=True
    if(A2 in A3 or B6):
     try:
@@ -325,7 +309,7 @@ class Z:
   for t in range(8):
    for u in range(8):
     z=self.K[t][u]
-    k=z.isupper()
+    k=not z.islower()
     if(z!='-'):
      if k:
       A5+=B[z.lower()]
@@ -335,7 +319,7 @@ class Z:
       A5-=J[z][abs(t-7)][u]
   for(B7,B8)in self.f:
    if B[B8.lower()]<=B[B7.lower()]:
-    A5+=C[B7.lower()]
+    A5+=C[z.lower()]
   for(B7,B8)in self.g:
    if B[B8.lower()]<=B[B7.lower()]:
     A5-=C[B7.lower()]
@@ -435,7 +419,6 @@ while True:
    gameZ.L=0
   elif l=="eval":
    gameZ.e()
-   gameZ.w(1)
    print(gameZ.A4())
    gameZ.d()
   elif l=="isready":
@@ -449,7 +432,7 @@ while True:
    gameZ.L=(APMoves-3)
   elif l.startswith("go"):
    goZ=Z()
-   goZ.W([x[:]for x in gameZ.K.copy()])
+   goZ.W([x[:]for x in gameZ.K])
    goZ.L=gameZ.L
    goZ.e()
    if(gameZ.L%2==0):
@@ -457,7 +440,7 @@ while True:
    else:
     moveTime=3/len(goZ.N)
    AB=time.perf_counter()
-   (score,move,pv,calcDepth)=goZ.A6(1,goZ,(gameZ.L%2==0),moveTime)
+   (score,move,pv,calcDepth)=goZ.A6(2,goZ,(gameZ.L%2==0),moveTime)
    elapsedTime=math.ceil(time.perf_counter()-AB)
    nps=math.ceil(goZ.nodes/elapsedTime)
    if(gameZ.L%2!=0):
@@ -471,4 +454,5 @@ while True:
  except Exception as e:
   print(e)
   raise
+# Created by pyminifier (https://github.com/liftoff/pyminifier)
 

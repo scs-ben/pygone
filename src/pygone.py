@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-import math, os, sys, subprocess, time
+import copy, math, os, sys, subprocess, time
+
+import cProfile, pstats, io
+from pstats import SortKey
 
 openingBook = {'e2e4': 'e7e5', 'd2d4': 'd7d5', 'c2c4': 'c7c5', 'g1f3': 'c7c5'}
 piecePoints = {'p': 100.0, 'r': 479.0, 'n': 280.0, 'b': 320.0, 'q': 929.0, 'k': 60000.0}
-attackPoints = {'p': 10.0, 'r': 50.0, 'n': 30.0, 'b': 30.0, 'q': 100.0, 'k': 500.0}
+attackPoints = {'p': 50.0, 'r': 180.0, 'n': 100.0, 'b': 100.0, 'q': 200.0, 'k': 250.0}
 
 pPSQT = [[0,0,0,0,0,0,0,0],
   [78,83,86,73,102,82,85,90],
@@ -56,6 +59,9 @@ kPSQT = [[ 4,54,47,-99,-99,60,83,-62],
 
 allPSGT={'p': pPSQT,'n': nPSQT,'b':bPSQT,'r':rPSQT,'q':qPSQT,'k':kPSQT}
 
+isupper = lambda c: 'A' <= c <= 'Z'
+islower = lambda c: 'a' <= c <= 'z'
+
 class Board:
 
   boardState = []
@@ -69,6 +75,10 @@ class Board:
   moveList = []
   lastMove = ''
   nodes = 0
+  whiteCanCastleShort = True
+  whiteCanCastleLong = True
+  blackCanCastleShort = True
+  blackCanCastleLong = True
 
   def __init__(self):
     self.setDefaultBoardState()
@@ -76,35 +86,31 @@ class Board:
 
   def setDefaultBoardState(self):
     self.boardState = [['r','n','b','q','k','b','n','r'],
-            ['p','p','p','p','p','p','p','p'],
-            ['-','-','-','-','-','-','-','-'],
-            ['-','-','-','-','-','-','-','-'],
-            ['-','-','-','-','-','-','-','-'],
-            ['-','-','-','-','-','-','-','-'],
-            ['P','P','P','P','P','P','P','P'],
+            ['p']*8,
+            ['-']*8,
+            ['-']*8,
+            ['-']*8,
+            ['-']*8,
+            ['P']*8,
             ['R','N','B','Q','K','B','N','R'],]
   def setBoardState(self, state):
     self.boardState = state
 
   def makeMove(self, uciCoordinate):
-    fromCoordinate = uciCoordinate[0:2];
-    toCoordinate = uciCoordinate[2:4]
-    fromLetter = fromCoordinate[0]
-    toLetter = toCoordinate[0]
-    fromLetterNumber = self.letterToNumber(fromLetter)
-    fromNumber = abs(int(fromCoordinate[1]) - 8)
-    toLetterNumber = self.letterToNumber(toLetter)
-    toNumber = abs(int(toCoordinate[1]) - 8)
+    fromLetterNumber = self.letterToNumber(uciCoordinate[0:1])
+    fromNumber = abs(int(uciCoordinate[1:2]) - 8)
+    toLetterNumber = self.letterToNumber(uciCoordinate[2:3])
+    toNumber = abs(int(uciCoordinate[3:4]) - 8)
     fromPiece = self.boardState[fromNumber][fromLetterNumber]
     toPiece = self.boardState[toNumber][toLetterNumber]
-    promote = ''
+    promote = ""
     if (len(uciCoordinate) > 4):
       promote = uciCoordinate[4:5]
-    if (fromPiece.lower() == 'p' and toPiece == '-' and fromLetter != toLetter):
+    if ((fromPiece == 'P' or fromPiece == 'p') and toPiece == '-' and uciCoordinate[0:1] != uciCoordinate[2:3]):
       self.boardState[fromNumber][fromLetterNumber] = '-'
       self.boardState[toNumber][toLetterNumber] = fromPiece
       self.boardState[fromNumber][toLetterNumber] = '-'
-    elif (self.boardState[fromNumber][fromLetterNumber].lower() == 'k' and (uciCoordinate == 'e1g1' or uciCoordinate == 'e1c1' or uciCoordinate == 'e8g8' or uciCoordinate == 'e8c8')):
+    elif ((fromPiece == 'K' or fromPiece == 'k') and (uciCoordinate == 'e1g1' or uciCoordinate == 'e1c1' or uciCoordinate == 'e8g8' or uciCoordinate == 'e8c8')):
       self.boardState[fromNumber][fromLetterNumber] = '-'
       if (uciCoordinate[2] == 'g'):
         self.boardState[toNumber][toLetterNumber + 1] = '-'
@@ -125,16 +131,30 @@ class Board:
       else:
         self.boardState[fromNumber][toLetterNumber] = 'k'
     else:
-      fromState = self.boardState[fromNumber][fromLetterNumber]
-      toState = self.boardState[toNumber][toLetterNumber]
       self.boardState[fromNumber][fromLetterNumber] = '-'
-      if (len(promote) > 0):
+      if (promote != ""):
         if (self.playedMoveCount % 2 == 0):
           self.boardState[toNumber][toLetterNumber] = promote.upper()
         else:
           self.boardState[toNumber][toLetterNumber] = promote
       else:
-        self.boardState[toNumber][toLetterNumber] = fromState
+        self.boardState[toNumber][toLetterNumber] = fromPiece
+
+    if (uciCoordinate[0:2] == 'e1'):
+      self.whiteCanCastleShort = False
+      self.whiteCanCastleLong = False
+    if (uciCoordinate[0:2] == 'a1'):
+      self.whiteCanCastleLong = False
+    if (uciCoordinate[0:2] == 'h1'):
+      self.whiteCanCastleShort = False
+    if (uciCoordinate[0:2] == 'e8'):
+      self.blackCanCastleShort = False
+      self.blackCanCastleLong = False
+    if (uciCoordinate[0:2] == 'a8'):
+      self.blackCanCastleLong = False
+    if (uciCoordinate[0:2] == 'h8'):
+      self.blackCanCastleShort = False
+
     self.moveList.append(uciCoordinate)
     self.playedMoveCount += 1
 
@@ -150,10 +170,10 @@ class Board:
         print(self.boardState[i][j], end=" ") 
       print()
 
-  def getValidMoves(self): 
+  def getValidMoves(self):
     whiteValidMoves = []
     blackValidMoves = []
-    whitAttackPieces = []
+    whiteAttackPieces = []
     blackAttackPieces = []
     self.whiteAttackLocations = ''
     self.blackAttackLocations = ''
@@ -161,7 +181,9 @@ class Board:
     for row in range(8):  
       for column in range(8): 
         piece = evalState[row][column]
-        if (piece != "-"):
+        if (piece == "-"):
+          continue
+        else:
           whiteStartCoordinate = self.numberToLetter(column + 1) + str(abs(row - 8))
           blackStartCoordinate = self.numberToLetter(column + 1) + str(abs(row - 8))
           if ((piece == 'k' or piece == 'K')):
@@ -182,14 +204,14 @@ class Board:
               8: {'column': (column - 1), 'row': (row - 1)},
             }
             if isWhite:
-              if whiteStartCoordinate == 'e1' and evalState[7][5] == '-' and evalState[7][6] == '-' and evalState[7][7] == 'R':
+              if self.whiteCanCastleShort and whiteStartCoordinate == 'e1' and evalState[7][5] == '-' and evalState[7][6] == '-' and evalState[7][7] == 'R':
                 whiteValidMoves.append(whiteStartCoordinate + 'g1')
-              if whiteStartCoordinate == 'e1' and evalState[7][1] == '-' and evalState[7][2] == '-' and evalState[7][3] == '-' and evalState[7][0] == 'R':
+              if self.whiteCanCastleLong and whiteStartCoordinate == 'e1' and evalState[7][1] == '-' and evalState[7][2] == '-' and evalState[7][3] == '-' and evalState[7][0] == 'R':
                 whiteValidMoves.append(whiteStartCoordinate + 'c1')
             else:
-              if blackValidMoves == 'e8' and evalState[0][1] == '-' and evalState[0][1] == '-' and evalState[0][2] == '-' and evalState[0][0] == 'r':
+              if self.blackCanCastleShort and blackValidMoves == 'e8' and evalState[0][1] == '-' and evalState[0][1] == '-' and evalState[0][2] == '-' and evalState[0][0] == 'r':
                 bestMove.append(blackStartCoordinate + 'c8')
-              if blackValidMoves == 'e8' and evalState[0][5] == '-' and evalState[0][6] == '-' and evalState[0][7] == 'r':
+              if self.blackCanCastleLong and blackValidMoves == 'e8' and evalState[0][5] == '-' and evalState[0][6] == '-' and evalState[0][7] == 'r':
                 bestMove.append(blackStartCoordinate + 'g8')
             for key, nMove in kMoves.items():
               if (nMove['column'] >= 0 and nMove['column'] <= 7 and nMove['row'] >= 0 and nMove['row'] <= 7):
@@ -197,7 +219,7 @@ class Board:
                 if (isWhite):
                   canCapture = (evalPiece != '-' and evalPiece.islower())
                 else:
-                  canCapture = (evalPiece != '-' and not evalPiece.islower())
+                  canCapture = (evalPiece != '-' and evalPiece.isupper())
 
                 dest = self.numberToLetter(nMove['column'] + 1) + str(abs(nMove['row'] - 8))
 
@@ -208,10 +230,10 @@ class Board:
                     blackValidMoves.append(blackStartCoordinate + dest)
                 if (canCapture):
                   if (isWhite):
-                    whitAttackPieces.append(evalPiece)
+                    whiteAttackPieces.append([evalPiece, piece])
                     self.whiteAttackLocations += dest
                   else:
-                    blackAttackPieces.append(evalPiece)
+                    blackAttackPieces.append([evalPiece, piece])
                     self.blackAttackLocations += dest
           if ((piece == 'p' or piece == 'P')):
             if (piece == 'P'):
@@ -228,11 +250,11 @@ class Board:
                 if ((column - 1) >= 0 and evalState[row - 1][column - 1] != '-' and evalState[row - 1][column - 1].islower()):
                   whiteValidMoves.append(whiteStartCoordinate + self.numberToLetter(column) + str(abs(row - 9)) + prom)
                   self.whiteAttackLocations += self.numberToLetter(column) + str(abs(row - 9))
-                  whitAttackPieces.append(evalState[row - 1][column - 1])
+                  whiteAttackPieces.append([evalState[row - 1][column - 1], piece])
                 if ((column + 1) < 8 and evalState[row - 1][column + 1] != '-' and evalState[row - 1][column + 1].islower()):
                   whiteValidMoves.append(whiteStartCoordinate + self.numberToLetter(column + 2) + str(abs(row - 9)) + prom)
                   self.whiteAttackLocations += self.numberToLetter(column + 2) + str(abs(row - 9))
-                  whitAttackPieces.append(evalState[row - 1][column + 1])
+                  whiteAttackPieces.append([evalState[row - 1][column + 1], piece])
             else:
               if (row < 6 and evalState[row + 1][column] == '-'):
                 blackValidMoves.append(blackStartCoordinate + self.numberToLetter(column + 1) + str(abs(row - 7)))
@@ -245,14 +267,14 @@ class Board:
                 if (row == 6):
                   prom = 'q'
 
-                if ((column + 1) < 8 and evalState[row + 1][column + 1] != '-' and not evalState[row + 1][column + 1].islower()):
+                if ((column + 1) < 8 and evalState[row + 1][column + 1] != '-' and evalState[row + 1][column + 1].isupper()):
                   blackValidMoves.append(blackStartCoordinate + self.numberToLetter(column + 2) + str(abs(row - 7)) + prom)
                   self.blackAttackLocations += self.numberToLetter(column + 2) + str(abs(row - 7))
-                  blackAttackPieces.append(evalState[row + 1][column + 1])
-                if ((column - 1) >= 0 and evalState[row + 1][column - 1] != '-' and not evalState[row + 1][column - 1].islower()):
+                  blackAttackPieces.append([evalState[row + 1][column + 1], piece])
+                if ((column - 1) >= 0 and evalState[row + 1][column - 1] != '-' and evalState[row + 1][column - 1].isupper()):
                   blackValidMoves.append(blackStartCoordinate + self.numberToLetter(column) + str(abs(row - 7)) + prom)
                   self.blackAttackLocations += self.numberToLetter(column) + str(abs(row - 7))
-                  blackAttackPieces.append(evalState[row + 1][column - 1])
+                  blackAttackPieces.append([evalState[row + 1][column - 1], piece])
           if ((piece == 'n' or piece == 'N')):
             isWhite = (piece == 'N')
             nMoves = {
@@ -271,19 +293,19 @@ class Board:
                 if (isWhite):
                   canCapture = (evalPiece != '-' and evalPiece.islower())
                 else:
-                  canCapture = (evalPiece != '-' and not evalPiece.islower())
+                  canCapture = (evalPiece != '-' and evalPiece.isupper())
                 if (evalPiece == '-' or canCapture):
                   dest = self.numberToLetter(nMove['column'] + 1) + str(abs(nMove['row'] - 8))
                   if (isWhite):
                     whiteValidMoves.append(whiteStartCoordinate + dest)
                     if (canCapture):
                       self.whiteAttackLocations += dest
-                      whitAttackPieces.append(evalPiece)
+                      whiteAttackPieces.append([evalPiece, piece])
                   else:
                     blackValidMoves.append(blackStartCoordinate + dest)
                     if (canCapture):
                       self.blackAttackLocations += dest
-                      blackAttackPieces.append(evalPiece)
+                      blackAttackPieces.append([evalPiece, piece])
           if ((piece == 'r' or piece == 'R')) or ((piece == 'q' or piece == 'Q')):
             isWhite = (piece == 'R' or piece == 'Q')
 
@@ -299,7 +321,7 @@ class Board:
               tempCol = hMove['column']
               while (tempRow >= 0 and tempRow < 8 and tempCol >= 0 and tempCol < 8):
                 evalPiece = evalState[tempRow][tempCol]
-                canCapture = (isWhite and evalPiece != '-' and evalPiece.islower()) or (not isWhite and evalPiece != '-' and not evalPiece.islower())
+                canCapture = (isWhite and evalPiece != '-' and evalPiece.islower()) or (not isWhite and evalPiece != '-' and evalPiece.isupper())
 
                 if (evalPiece == '-' or canCapture):
                   dest = self.numberToLetter(tempCol + 1) + str(abs(tempRow - 8))
@@ -307,12 +329,12 @@ class Board:
                     whiteValidMoves.append(whiteStartCoordinate + dest)
                     if (canCapture):
                       self.whiteAttackLocations += dest
-                      whitAttackPieces.append(evalPiece)
+                      whiteAttackPieces.append([evalPiece, piece])
                   else:
                     blackValidMoves.append(blackStartCoordinate + dest)
                     if (canCapture):
                       self.blackAttackLocations += dest
-                      blackAttackPieces.append(evalPiece)
+                      blackAttackPieces.append([evalPiece, piece])
                   if (canCapture):
                     break
                 else:
@@ -335,7 +357,7 @@ class Board:
               tempCol = dMove['column']
               while (tempRow >= 0 and tempRow < 8 and tempCol >= 0 and tempCol < 8):
                 evalPiece = evalState[tempRow][tempCol]
-                canCapture = (isWhite and evalPiece != '-' and evalPiece.islower()) or (not isWhite and evalPiece != '-' and not evalPiece.islower())
+                canCapture = (isWhite and evalPiece != '-' and evalPiece.islower()) or (not isWhite and evalPiece != '-' and evalPiece.isupper())
 
                 if (evalPiece == '-' or canCapture):
                   dest = self.numberToLetter(tempCol + 1) + str(abs(tempRow - 8))
@@ -343,27 +365,27 @@ class Board:
                     whiteValidMoves.append(whiteStartCoordinate + dest)
                     if (canCapture):
                       self.whiteAttackLocations += dest
-                      whitAttackPieces.append(evalPiece)
+                      whiteAttackPieces.append([evalPiece, piece])
                   else:
                     blackValidMoves.append(blackStartCoordinate + dest)
                     if (canCapture):
                       self.blackAttackLocations += dest
-                      blackAttackPieces.append(evalPiece)
+                      blackAttackPieces.append([evalPiece, piece])
                   if (canCapture):
                     break
                 else:
                   break
                 tempRow += dMove['rowIncrement']
                 tempCol += dMove['colIncrement']
-            
+    
     self.whiteValidMoves = whiteValidMoves
     self.blackValidMoves = blackValidMoves
-    self.whitAttackPieces = whitAttackPieces
+    self.whiteAttackPieces = whiteAttackPieces
     self.blackAttackPieces = blackAttackPieces
     return {'whiteValidMoves': whiteValidMoves, 'blackValidMoves': blackValidMoves}
 
   def removeIllegalMoves(self, isWhite):
-    if (isWhite):
+    if isWhite:
       moves = self.whiteValidMoves.copy()
     else:
       moves = self.blackValidMoves.copy()
@@ -375,18 +397,39 @@ class Board:
       legalMovesBoard.playedMoveCount = self.playedMoveCount
       legalMovesBoard.makeMove(move)
       legalMovesBoard.getValidMoves()
+      sep = ''
+      moveString = ''
       if (isWhite):
         kLoc = legalMovesBoard.whiteKingLocation
         availMvs = legalMovesBoard.blackAttackLocations
+        if (legalMovesBoard.whiteCanCastleShort or legalMovesBoard.whiteCanCastleLong):
+          moveString = sep.join(legalMovesBoard.blackValidMoves)
       else:
         kLoc = legalMovesBoard.blackKingLocation
         availMvs = legalMovesBoard.whiteAttackLocations
-      
-      if (kLoc in availMvs):
+        if (legalMovesBoard.whiteCanCastleShort or legalMovesBoard.whiteCanCastleLong):
+          moveString = sep.join(legalMovesBoard.whiteValidMoves)
+
+      overrideRemove = False
+      if (move == 'e1g1'):
+        if ('e1' in moveString or 'f1' in moveString or 'g1' in moveString or not legalMovesBoard.whiteCanCastleShort):
+          overrideRemove = True
+      if (move == 'e1c1'):
+        if ('e1' in moveString or 'd1' in moveString or 'c1' in moveString or not legalMovesBoard.whiteCanCastleLong):
+          overrideRemove = True
+      if (move == 'e8g8'):
+        if ('e8' in moveString or 'f8' in moveString or 'g8' in moveString or not legalMovesBoard.blackCanCastleShort):
+          overrideRemove = True
+      if (move == 'e8c8'):
+        if ('e8' in moveString or 'd8' in moveString or 'c8' in moveString or not legalMovesBoard.blackCanCastleLong):
+          overrideRemove = True
+
+      if (kLoc in availMvs or overrideRemove):
         try:
           masterMoves.remove(move)
         except:
           continue
+
     return masterMoves
 
   def boardEvaluation(self):
@@ -394,23 +437,26 @@ class Board:
     for row in range(8):
       for column in range(8):
         piece = self.boardState[row][column]
-        isWhite = not piece.islower()
+        isWhite = piece.isupper()
         if (piece != '-'):
           if isWhite:
             bEval += piecePoints[piece.lower()] 
             bEval += allPSGT[piece.lower()][row][column]
             # if (self.blackKingLocation in self.whiteAttackLocations):
-            #   bEval += (piecePoints[piece.lower()] / 10)
+            #   bEval += attackPoints[piece.lower()]
           else:
             bEval -= piecePoints[piece]
-            bEval -= allPSGT[piece][abs(row-7)][abs(column-7)]
+            bEval -= allPSGT[piece][abs(row-7)][column]
             # if (self.whiteKingLocation in self.blackAttackLocations):
-            #   bEval -= (piecePoints[piece.lower()] / 10)
+            #   bEval -= attackPoints[piece.lower()]
 
-    # for piece in self.whitAttackPieces:
-    #   bEval += attackPoints[piece.lower()]
-    # for piece in self.blackAttackPieces:
-    #   bEval -= attackPoints[piece.lower()]
+    for (attacked, attacker) in self.whiteAttackPieces:
+      if piecePoints[attacker.lower()] <= piecePoints[attacked.lower()]:
+        bEval += attackPoints[attacked.lower()]
+    for (attacked, attacker) in self.blackAttackPieces:
+      if piecePoints[attacker.lower()] <= piecePoints[attacked.lower()]:
+        bEval -= attackPoints[attacked.lower()]
+
 
     return bEval
 
@@ -457,6 +503,7 @@ class Board:
             bestMove = value
             bestMoveFinal = move
     gameBoard.lastMove = bestMoveFinal
+
     return [bestMove, bestMoveFinal, '', calcDepth]
 
   def minimax(self, depth, alpha, beta, localBoard, isMaximizing, endTime, lastMove):
@@ -510,6 +557,12 @@ while True:
     elif l=="ucinewgame":
       gameBoard = Board()
       gameBoard.playedMoveCount = 0
+    elif l=="eval":
+      gameBoard.getValidMoves()
+      gameBoard.removeIllegalMoves(1)
+      # gameBoard.removeIllegalMoves(0)
+      print(gameBoard.boardEvaluation())
+      gameBoard.showBoard()
     elif l=="isready":
       print("readyok")
     elif l.startswith("position"):
@@ -521,15 +574,15 @@ while True:
       gameBoard.playedMoveCount = (offsetMoves - 3)
     elif l.startswith("go"):
       goBoard = Board()
-      goBoard.setBoardState([x[:] for x in gameBoard.boardState])
+      goBoard.setBoardState([x[:] for x in gameBoard.boardState.copy()])
       goBoard.playedMoveCount = gameBoard.playedMoveCount
       goBoard.getValidMoves()
       if (gameBoard.playedMoveCount % 2 == 0):
-        moveTime = 10 / len(goBoard.whiteValidMoves)
+        moveTime = 3 / len(goBoard.whiteValidMoves)
       else:
-        moveTime = 10 / len(goBoard.blackValidMoves)
+        moveTime = 3 / len(goBoard.blackValidMoves)
       startTime = time.perf_counter()
-      (score, move, pv, calcDepth) = goBoard.minimaxRoot(3, goBoard, (gameBoard.playedMoveCount % 2 == 0), moveTime)
+      (score, move, pv, calcDepth) = goBoard.minimaxRoot(1, goBoard, (gameBoard.playedMoveCount % 2 == 0), moveTime)
       elapsedTime = math.ceil(time.perf_counter() - startTime)
       nps = math.ceil(goBoard.nodes / elapsedTime)
       if (gameBoard.playedMoveCount % 2 != 0):
