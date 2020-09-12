@@ -16,5 +16,5 @@
         restart=off \
         -openings file=book.pgn \
         -repeat \
-        -pgnout games.pgn \
+        -pgnout games.pgn min \
          -games 2 -rounds 100 > debug.log

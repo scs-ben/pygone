@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 import copy, math, os, sys, subprocess, time
 
-import cProfile, pstats, io
-from pstats import SortKey
-
 openingBook = {'e2e4': 'e7e5', 'd2d4': 'd7d5', 'c2c4': 'c7c5', 'g1f3': 'c7c5'}
 piecePoints = {'p': 100.0, 'r': 479.0, 'n': 280.0, 'b': 320.0, 'q': 929.0, 'k': 60000.0}
-attackPoints = {'p': 50.0, 'r': 180.0, 'n': 100.0, 'b': 100.0, 'q': 200.0, 'k': 250.0}
+attackPoints = {'p': 5.0, 'r': 18.0, 'n': 10.0, 'b': 10.0, 'q': 20.0, 'k': 30.0}
 
 pPSQT = [[0,0,0,0,0,0,0,0],
   [78,83,86,73,102,82,85,90],
@@ -377,60 +374,56 @@ class Board:
                   break
                 tempRow += dMove['rowIncrement']
                 tempCol += dMove['colIncrement']
-    
+
+    sep = ''
+    if (self.playedMoveCount % 2 == 0):
+      moveCopy = whiteValidMoves.copy()
+      kLoc = self.whiteKingLocation
+
+      moveString = sep.join(blackValidMoves)
+      pastMoves = sep.join(self.moveList)
+
+      for move in moveCopy:
+        overrideRemove = ((move == 'e1g1' and ('e1' in moveString or 'f1' in moveString or 'g1' in moveString)) or (move == 'e1c1' and ('e1' in moveString or 'd1' in moveString or 'c1' in moveString)))
+
+        if overrideRemove:
+          try:
+            whiteValidMoves.remove(move)
+          except:
+            continue
+    else:
+      moveCopy = blackValidMoves.copy()
+      kLoc = self.blackKingLocation
+
+      moveString = sep.join(whiteValidMoves)
+      pastMoves = sep.join(self.moveList)
+
+      for move in moveCopy:
+        overrideRemove = ((move == 'e8g8' and ('e8' in moveString or 'f8' in moveString or 'g8' in moveString)) or (move == 'e8c8' and ('e8' in moveString or 'd8' in moveString or 'c8' in moveString)))
+
+        if overrideRemove:
+          try:
+            blackValidMoves.remove(move)
+          except:
+            continue
+
     self.whiteValidMoves = whiteValidMoves
     self.blackValidMoves = blackValidMoves
     self.whiteAttackPieces = whiteAttackPieces
     self.blackAttackPieces = blackAttackPieces
     return {'whiteValidMoves': whiteValidMoves, 'blackValidMoves': blackValidMoves}
 
-  def removeIllegalMoves(self, isWhite):
-    if isWhite:
-      moves = self.whiteValidMoves.copy()
+  def moves(self):
+    if (self.playedMoveCount % 2 == 0):
+      return self.whiteValidMoves
     else:
-      moves = self.blackValidMoves.copy()
+      return self.blackValidMoves
 
-    masterMoves = moves.copy()
-    for move in moves:
-      legalMovesBoard = Board()
-      legalMovesBoard.setBoardState([x[:] for x in self.boardState.copy()])
-      legalMovesBoard.playedMoveCount = self.playedMoveCount
-      legalMovesBoard.makeMove(move)
-      legalMovesBoard.getValidMoves()
-      sep = ''
-      moveString = ''
-      if (isWhite):
-        kLoc = legalMovesBoard.whiteKingLocation
-        availMvs = legalMovesBoard.blackAttackLocations
-        if (legalMovesBoard.whiteCanCastleShort or legalMovesBoard.whiteCanCastleLong):
-          moveString = sep.join(legalMovesBoard.blackValidMoves)
-      else:
-        kLoc = legalMovesBoard.blackKingLocation
-        availMvs = legalMovesBoard.whiteAttackLocations
-        if (legalMovesBoard.whiteCanCastleShort or legalMovesBoard.whiteCanCastleLong):
-          moveString = sep.join(legalMovesBoard.whiteValidMoves)
-
-      overrideRemove = False
-      if (move == 'e1g1'):
-        if ('e1' in moveString or 'f1' in moveString or 'g1' in moveString or not legalMovesBoard.whiteCanCastleShort):
-          overrideRemove = True
-      if (move == 'e1c1'):
-        if ('e1' in moveString or 'd1' in moveString or 'c1' in moveString or not legalMovesBoard.whiteCanCastleLong):
-          overrideRemove = True
-      if (move == 'e8g8'):
-        if ('e8' in moveString or 'f8' in moveString or 'g8' in moveString or not legalMovesBoard.blackCanCastleShort):
-          overrideRemove = True
-      if (move == 'e8c8'):
-        if ('e8' in moveString or 'd8' in moveString or 'c8' in moveString or not legalMovesBoard.blackCanCastleLong):
-          overrideRemove = True
-
-      if (kLoc in availMvs or overrideRemove):
-        try:
-          masterMoves.remove(move)
-        except:
-          continue
-
-    return masterMoves
+  def getSideMoves(self, isWhite):
+    if isWhite:
+      return self.whiteValidMoves.copy()
+    else:
+      return self.blackValidMoves.copy()
 
   def boardEvaluation(self):
     bEval = 0
@@ -441,27 +434,21 @@ class Board:
         if (piece != '-'):
           if isWhite:
             bEval += piecePoints[piece.lower()] 
-            bEval += allPSGT[piece.lower()][row][column]
-            # if (self.blackKingLocation in self.whiteAttackLocations):
-            #   bEval += attackPoints[piece.lower()]
+            bEval += (allPSGT[piece.lower()][row][column] / 10)
           else:
             bEval -= piecePoints[piece]
-            bEval -= allPSGT[piece][abs(row-7)][column]
-            # if (self.whiteKingLocation in self.blackAttackLocations):
-            #   bEval -= attackPoints[piece.lower()]
+            bEval -= (allPSGT[piece][abs(row-7)][abs(column-7)] / 10)
 
-    for (attacked, attacker) in self.whiteAttackPieces:
-      if piecePoints[attacker.lower()] <= piecePoints[attacked.lower()]:
-        bEval += attackPoints[attacked.lower()]
-    for (attacked, attacker) in self.blackAttackPieces:
-      if piecePoints[attacker.lower()] <= piecePoints[attacked.lower()]:
-        bEval -= attackPoints[attacked.lower()]
+    # for (attacked, attacker) in self.whiteAttackPieces:
+    #   bEval += attackPoints[attacked.lower()] / 10
+    # for (attacked, attacker) in self.blackAttackPieces:
+    #   bEval -= attackPoints[attacked.lower()] / 10
 
 
     return bEval
 
-  def minimaxRoot(self, depth, localBoard, isMaximizing, maxTime):
-    lglMvs = localBoard.removeIllegalMoves(localBoard.playedMoveCount % 2 == 0)
+  def minimaxRoot(self, depth, localBoard, isMaxingWhite, maxTime):
+    lglMvs = localBoard.getSideMoves(localBoard.playedMoveCount % 2 == 0)
     if (localBoard.playedMoveCount == 0):
       possMvs = ['e2e4', 'd2d4', 'c2c4', 'g1f3']
       return [0, possMvs[0], '', 1]
@@ -475,74 +462,74 @@ class Board:
       possMvs = lglMvs
     if(len(possMvs) == 1):
       return [localBoard.boardEvaluation(), possMvs[0], '', 1]
-    if (isMaximizing):
-      bestMove = -9999999
-    else:
-      bestMove = 9999999
-    bestMoveFinal = possMvs[0]
+
+    global_score = -50000 if isMaxingWhite else 50000
+    chosen_move = None
+
     originalState = [x[:] for x in localBoard.boardState]
-    calcDepth = 1
+
     for move in possMvs:
       localBoard.nodes += 1
       localBoard.makeMove(move)
+
       startTime = time.perf_counter() + maxTime
-      retMove = self.minimax(depth - 1, -19999999, 19999999, localBoard, not isMaximizing, startTime, move)
-      if (isMaximizing):
-        value = max(bestMove, retMove)
-      else:
-        value = min(bestMove, retMove)
-      print(move, retMove, isMaximizing)
+
+      local_score = self.minimax(depth - 1, not isMaxingWhite, -50000, 50000, localBoard, startTime, move)
+
+      if isMaxingWhite and local_score > global_score:
+        global_score = local_score
+        chosen_move = move
+      elif not isMaxingWhite and local_score < global_score:
+        global_score = local_score
+        chosen_move = move
+
       localBoard.setBoardState([x[:] for x in originalState])
       localBoard.playedMoveCount -= 1
-      if (isMaximizing):
-        if (value > bestMove):
-          bestMove = value
-          bestMoveFinal = move
-      else:
-        if (value < bestMove):
-            bestMove = value
-            bestMoveFinal = move
-    gameBoard.lastMove = bestMoveFinal
 
-    return [bestMove, bestMoveFinal, '', calcDepth]
+    gameBoard.lastMove = chosen_move
+    return [global_score, chosen_move, '', 1]
 
-  def minimax(self, depth, alpha, beta, localBoard, isMaximizing, endTime, lastMove):
+  def minimax(self, depth, isMaxingWhite, alpha, beta, localBoard, endTime, lastMove):
     localBoard.getValidMoves()
-    possMvs = localBoard.removeIllegalMoves(isMaximizing)
+    possMvs = localBoard.getSideMoves(isMaxingWhite)
     startTime = time.perf_counter()
-    if depth == 0 or startTime >= endTime:
+
+    if depth == 0 or startTime >= endTime or len(possMvs) == 0:
       offset = 0
       if (lastMove == gameBoard.lastMove):
-        if (localBoard.playedMoveCount % 2 == 0):
+        if (isMaxingWhite):
           offset = -30.0
         else:
           offset = 30.0
-      return localBoard.boardEvaluation() + offset
+      return localBoard.boardEvaluation() + offset 
+
+    initialScore = localBoard.boardEvaluation()
+
+    if (isMaxingWhite and initialScore < -50000) or (not isMaxingWhite and initialScore > 50000):
+      return localBoard.boardEvaluation()
+
     originalState = [x[:] for x in localBoard.boardState]
-    if(isMaximizing):
-      bestMove = -9999999
-      for move in possMvs:
-        localBoard.nodes += 1
-        localBoard.makeMove(move)
-        bestMove = max(bestMove, self.minimax(depth - 1, alpha, beta, localBoard, not isMaximizing, endTime, move))
-        localBoard.setBoardState([x[:] for x in originalState])
-        localBoard.playedMoveCount -= 1
-        alpha = max(alpha,bestMove)
-        if (beta <= alpha):
-          return bestMove
-      return bestMove
-    else:
-      bestMove = 9999999
-      for move in possMvs:
-        localBoard.nodes += 1
-        localBoard.makeMove(move)
-        bestMove = min(bestMove, self.minimax(depth - 1, alpha, beta, localBoard, not isMaximizing, endTime, move))
-        localBoard.setBoardState([x[:] for x in originalState])
-        localBoard.playedMoveCount -= 1
-        beta = min(beta,bestMove)
-        if (beta <= alpha):
-          return bestMove
-      return bestMove
+    best_score = -1e8 if isMaxingWhite else 1e8
+    for move in possMvs:
+      localBoard.nodes += 1
+      localBoard.makeMove(move)
+
+      local_score = self.minimax(depth - 1, not isMaxingWhite, alpha, beta, localBoard, endTime, move)
+
+      if isMaxingWhite:
+        best_score = max(best_score, local_score)
+        alpha = max(alpha, best_score)
+      else:
+        best_score = min(best_score, local_score)
+        beta = min(beta, best_score)
+
+      localBoard.setBoardState([x[:] for x in originalState])
+      localBoard.playedMoveCount -= 1
+
+      if beta <= alpha:
+        break
+
+    return best_score
 
 gameBoard = Board()
 
@@ -559,8 +546,8 @@ while True:
       gameBoard.playedMoveCount = 0
     elif l=="eval":
       gameBoard.getValidMoves()
-      gameBoard.removeIllegalMoves(1)
-      # gameBoard.removeIllegalMoves(0)
+      gameBoard.getSideMoves(1)
+      # gameBoard.getSideMoves(0)
       print(gameBoard.boardEvaluation())
       gameBoard.showBoard()
     elif l=="isready":
@@ -573,23 +560,24 @@ while True:
         offsetMoves += 1
       gameBoard.playedMoveCount = (offsetMoves - 3)
     elif l.startswith("go"):
+      gameBoard.showBoard()
       goBoard = Board()
       goBoard.setBoardState([x[:] for x in gameBoard.boardState.copy()])
       goBoard.playedMoveCount = gameBoard.playedMoveCount
       goBoard.getValidMoves()
+      
       if (gameBoard.playedMoveCount % 2 == 0):
-        moveTime = 3 / len(goBoard.whiteValidMoves)
+        moveTime = 250 / len(goBoard.whiteValidMoves)
       else:
-        moveTime = 3 / len(goBoard.blackValidMoves)
+        moveTime = 250 / len(goBoard.blackValidMoves)
       startTime = time.perf_counter()
-      (score, move, pv, calcDepth) = goBoard.minimaxRoot(1, goBoard, (gameBoard.playedMoveCount % 2 == 0), moveTime)
+      (score, move, pv, calcDepth) = goBoard.minimaxRoot(2, goBoard, (gameBoard.playedMoveCount % 2 == 0), moveTime)
       elapsedTime = math.ceil(time.perf_counter() - startTime)
       nps = math.ceil(goBoard.nodes / elapsedTime)
-      if (gameBoard.playedMoveCount % 2 != 0):
-        score = score * -1
+      # if (gameBoard.playedMoveCount % 2 != 0):
+      #   score = score * -1
       print("info depth " + str(calcDepth) + " score cp " + str(math.ceil(score)) + " time " + str(elapsedTime) + " nodes " + str(goBoard.nodes) + " nps " + str(nps) + " pv " + move)
       print("bestmove " + move)
-      goBoard.showBoard()
   except (KeyboardInterrupt, SystemExit):
     print('quit')
     sys.exit()
