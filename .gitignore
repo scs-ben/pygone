@@ -2,3 +2,5 @@ pygone
 bin/cutechess*
 bin/stockfish*
 src/__pycache__*
+bin/debug.log
+bin/games.pgn

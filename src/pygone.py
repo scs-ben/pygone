@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import copy, math, os, sys, subprocess, time
 
-openingBook = {'e2e4': 'e7e5', 'd2d4': 'd7d5', 'c2c4': 'c7c5', 'g1f3': 'c7c5'}
 piecePoints = {'p': 100.0, 'r': 479.0, 'n': 280.0, 'b': 320.0, 'q': 929.0, 'k': 60000.0}
 attackPoints = {'p': 5.0, 'r': 18.0, 'n': 10.0, 'b': 10.0, 'q': 20.0, 'k': 30.0}
 
@@ -73,10 +72,6 @@ class Board:
   lastMove = ''
   nodes = 0
   depth = 0
-  whiteCanCastleShort = True
-  whiteCanCastleLong = True
-  blackCanCastleShort = True
-  blackCanCastleLong = True
 
   def __init__(self):
     self.setDefaultBoardState()
@@ -138,21 +133,6 @@ class Board:
       else:
         self.boardState[toNumber][toLetterNumber] = fromPiece
 
-    if (uciCoordinate[0:2] == 'e1'):
-      self.whiteCanCastleShort = False
-      self.whiteCanCastleLong = False
-    if (uciCoordinate[0:2] == 'a1'):
-      self.whiteCanCastleLong = False
-    if (uciCoordinate[0:2] == 'h1'):
-      self.whiteCanCastleShort = False
-    if (uciCoordinate[0:2] == 'e8'):
-      self.blackCanCastleShort = False
-      self.blackCanCastleLong = False
-    if (uciCoordinate[0:2] == 'a8'):
-      self.blackCanCastleLong = False
-    if (uciCoordinate[0:2] == 'h8'):
-      self.blackCanCastleShort = False
-
     self.moveList.append(uciCoordinate)
     self.playedMoveCount += 1
 
@@ -202,14 +182,14 @@ class Board:
               8: {'column': (column - 1), 'row': (row - 1)},
             }
             if isWhite:
-              if self.whiteCanCastleShort and whiteStartCoordinate == 'e1' and evalState[7][5] == '-' and evalState[7][6] == '-' and evalState[7][7] == 'R':
+              if whiteStartCoordinate == 'e1' and evalState[7][5] == '-' and evalState[7][6] == '-' and evalState[7][7] == 'R':
                 whiteValidMoves.append(whiteStartCoordinate + 'g1')
-              if self.whiteCanCastleLong and whiteStartCoordinate == 'e1' and evalState[7][1] == '-' and evalState[7][2] == '-' and evalState[7][3] == '-' and evalState[7][0] == 'R':
+              if whiteStartCoordinate == 'e1' and evalState[7][1] == '-' and evalState[7][2] == '-' and evalState[7][3] == '-' and evalState[7][0] == 'R':
                 whiteValidMoves.append(whiteStartCoordinate + 'c1')
             else:
-              if self.blackCanCastleShort and blackValidMoves == 'e8' and evalState[0][1] == '-' and evalState[0][1] == '-' and evalState[0][2] == '-' and evalState[0][0] == 'r':
+              if blackValidMoves == 'e8' and evalState[0][1] == '-' and evalState[0][1] == '-' and evalState[0][2] == '-' and evalState[0][0] == 'r':
                 bestMove.append(blackStartCoordinate + 'c8')
-              if self.blackCanCastleLong and blackValidMoves == 'e8' and evalState[0][5] == '-' and evalState[0][6] == '-' and evalState[0][7] == 'r':
+              if blackValidMoves == 'e8' and evalState[0][5] == '-' and evalState[0][6] == '-' and evalState[0][7] == 'r':
                 bestMove.append(blackStartCoordinate + 'g8')
             for key, nMove in kMoves.items():
               if (nMove['column'] >= 0 and nMove['column'] <= 7 and nMove['row'] >= 0 and nMove['row'] <= 7):
@@ -450,19 +430,7 @@ class Board:
 
   def minimaxRoot(self, depth, localBoard, maxTime):
     lglMvs = localBoard.getSideMoves(localBoard.playedMoveCount % 2 == 0)
-    if (localBoard.playedMoveCount == 0):
-      possMvs = ['e2e4', 'd2d4', 'c2c4', 'g1f3']
-      localBoard.depth = 1
-      return [0, possMvs[0]]
-    elif localBoard.playedMoveCount == 1:
-      try:
-        localBoard.depth = 1
-        move = openingBook[localBoard.moveList[0]]
-        return [0, move]
-      except:
-        possMvs = lglMvs
-    else:
-      possMvs = lglMvs
+    possMvs = lglMvs
     if(len(possMvs) == 1):
       localBoard.depth = 1
       return [localBoard.boardEvaluation(), possMvs[0]]
@@ -579,7 +547,7 @@ while True:
       
       whiteTime = 300
       blackTime = 300
-      depth = 4
+      depth = 3
 
       args = l.split()
       for key, arg in enumerate(args):

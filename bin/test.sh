@@ -11,7 +11,7 @@
         option.Threads=1 \
     -each \
         proto=uci \
-        tc=0/300+1 \
+        tc=inf \
         depth=1 \
         restart=off \
         -openings file=book.pgn \

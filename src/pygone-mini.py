@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import copy,math,os,sys,subprocess,time
-A={'e2e4':'e7e5','d2d4':'d7d5','c2c4':'c7c5','g1f3':'c7c5'}
 B={'p':100.0,'r':479.0,'n':280.0,'b':320.0,'q':929.0,'k':60000.0}
 C={'p':5.0,'r':18.0,'n':10.0,'b':10.0,'q':20.0,'k':30.0}
 D=[[0,0,0,0,0,0,0,0],[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0,0,0,0,0,0,0,0]]
@@ -25,10 +24,6 @@ class Z:
  T=''
  nodes=0
  depth=0
- whiteCanCastleShort=True
- whiteCanCastleLong=True
- blackCanCastleShort=True
- blackCanCastleLong=True
  def __init__(self):
   self.V()
   self.L=0
@@ -77,20 +72,6 @@ class Z:
      self.K[D8][D4]=a
    else:
     self.K[D8][D4]=D9
-  if(Y[0:2]=='e1'):
-   self.whiteCanCastleShort=False
-   self.whiteCanCastleLong=False
-  if(Y[0:2]=='a1'):
-   self.whiteCanCastleLong=False
-  if(Y[0:2]=='h1'):
-   self.whiteCanCastleShort=False
-  if(Y[0:2]=='e8'):
-   self.blackCanCastleShort=False
-   self.blackCanCastleLong=False
-  if(Y[0:2]=='a8'):
-   self.blackCanCastleLong=False
-  if(Y[0:2]=='h8'):
-   self.blackCanCastleShort=False
   self.S.append(Y)
   self.L+=1
  def b(self,letter):
@@ -127,14 +108,14 @@ class Z:
        self.R=j
       l={1:{'u':(u+0),'t':(t+1)},2:{'u':(u+0),'t':(t-1)},3:{'u':(u+1),'t':(t+0)},4:{'u':(u-1),'t':(t+0)},5:{'u':(u+1),'t':(t+1)},6:{'u':(u+1),'t':(t-1)},7:{'u':(u-1),'t':(t+1)},8:{'u':(u-1),'t':(t-1)},}
       if k:
-       if self.whiteCanCastleShort and i=='e1' and h[7][5]=='-' and h[7][6]=='-' and h[7][7]=='R':
+       if i=='e1' and h[7][5]=='-' and h[7][6]=='-' and h[7][7]=='R':
         M.append(i+'g1')
-       if self.whiteCanCastleLong and i=='e1' and h[7][1]=='-' and h[7][2]=='-' and h[7][3]=='-' and h[7][0]=='R':
+       if i=='e1' and h[7][1]=='-' and h[7][2]=='-' and h[7][3]=='-' and h[7][0]=='R':
         M.append(i+'c1')
       else:
-       if self.blackCanCastleShort and N=='e8' and h[0][1]=='-' and h[0][1]=='-' and h[0][2]=='-' and h[0][0]=='r':
+       if N=='e8' and h[0][1]=='-' and h[0][1]=='-' and h[0][2]=='-' and h[0][0]=='r':
         n.append(j+'c8')
-       if self.blackCanCastleLong and N=='e8' and h[0][5]=='-' and h[0][6]=='-' and h[0][7]=='r':
+       if N=='e8' and h[0][5]=='-' and h[0][6]=='-' and h[0][7]=='r':
         n.append(j+'g8')
       for x,AJ in l.items():
        if(AJ['u']>=0 and AJ['u']<=7 and AJ['t']>=0 and AJ['t']<=7):
@@ -327,19 +308,7 @@ class Z:
   return A5
  def A6(self,depth,AK,maxTime):
   A8=AK.getSideMoves(AK.L%2==0)
-  if(AK.L==0):
-   A9=['e2e4','d2d4','c2c4','g1f3']
-   AK.depth=1
-   return[0,A9[0]]
-  elif AK.L==1:
-   try:
-    AK.depth=1
-    move=A[AK.S[0]]
-    return[0,move]
-   except:
-    A9=A8
-  else:
-   A9=A8
+  A9=A8
   if(len(A9)==1):
    AK.depth=1
    return[AK.A4(),A9[0]]
@@ -430,7 +399,7 @@ while True:
    goZ.e()
    whiteTime=300
    blackTime=300
-   depth=4
+   depth=3
    args=l.split()
    for x,arg in enumerate(args):
     if(arg=='wtime'):
