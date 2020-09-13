@@ -8,7 +8,7 @@ E=[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,
 F=[[-59,-78,-82,-76,-23,-107,-37,-50],[-11,20,35,-42,-39,31,2,-22],[-9,39,-32,41,52,-10,28,-14],[25,17,20,34,26,25,15,10],[13,10,17,23,17,16,0,7],[14,25,24,15,8,25,20,15],[19,20,11,6,7,6,20,16],[-7,2,-15,-12,-14,-15,-10,-10]]
 G=[[35,29,33,4,37,33,56,50],[55,29,56,67,55,62,34,60],[19,35,28,33,45,27,25,15],[0,5,16,13,18,-4,-9,-6],[-28,-35,-16,-21,-13,-29,-46,-30],[-42,-28,-42,-25,-25,-35,-26,-46],[-53,-38,-31,-26,-29,-43,-44,-53],[-30,-24,-18,5,-2,-18,-31,-32]]
 H=[[6,1,-8,-104,69,24,88,26],[14,32,60,-10,20,76,57,24],[-2,43,32,60,72,63,43,2],[1,-16,22,17,25,20,-13,-6],[-14,-15,-2,-5,-1,-10,-20,-22],[-30,-6,-13,-11,-16,-11,-16,-27],[-36,-18,0,-19,-15,-15,-21,-38],[-39,-30,-31,-13,-31,-36,-34,-42]]
-I=[[4,54,47,-99,-99,60,83,-62],[-32,10,55,56,56,55,10,3],[-62,12,-57,44,-67,28,37,-31],[-55,50,11,-4,-19,13,0,-49],[-55,-43,-52,-28,-51,-47,-8,-50],[-47,-42,-43,-79,-64,-32,-29,-32],[-4,3,-14,-50,-57,-18,13,4],[17,55,-3,-14,6,-1,55,18]]
+I=[[4,54,47,-99,-99,60,83,-62],[-32,10,55,56,56,55,10,3],[-62,12,-57,44,-67,28,37,-31],[-55,50,11,-4,-19,13,0,-49],[-55,-43,-52,-28,-51,-47,-8,-50],[-47,-42,-43,-79,-64,-32,-29,-32],[-4,3,-14,-50,-57,-18,13,4],[22,30,-3,-14,6,-1,40,26]]
 J={'p':D,'n':E,'b':F,'r':G,'q':H,'k':I}
 isupper=lambda c:'A'<=c<='Z'
 islower=lambda c:'a'<=c<='z'
@@ -24,6 +24,7 @@ class Z:
  S=[]
  T=''
  nodes=0
+ depth=0
  whiteCanCastleShort=True
  whiteCanCastleLong=True
  blackCanCastleShort=True
@@ -324,29 +325,35 @@ class Z:
       A5-=B[z]
       A5-=(J[z][abs(t-7)][abs(u-7)]/10)
   return A5
- def A6(self,depth,AK,isMaxingWhite,maxTime):
+ def A6(self,depth,AK,maxTime):
   A8=AK.getSideMoves(AK.L%2==0)
   if(AK.L==0):
    A9=['e2e4','d2d4','c2c4','g1f3']
-   return[0,A9[0],'',1]
+   AK.depth=1
+   return[0,A9[0]]
   elif AK.L==1:
    try:
+    AK.depth=1
     move=A[AK.S[0]]
-    return[0,move,'',1]
+    return[0,move]
    except:
     A9=A8
   else:
    A9=A8
   if(len(A9)==1):
-   return[AK.A4(),A9[0],'',1]
+   AK.depth=1
+   return[AK.A4(),A9[0]]
+  isMaxingWhite=(AK.L%2==0)
   global_score=-50000 if isMaxingWhite else 50000
   chosen_move=None
   AA=[x[:]for x in AK.K]
+  AK.depth=depth
+  maxTime=maxTime/len(A9)
   for move in A9:
    AK.nodes+=1
    AK.X(move)
    AB=time.perf_counter()+maxTime
-   local_score=self.A7(depth-1,not isMaxingWhite,-50000,50000,AK,AB,move)
+   local_score=self.A7(depth-1,-50000,50000,AK,AB,move)
    if isMaxingWhite and local_score>global_score:
     global_score=local_score
     chosen_move=move
@@ -356,8 +363,9 @@ class Z:
    AK.W([x[:]for x in AA])
    AK.L-=1
   gameZ.T=chosen_move
-  return[global_score,chosen_move,'',1]
- def A7(self,depth,isMaxingWhite,AM,AN,AK,AG,T):
+  return[global_score,chosen_move]
+ def A7(self,depth,AM,AN,AK,AG,T):
+  isMaxingWhite=(AK.L%2==0)
   AK.e()
   A9=AK.getSideMoves(isMaxingWhite)
   AB=time.perf_counter()
@@ -373,11 +381,11 @@ class Z:
   if(isMaxingWhite and initialScore<-50000)or(not isMaxingWhite and initialScore>50000):
    return AK.A4()
   AA=[x[:]for x in AK.K]
-  best_score=-1e8 if isMaxingWhite else 1e8
+  best_score=-50000 if isMaxingWhite else 50000
   for move in A9:
    AK.nodes+=1
    AK.X(move)
-   local_score=self.A7(depth-1,not isMaxingWhite,AM,AN,AK,AG,move)
+   local_score=self.A7(depth-1,AM,AN,AK,AG,move)
    if isMaxingWhite:
     best_score=max(best_score,local_score)
     AM=max(AM,best_score)
@@ -416,20 +424,36 @@ while True:
     APMoves+=1
    gameZ.L=(APMoves-3)
   elif l.startswith("go"):
-   gameZ.d()
    goZ=Z()
    goZ.W([x[:]for x in gameZ.K.copy()])
    goZ.L=gameZ.L
    goZ.e()
-   if(gameZ.L%2==0):
-    moveTime=250/len(goZ.M)
+   whiteTime=300
+   blackTime=300
+   depth=4
+   args=l.split()
+   for x,arg in enumerate(args):
+    if(arg=='wtime'):
+     whiteTime=int(args[x+1])
+    if(arg=='btime'):
+     blackTime=int(args[x+1])
+   timeMoveCalc=40
+   if(gameZ.L>38):
+    timeMoveCalc=2
    else:
-    moveTime=250/len(goZ.N)
+    timeMoveCalc=40-gameZ.L
+   if(gameZ.L%2==0):
+    moveTime=whiteTime/(timeMoveCalc*1000)
+   else:
+    moveTime=blackTime/(timeMoveCalc*1000)
+   moveTime-=3
+   if moveTime<5:
+    moveTime=5
    AB=time.perf_counter()
-   (score,move,pv,calcDepth)=goZ.A6(2,goZ,(gameZ.L%2==0),moveTime)
+   (score,move)=goZ.A6(depth,goZ,moveTime)
    elapsedTime=math.ceil(time.perf_counter()-AB)
    nps=math.ceil(goZ.nodes/elapsedTime)
-   print("info depth "+str(calcDepth)+" score cp "+str(math.ceil(score))+" time "+str(elapsedTime)+" nodes "+str(goZ.nodes)+" nps "+str(nps)+" pv "+move)
+   print("info depth "+str(goZ.depth)+" score cp "+str(math.ceil(score))+" time "+str(elapsedTime)+" nodes "+str(goZ.nodes)+" nps "+str(nps)+" pv "+move)
    print("bestmove "+move)
  except(KeyboardInterrupt,SystemExit):
   print('quit')

@@ -11,10 +11,10 @@
         option.Threads=1 \
     -each \
         proto=uci \
-        tc=inf \
+        tc=0/300+1 \
         depth=1 \
         restart=off \
         -openings file=book.pgn \
         -repeat \
         -pgnout games.pgn min \
-         -games 2 -rounds 100 > debug.log
+        -games 2 -rounds 100 > debug.log

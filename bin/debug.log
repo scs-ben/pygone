@@ -1,1617 +1,282 @@
-3 >pygone(0): uci
+4 >pygone(0): uci
 5 >sf12(1): uci
 5 <sf12(1): Stockfish 040920 by the Stockfish developers (see AUTHORS file)
-31 <pygone(0): pygone 1.0 by rcostheta
-31 <pygone(0): uciok
-31 >pygone(0): isready
-31 <pygone(0): readyok
-202 <sf12(1): id name Stockfish 040920
-202 <sf12(1): id author the Stockfish developers (see AUTHORS file)
-203 <sf12(1): option name Debug Log File type string default 
-203 <sf12(1): option name Contempt type spin default 24 min -100 max 100
-203 <sf12(1): option name Analysis Contempt type combo default Both var Off var White var Black var Both
-203 <sf12(1): option name Threads type spin default 1 min 1 max 512
-203 <sf12(1): option name Hash type spin default 16 min 1 max 33554432
-203 <sf12(1): option name Clear Hash type button
-203 <sf12(1): option name Ponder type check default false
-203 <sf12(1): option name MultiPV type spin default 1 min 1 max 500
-203 <sf12(1): option name Skill Level type spin default 20 min 0 max 20
-203 <sf12(1): option name Move Overhead type spin default 10 min 0 max 5000
-203 <sf12(1): option name Slow Mover type spin default 100 min 10 max 1000
-203 <sf12(1): option name nodestime type spin default 0 min 0 max 10000
-203 <sf12(1): option name UCI_Chess960 type check default false
-203 <sf12(1): option name UCI_AnalyseMode type check default false
-203 <sf12(1): option name UCI_LimitStrength type check default false
-203 <sf12(1): option name UCI_Elo type spin default 1350 min 1350 max 2850
-203 <sf12(1): option name UCI_ShowWDL type check default false
-203 <sf12(1): option name SyzygyPath type string default <empty>
-203 <sf12(1): option name SyzygyProbeDepth type spin default 1 min 1 max 100
-203 <sf12(1): option name Syzygy50MoveRule type check default true
-203 <sf12(1): option name SyzygyProbeLimit type spin default 7 min 0 max 7
-203 <sf12(1): option name Use NNUE type check default true
-203 <sf12(1): option name EvalFile type string default nn-308d71810dff.nnue
-203 <sf12(1): uciok
-203 >sf12(1): setoption name Contempt value 0
-204 >sf12(1): setoption name Hash value 16
-204 >sf12(1): setoption name Threads value 1
-204 >sf12(1): isready
-218 <sf12(1): readyok
+32 <pygone(0): pygone 1.0 by rcostheta
+32 <pygone(0): uciok
+32 >pygone(0): isready
+32 <pygone(0): readyok
+208 <sf12(1): id name Stockfish 040920
+209 <sf12(1): id author the Stockfish developers (see AUTHORS file)
+209 <sf12(1): option name Debug Log File type string default 
+209 <sf12(1): option name Contempt type spin default 24 min -100 max 100
+209 <sf12(1): option name Analysis Contempt type combo default Both var Off var White var Black var Both
+209 <sf12(1): option name Threads type spin default 1 min 1 max 512
+209 <sf12(1): option name Hash type spin default 16 min 1 max 33554432
+209 <sf12(1): option name Clear Hash type button
+209 <sf12(1): option name Ponder type check default false
+209 <sf12(1): option name MultiPV type spin default 1 min 1 max 500
+209 <sf12(1): option name Skill Level type spin default 20 min 0 max 20
+209 <sf12(1): option name Move Overhead type spin default 10 min 0 max 5000
+209 <sf12(1): option name Slow Mover type spin default 100 min 10 max 1000
+209 <sf12(1): option name nodestime type spin default 0 min 0 max 10000
+210 <sf12(1): option name UCI_Chess960 type check default false
+210 <sf12(1): option name UCI_AnalyseMode type check default false
+210 <sf12(1): option name UCI_LimitStrength type check default false
+210 <sf12(1): option name UCI_Elo type spin default 1350 min 1350 max 2850
+210 <sf12(1): option name UCI_ShowWDL type check default false
+210 <sf12(1): option name SyzygyPath type string default <empty>
+210 <sf12(1): option name SyzygyProbeDepth type spin default 1 min 1 max 100
+210 <sf12(1): option name Syzygy50MoveRule type check default true
+210 <sf12(1): option name SyzygyProbeLimit type spin default 7 min 0 max 7
+210 <sf12(1): option name Use NNUE type check default true
+210 <sf12(1): option name EvalFile type string default nn-308d71810dff.nnue
+210 <sf12(1): uciok
+210 >sf12(1): setoption name Contempt value 0
+210 >sf12(1): setoption name Hash value 16
+210 >sf12(1): setoption name Threads value 1
+211 >sf12(1): isready
+223 <sf12(1): readyok
 Started game 1 of 200 (pygone vs sf12)
-218 >pygone(0): ucinewgame
-218 >pygone(0): position startpos
-218 >sf12(1): ucinewgame
-218 >sf12(1): setoption name Ponder value false
-218 >sf12(1): position startpos
-218 >pygone(0): position startpos moves e2e4
-218 >sf12(1): position startpos moves e2e4
-218 >sf12(1): position startpos moves e2e4 e7e5
-218 >pygone(0): position startpos moves e2e4 e7e5
-218 >pygone(0): position startpos moves e2e4 e7e5 g1f3
-219 >sf12(1): position startpos moves e2e4 e7e5 g1f3
-219 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6
-219 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6
-219 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-219 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-219 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
-219 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
-219 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
-219 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
-219 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
-219 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
-219 >pygone(0): isready
-219 <pygone(0): readyok
-219 >pygone(0): go depth 1
-373 <pygone(0): r - b q k b - r 
-374 <pygone(0): - p p p - p p p 
-374 <pygone(0): p - n - - n - - 
-374 <pygone(0): - - - - p - - - 
-374 <pygone(0): B - - - P - - - 
-374 <pygone(0): - - - - - N - - 
-374 <pygone(0): P P P P - P P P 
-374 <pygone(0): R N B Q K - - R 
-374 <pygone(0): info depth 1 score cp -41 time 1 nodes 834 nps 834 pv a4c6
-374 <pygone(0): bestmove a4c6
-374 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6
-374 >sf12(1): isready
-374 <sf12(1): readyok
-374 >sf12(1): go depth 1
-374 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-374 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 12 nodes 28 nps 28000 tbhits 0 time 1 pv d7c6
-375 <sf12(1): bestmove d7c6
-375 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6
-375 >pygone(0): isready
-375 <pygone(0): readyok
-375 >pygone(0): go depth 1
-543 <pygone(0): r - b q k b - r 
-543 <pygone(0): - p p - - p p p 
-543 <pygone(0): p - p - - n - - 
-543 <pygone(0): - - - - p - - - 
-543 <pygone(0): - - - - P - - - 
-543 <pygone(0): - - - - - N - - 
-543 <pygone(0): P P P P - P P P 
-543 <pygone(0): R N B Q K - - R 
-543 <pygone(0): info depth 1 score cp -42 time 1 nodes 919 nps 919 pv f3e5
-543 <pygone(0): bestmove f3e5
-543 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5
-544 >sf12(1): isready
-544 <sf12(1): readyok
-544 >sf12(1): go depth 1
-544 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-544 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 23 nodes 36 nps 36000 tbhits 0 time 1 pv f6e4
-544 <sf12(1): bestmove f6e4
-544 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4
-544 >pygone(0): isready
-544 <pygone(0): readyok
-544 >pygone(0): go depth 1
-815 <pygone(0): r - b q k b - r 
-815 <pygone(0): - p p - - p p p 
-815 <pygone(0): p - p - - - - - 
-815 <pygone(0): - - - - N - - - 
-815 <pygone(0): - - - - n - - - 
-815 <pygone(0): - - - - - - - - 
-815 <pygone(0): P P P P - P P P 
-815 <pygone(0): R N B Q K - - R 
-816 <pygone(0): info depth 1 score cp -140 time 1 nodes 1433 nps 1433 pv e1g1
-816 <pygone(0): bestmove e1g1
-816 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1
-816 >sf12(1): isready
-816 <sf12(1): readyok
-816 >sf12(1): go depth 1
-816 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-816 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 148 nodes 49 nps 24500 tbhits 0 time 2 pv h7h5
-816 <sf12(1): bestmove h7h5
-816 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5
-816 >pygone(0): isready
-816 <pygone(0): readyok
-816 >pygone(0): go depth 1
-1111 <pygone(0): r - b q k b - r 
-1111 <pygone(0): - p p - - p p - 
-1111 <pygone(0): p - p - - - - - 
-1111 <pygone(0): - - - - N - - p 
-1111 <pygone(0): - - - - n - - - 
-1111 <pygone(0): - - - - - - - - 
-1111 <pygone(0): P P P P - P P P 
-1111 <pygone(0): R N B Q - R K - 
-1111 <pygone(0): info depth 1 score cp -136 time 1 nodes 1378 nps 1378 pv f2f4
-1111 <pygone(0): bestmove f2f4
-1112 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4
-1112 >sf12(1): isready
-1112 <sf12(1): readyok
-1112 >sf12(1): go depth 1
-1112 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-1112 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 440 nodes 69 nps 69000 tbhits 0 time 1 pv d8d4 g1h1 e4f2 f1f2 d4f2
-1112 <sf12(1): bestmove d8d4 ponder g1h1
-1112 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4
-1112 >pygone(0): isready
-1112 <pygone(0): readyok
-1112 >pygone(0): go depth 1
-1416 <pygone(0): r - b - k b - r 
-1416 <pygone(0): - p p - - p p - 
-1416 <pygone(0): p - p - - - - - 
-1416 <pygone(0): - - - - N - - p 
-1416 <pygone(0): - - - q n P - - 
-1416 <pygone(0): - - - - - - - - 
-1416 <pygone(0): P P P P - - P P 
-1417 <pygone(0): R N B Q - R K - 
-1417 <pygone(0): info depth 1 score cp -324 time 1 nodes 1377 nps 1377 pv g1h1
-1417 <pygone(0): bestmove g1h1
-1417 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1
-1417 >sf12(1): isready
-1417 <sf12(1): readyok
-1417 >sf12(1): go depth 1
-1417 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-1417 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 440 nodes 61 nps 30500 tbhits 0 time 2 pv e4f2 f1f2
-1417 <sf12(1): bestmove e4f2 ponder f1f2
-1417 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2
-1417 >pygone(0): isready
-1417 <pygone(0): readyok
-1417 >pygone(0): go depth 1
-1775 <pygone(0): r - b - k b - r 
-1776 <pygone(0): - p p - - p p - 
-1776 <pygone(0): p - p - - - - - 
-1776 <pygone(0): - - - - N - - p 
-1776 <pygone(0): - - - q - P - - 
-1776 <pygone(0): - - - - - - - - 
-1776 <pygone(0): P P P P - n P P 
-1776 <pygone(0): R N B Q - R - K 
-1776 <pygone(0): info depth 1 score cp -241 time 1 nodes 1569 nps 1569 pv f1f2
-1776 <pygone(0): bestmove f1f2
-1776 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2
-1776 >sf12(1): isready
-1776 <sf12(1): readyok
-1776 >sf12(1): go depth 1
-1776 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-1776 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 440 nodes 45 nps 45000 tbhits 0 time 1 pv d4f2
-1776 <sf12(1): bestmove d4f2
-1776 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2
-1776 >pygone(0): isready
-1776 <pygone(0): readyok
-1777 >pygone(0): go depth 1
-2070 <pygone(0): r - b - k b - r 
-2070 <pygone(0): - p p - - p p - 
-2070 <pygone(0): p - p - - - - - 
-2070 <pygone(0): - - - - N - - p 
-2070 <pygone(0): - - - - - P - - 
-2070 <pygone(0): - - - - - - - - 
-2071 <pygone(0): P P P P - q P P 
-2071 <pygone(0): R N B Q - - - K 
-2071 <pygone(0): info depth 1 score cp -334 time 1 nodes 1317 nps 1317 pv b1c3
-2071 <pygone(0): bestmove b1c3
-2071 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3
-2071 >sf12(1): isready
-2071 <sf12(1): readyok
-2071 >sf12(1): go depth 1
-2071 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-2071 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 494 nodes 45 nps 45000 tbhits 0 time 1 pv f2f4
-2071 <sf12(1): bestmove f2f4
-2071 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4
-2071 >pygone(0): isready
-2071 <pygone(0): readyok
-2071 >pygone(0): go depth 1
-2447 <pygone(0): r - b - k b - r 
-2447 <pygone(0): - p p - - p p - 
-2447 <pygone(0): p - p - - - - - 
-2447 <pygone(0): - - - - N - - p 
-2447 <pygone(0): - - - - - q - - 
-2447 <pygone(0): - - N - - - - - 
-2448 <pygone(0): P P P P - - P P 
-2448 <pygone(0): R - B Q - - - K 
-2448 <pygone(0): info depth 1 score cp -431 time 1 nodes 1538 nps 1538 pv e5d3
-2448 <pygone(0): bestmove e5d3
-2448 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3
-2448 >sf12(1): isready
-2448 <sf12(1): readyok
-2448 >sf12(1): go depth 1
-2448 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-2448 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 334 nodes 242 nps 242000 tbhits 0 time 1 pv f4h4 d1e2 f8e7
-2448 <sf12(1): bestmove f4h4 ponder d1e2
-2448 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4
-2448 >pygone(0): isready
-2448 <pygone(0): readyok
-2448 >pygone(0): go depth 1
-2732 <pygone(0): r - b - k b - r 
-2732 <pygone(0): - p p - - p p - 
-2732 <pygone(0): p - p - - - - - 
-2732 <pygone(0): - - - - - - - p 
-2732 <pygone(0): - - - - - - - q 
-2732 <pygone(0): - - N N - - - - 
-2732 <pygone(0): P P P P - - P P 
-2732 <pygone(0): R - B Q - - - K 
-2732 <pygone(0): info depth 1 score cp -427 time 1 nodes 1176 nps 1176 pv h1g1
-2732 <pygone(0): bestmove h1g1
-2732 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1
-2732 >sf12(1): isready
-2732 <sf12(1): readyok
-2732 >sf12(1): go depth 1
-2732 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-2732 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 570 nodes 176 nps 88000 tbhits 0 time 2 pv f8e7
-2733 <sf12(1): bestmove f8e7
-2733 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7
-2733 >pygone(0): isready
-2733 <pygone(0): readyok
-2733 >pygone(0): go depth 1
-3066 <pygone(0): r - b - k - - r 
-3067 <pygone(0): - p p - b p p - 
-3067 <pygone(0): p - p - - - - - 
-3067 <pygone(0): - - - - - - - p 
-3067 <pygone(0): - - - - - - - q 
-3067 <pygone(0): - - N N - - - - 
-3067 <pygone(0): P P P P - - P P 
-3067 <pygone(0): R - B Q - - K - 
-3067 <pygone(0): info depth 1 score cp -428 time 1 nodes 1276 nps 1276 pv d3e5
-3067 <pygone(0): bestmove d3e5
-3067 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5
-3067 >sf12(1): isready
-3067 <sf12(1): readyok
-3067 >sf12(1): go depth 1
-3067 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-3067 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 909 nodes 56 nps 56000 tbhits 0 time 1 pv h4d4 g1h1
-3067 <sf12(1): bestmove h4d4 ponder g1h1
-3068 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4
-3068 >pygone(0): isready
-3068 <pygone(0): readyok
-3068 >pygone(0): go depth 1
-3533 <pygone(0): r - b - k - - r 
-3533 <pygone(0): - p p - b p p - 
-3534 <pygone(0): p - p - - - - - 
-3534 <pygone(0): - - - - N - - p 
-3534 <pygone(0): - - - q - - - - 
-3534 <pygone(0): - - N - - - - - 
-3534 <pygone(0): P P P P - - P P 
-3534 <pygone(0): R - B Q - - K - 
-3534 <pygone(0): info depth 1 score cp -621 time 1 nodes 1698 nps 1698 pv g1h1
-3534 <pygone(0): bestmove g1h1
-3534 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1
-3534 >sf12(1): isready
-3534 <sf12(1): readyok
-3534 >sf12(1): go depth 1
-3534 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-3534 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 909 nodes 54 nps 54000 tbhits 0 time 1 pv d4e5
-3535 <sf12(1): bestmove d4e5
-3535 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5
-3535 >pygone(0): isready
-3535 <pygone(0): readyok
-3535 >pygone(0): go depth 1
-3879 <pygone(0): r - b - k - - r 
-3879 <pygone(0): - p p - b p p - 
-3879 <pygone(0): p - p - - - - - 
-3879 <pygone(0): - - - - q - - p 
-3879 <pygone(0): - - - - - - - - 
-3879 <pygone(0): - - N - - - - - 
-3879 <pygone(0): P P P P - - P P 
-3879 <pygone(0): R - B Q - - - K 
-3880 <pygone(0): info depth 1 score cp -715 time 1 nodes 1271 nps 1271 pv d2d4
-3880 <pygone(0): bestmove d2d4
-3880 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4
-3880 >sf12(1): isready
-3880 <sf12(1): readyok
-3880 >sf12(1): go depth 1
-3880 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-3880 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 839 nodes 63 nps 31500 tbhits 0 time 2 pv e5f5
-3880 <sf12(1): bestmove e5f5
-3880 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5
-3880 >pygone(0): isready
-3880 <pygone(0): readyok
-3880 >pygone(0): go depth 1
-4318 <pygone(0): r - b - k - - r 
-4318 <pygone(0): - p p - b p p - 
-4318 <pygone(0): p - p - - - - - 
-4318 <pygone(0): - - - - - q - p 
-4318 <pygone(0): - - - P - - - - 
-4318 <pygone(0): - - N - - - - - 
-4318 <pygone(0): P P P - - - P P 
-4319 <pygone(0): R - B Q - - - K 
-4319 <pygone(0): info depth 1 score cp -715 time 1 nodes 1505 nps 1505 pv h1g1
-4319 <pygone(0): bestmove h1g1
-4319 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1
-4319 >sf12(1): isready
-4319 <sf12(1): readyok
-4319 >sf12(1): go depth 1
-4319 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-4319 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 855 nodes 61 nps 61000 tbhits 0 time 1 pv h5h4
-4319 <sf12(1): bestmove h5h4
-4319 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4
-4319 >pygone(0): isready
-4320 <pygone(0): readyok
-4320 >pygone(0): go depth 1
-4764 <pygone(0): r - b - k - - r 
-4764 <pygone(0): - p p - b p p - 
-4764 <pygone(0): p - p - - - - - 
-4764 <pygone(0): - - - - - q - - 
-4764 <pygone(0): - - - P - - - p 
-4764 <pygone(0): - - N - - - - - 
-4765 <pygone(0): P P P - - - P P 
-4765 <pygone(0): R - B Q - - K - 
-4765 <pygone(0): info depth 1 score cp -714 time 1 nodes 1498 nps 1498 pv c1e3
-4765 <pygone(0): bestmove c1e3
-4765 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3
-4765 >sf12(1): isready
-4765 <sf12(1): readyok
-4765 >sf12(1): go depth 1
-4765 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-4765 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 883 nodes 59 nps 59000 tbhits 0 time 1 pv e7d6
-4765 <sf12(1): bestmove e7d6
-4765 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6
-4766 >pygone(0): isready
-4766 <pygone(0): readyok
-4766 >pygone(0): go depth 1
-5317 <pygone(0): r - b - k - - r 
-5317 <pygone(0): - p p - - p p - 
-5317 <pygone(0): p - p b - - - - 
-5317 <pygone(0): - - - - - q - - 
-5317 <pygone(0): - - - P - - - p 
-5317 <pygone(0): - - N - B - - - 
-5317 <pygone(0): P P P - - - P P 
-5317 <pygone(0): R - - Q - - K - 
-5318 <pygone(0): info depth 1 score cp -713 time 1 nodes 1764 nps 1764 pv h2h3
-5318 <pygone(0): bestmove h2h3
-5318 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3
-5318 >sf12(1): isready
-5318 <sf12(1): readyok
-5318 >sf12(1): go depth 1
-5318 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-5318 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1014 nodes 60 nps 60000 tbhits 0 time 1 pv f5e6
-5318 <sf12(1): bestmove f5e6
-5318 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6
-5318 >pygone(0): isready
-5318 <pygone(0): readyok
-5318 >pygone(0): go depth 1
-5805 <pygone(0): r - b - k - - r 
-5805 <pygone(0): - p p - - p p - 
-5805 <pygone(0): p - p b q - - - 
-5805 <pygone(0): - - - - - - - - 
-5805 <pygone(0): - - - P - - - p 
-5805 <pygone(0): - - N - B - - P 
-5805 <pygone(0): P P P - - - P - 
-5806 <pygone(0): R - - Q - - K - 
-5806 <pygone(0): info depth 1 score cp -704 time 1 nodes 1556 nps 1556 pv e3g5
-5806 <pygone(0): bestmove e3g5
-5806 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5
-5806 >sf12(1): isready
-5806 <sf12(1): readyok
-5806 >sf12(1): go depth 1
-5806 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-5806 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 904 nodes 53 nps 53000 tbhits 0 time 1 pv d6g3
-5806 <sf12(1): bestmove d6g3
-5806 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3
-5807 >pygone(0): isready
-5807 <pygone(0): readyok
-5807 >pygone(0): go depth 1
-6323 <pygone(0): r - b - k - - r 
-6323 <pygone(0): - p p - - p p - 
-6323 <pygone(0): p - p - q - - - 
-6323 <pygone(0): - - - - - - B - 
-6323 <pygone(0): - - - P - - - p 
-6323 <pygone(0): - - N - - - b P 
-6323 <pygone(0): P P P - - - P - 
-6323 <pygone(0): R - - Q - - K - 
-6323 <pygone(0): info depth 1 score cp -705 time 1 nodes 1575 nps 1575 pv a2a3
-6324 <pygone(0): bestmove a2a3
-6324 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3
-6324 >sf12(1): isready
-6324 <sf12(1): readyok
-6324 >sf12(1): go depth 1
-6324 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-6324 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 938 nodes 63 nps 63000 tbhits 0 time 1 pv e8g8
-6324 <sf12(1): bestmove e8g8
-6324 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8
-6324 >pygone(0): isready
-6324 <pygone(0): readyok
-6324 >pygone(0): go depth 1
-6816 <pygone(0): r - b - - r k - 
-6817 <pygone(0): - p p - - p p - 
-6827 <pygone(0): p - p - q - - - 
-6828 <pygone(0): - - - - - - B - 
-6828 <pygone(0): - - - P - - - p 
-6828 <pygone(0): P - N - - - b P 
-6828 <pygone(0): - P P - - - P - 
-6828 <pygone(0): R - - Q - - K - 
-6828 <pygone(0): info depth 1 score cp -712 time 1 nodes 1470 nps 1470 pv a1c1
-6828 <pygone(0): bestmove a1c1
-6828 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1
-6828 >sf12(1): isready
-6828 <sf12(1): readyok
-6829 >sf12(1): go depth 1
-6829 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-6829 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1225 nodes 47 nps 47000 tbhits 0 time 1 pv e6f5
-6829 <sf12(1): bestmove e6f5
-6829 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5
-6829 >pygone(0): isready
-6829 <pygone(0): readyok
-6829 >pygone(0): go depth 1
-7291 <pygone(0): r - b - - r k - 
-7291 <pygone(0): - p p - - p p - 
-7291 <pygone(0): p - p - - - - - 
-7291 <pygone(0): - - - - - q B - 
-7291 <pygone(0): - - - P - - - p 
-7291 <pygone(0): P - N - - - b P 
-7291 <pygone(0): - P P - - - P - 
-7291 <pygone(0): - - R Q - - K - 
-7292 <pygone(0): info depth 1 score cp -722 time 1 nodes 1311 nps 1311 pv g5e3
-7292 <pygone(0): bestmove g5e3
-7292 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3
-7292 >sf12(1): isready
-7292 <sf12(1): readyok
-7292 >sf12(1): go depth 1
-7292 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-7292 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1061 nodes 54 nps 27000 tbhits 0 time 2 pv f5e6
-7292 <sf12(1): bestmove f5e6
-7292 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6
-7292 >pygone(0): isready
-7292 <pygone(0): readyok
-7292 >pygone(0): go depth 1
-7701 <pygone(0): r - b - - r k - 
-7701 <pygone(0): - p p - - p p - 
-7701 <pygone(0): p - p - q - - - 
-7701 <pygone(0): - - - - - - - - 
-7702 <pygone(0): - - - P - - - p 
-7702 <pygone(0): P - N - B - b P 
-7702 <pygone(0): - P P - - - P - 
-7702 <pygone(0): - - R Q - - K - 
-7702 <pygone(0): info depth 1 score cp -712 time 1 nodes 1168 nps 1168 pv e3g5
-7702 <pygone(0): bestmove e3g5
-7702 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5
-7702 >sf12(1): isready
-7702 <sf12(1): readyok
-7702 >sf12(1): go depth 1
-7702 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-7702 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1225 nodes 39 nps 39000 tbhits 0 time 1 pv e6f5
-7702 <sf12(1): bestmove e6f5
-7702 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5
-7702 >pygone(0): isready
-7703 <pygone(0): readyok
-7703 >pygone(0): go depth 1
-8205 <pygone(0): r - b - - r k - 
-8205 <pygone(0): - p p - - p p - 
-8205 <pygone(0): p - p - - - - - 
-8205 <pygone(0): - - - - - q B - 
-8205 <pygone(0): - - - P - - - p 
-8205 <pygone(0): P - N - - - b P 
-8205 <pygone(0): - P P - - - P - 
-8205 <pygone(0): - - R Q - - K - 
-8206 <pygone(0): info depth 1 score cp -722 time 1 nodes 1311 nps 1311 pv g5e3
-8206 <pygone(0): bestmove g5e3
-8206 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3
-8206 >sf12(1): isready
-8206 <sf12(1): readyok
-8206 >sf12(1): go depth 1
-8206 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-8206 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 971 nodes 42 nps 21000 tbhits 0 time 2 pv a6a5
-8206 <sf12(1): bestmove a6a5
-8206 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5
-8206 >pygone(0): isready
-8206 <pygone(0): readyok
-8206 >pygone(0): go depth 1
-8668 <pygone(0): r - b - - r k - 
-8668 <pygone(0): - p p - - p p - 
-8668 <pygone(0): - - p - - - - - 
-8669 <pygone(0): p - - - - q - - 
-8669 <pygone(0): - - - P - - - p 
-8669 <pygone(0): P - N - B - b P 
-8669 <pygone(0): - P P - - - P - 
-8669 <pygone(0): - - R Q - - K - 
-8669 <pygone(0): info depth 1 score cp -721 time 1 nodes 1228 nps 1228 pv d4d5
-8669 <pygone(0): bestmove d4d5
-8669 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5
-8669 >sf12(1): isready
-8669 <sf12(1): readyok
-8669 >sf12(1): go depth 1
-8669 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-8669 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1101 nodes 64 nps 64000 tbhits 0 time 1 pv f5e5 d5c6 e5e3 g1f1
-8670 <sf12(1): bestmove f5e5 ponder d5c6
-8670 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5
-8670 >pygone(0): isready
-8670 <pygone(0): readyok
-8670 >pygone(0): go depth 1
-9216 <pygone(0): r - b - - r k - 
-9216 <pygone(0): - p p - - p p - 
-9216 <pygone(0): - - p - - - - - 
-9217 <pygone(0): p - - P q - - - 
-9217 <pygone(0): - - - - - - - p 
-9217 <pygone(0): P - N - B - b P 
-9217 <pygone(0): - P P - - - P - 
-9217 <pygone(0): - - R Q - - K - 
-9217 <pygone(0): info depth 1 score cp -840 time 1 nodes 1414 nps 1414 pv d5c6
-9217 <pygone(0): bestmove d5c6
-9217 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6
-9217 >sf12(1): isready
-9217 <sf12(1): readyok
-9218 >sf12(1): go depth 1
-9218 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-9218 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 1117 nodes 61 nps 61000 tbhits 0 time 1 pv e5e3 g1h1
-9218 <sf12(1): bestmove e5e3 ponder g1h1
-9218 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3
-9218 >pygone(0): isready
-9218 <pygone(0): readyok
-9218 >pygone(0): go depth 1
-9691 <pygone(0): r - b - - r k - 
-9691 <pygone(0): - p p - - p p - 
-9691 <pygone(0): - - P - - - - - 
-9691 <pygone(0): p - - - - - - - 
-9691 <pygone(0): - - - - - - - p 
-9691 <pygone(0): P - N - q - b P 
-9692 <pygone(0): - P P - - - P - 
-9692 <pygone(0): - - R Q - - K - 
-9692 <pygone(0): info depth 1 score cp -1318 time 1 nodes 1138 nps 1138 pv g1h1
-9692 <pygone(0): bestmove g1h1
-9692 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1
-9692 >sf12(1): isready
-9692 <sf12(1): readyok
-9692 >sf12(1): go depth 1
-9692 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-9692 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1155 nodes 53 nps 53000 tbhits 0 time 1 pv b7c6
-9692 <sf12(1): bestmove b7c6
-9692 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6
-9692 >pygone(0): isready
-9692 <pygone(0): readyok
-9692 >pygone(0): go depth 1
-10216 <pygone(0): r - b - - r k - 
-10216 <pygone(0): - - p - - p p - 
-10216 <pygone(0): - - p - - - - - 
-10216 <pygone(0): p - - - - - - - 
-10216 <pygone(0): - - - - - - - p 
-10216 <pygone(0): P - N - q - b P 
-10216 <pygone(0): - P P - - - P - 
-10216 <pygone(0): - - R Q - - - K 
-10216 <pygone(0): info depth 1 score cp -1228 time 1 nodes 1332 nps 1332 pv c1b1
-10216 <pygone(0): bestmove c1b1
-10216 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1
-10216 >sf12(1): isready
-10217 <sf12(1): readyok
-10217 >sf12(1): go depth 1
-10217 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-10217 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1171 nodes 53 nps 26500 tbhits 0 time 2 pv c6c5
-10217 <sf12(1): bestmove c6c5
-10217 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5
-10217 >pygone(0): isready
-10217 <pygone(0): readyok
-10217 >pygone(0): go depth 1
-10746 <pygone(0): r - b - - r k - 
-10746 <pygone(0): - - p - - p p - 
-10746 <pygone(0): - - - - - - - - 
-10746 <pygone(0): p - p - - - - - 
-10747 <pygone(0): - - - - - - - p 
-10747 <pygone(0): P - N - q - b P 
-10747 <pygone(0): - P P - - - P - 
-10747 <pygone(0): - R - Q - - - K 
-10747 <pygone(0): info depth 1 score cp -1043 time 1 nodes 1276 nps 1276 pv c3d5
-10747 <pygone(0): bestmove c3d5
-10747 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5
-10747 >sf12(1): isready
-10747 <sf12(1): readyok
-10747 >sf12(1): go depth 1
-10747 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-10747 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1125 nodes 92 nps 92000 tbhits 0 time 1 pv e3e4
-10748 <sf12(1): bestmove e3e4
-10748 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4
-10748 >pygone(0): isready
-10748 <pygone(0): readyok
-10748 >pygone(0): go depth 1
-11328 <pygone(0): r - b - - r k - 
-11328 <pygone(0): - - p - - p p - 
-11329 <pygone(0): - - - - - - - - 
-11329 <pygone(0): p - p N - - - - 
-11329 <pygone(0): - - - - q - - p 
-11329 <pygone(0): P - - - - - b P 
-11329 <pygone(0): - P P - - - P - 
-11329 <pygone(0): - R - Q - - - K 
-11330 <pygone(0): info depth 1 score cp -1047 time 1 nodes 1374 nps 1374 pv d5c3
-11330 <pygone(0): bestmove d5c3
-11330 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3
-11330 >sf12(1): isready
-11330 <sf12(1): readyok
-11330 >sf12(1): go depth 1
-11330 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-11330 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1171 nodes 69 nps 69000 tbhits 0 time 1 pv e4e3
-11331 <sf12(1): bestmove e4e3
-11331 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3
-11331 >pygone(0): isready
-11331 <pygone(0): readyok
-11331 >pygone(0): go depth 1
-11862 <pygone(0): r - b - - r k - 
-11862 <pygone(0): - - p - - p p - 
-11862 <pygone(0): - - - - - - - - 
-11862 <pygone(0): p - p - - - - - 
-11862 <pygone(0): - - - - - - - p 
-11862 <pygone(0): P - N - q - b P 
-11862 <pygone(0): - P P - - - P - 
-11862 <pygone(0): - R - Q - - - K 
-11862 <pygone(0): info depth 1 score cp -1043 time 1 nodes 1276 nps 1276 pv c3d5
-11862 <pygone(0): bestmove c3d5
-11863 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5
-11863 >sf12(1): isready
-11863 <sf12(1): readyok
-11863 >sf12(1): go depth 1
-11863 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-11863 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1125 nodes 53 nps 26500 tbhits 0 time 2 pv e3e4
-11863 <sf12(1): bestmove e3e4
-11863 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4
-11863 >pygone(0): isready
-11863 <pygone(0): readyok
-11863 >pygone(0): go depth 1
-12455 <pygone(0): r - b - - r k - 
-12455 <pygone(0): - - p - - p p - 
-12455 <pygone(0): - - - - - - - - 
-12455 <pygone(0): p - p N - - - - 
-12455 <pygone(0): - - - - q - - p 
-12455 <pygone(0): P - - - - - b P 
-12455 <pygone(0): - P P - - - P - 
-12455 <pygone(0): - R - Q - - - K 
-12456 <pygone(0): info depth 1 score cp -1047 time 1 nodes 1374 nps 1374 pv d5c3
-12456 <pygone(0): bestmove d5c3
-12456 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3
-12456 >sf12(1): isready
-12456 <sf12(1): readyok
-12456 >sf12(1): go depth 1
-12456 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-12456 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1124 nodes 69 nps 69000 tbhits 0 time 1 pv e4c4
-12456 <sf12(1): bestmove e4c4
-12456 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4
-12456 >pygone(0): isready
-12456 <pygone(0): readyok
-12456 >pygone(0): go depth 1
-12983 <pygone(0): r - b - - r k - 
-12984 <pygone(0): - - p - - p p - 
-12984 <pygone(0): - - - - - - - - 
-12984 <pygone(0): p - p - - - - - 
-12984 <pygone(0): - - q - - - - p 
-12984 <pygone(0): P - N - - - b P 
-12984 <pygone(0): - P P - - - P - 
-12984 <pygone(0): - R - Q - - - K 
-12984 <pygone(0): info depth 1 score cp -1220 time 1 nodes 1191 nps 1191 pv c3b5
-12984 <pygone(0): bestmove c3b5
-12984 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5
-12984 >sf12(1): isready
-12984 <sf12(1): readyok
-12984 >sf12(1): go depth 1
-12984 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-12985 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1617 nodes 43 nps 43000 tbhits 0 time 1 pv c4b5
-12985 <sf12(1): bestmove c4b5
-12985 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5
-12985 >pygone(0): isready
-12985 <pygone(0): readyok
-12985 >pygone(0): go depth 1
-13443 <pygone(0): r - b - - r k - 
-13444 <pygone(0): - - p - - p p - 
-13444 <pygone(0): - - - - - - - - 
-13444 <pygone(0): p q p - - - - - 
-13444 <pygone(0): - - - - - - - p 
-13444 <pygone(0): P - - - - - b P 
-13444 <pygone(0): - P P - - - P - 
-13444 <pygone(0): - R - Q - - - K 
-13444 <pygone(0): info depth 1 score cp -1324 time 1 nodes 1017 nps 1017 pv b2b4
-13444 <pygone(0): bestmove b2b4
-13444 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4
-13444 >sf12(1): isready
-13445 <sf12(1): readyok
-13445 >sf12(1): go depth 1
-13445 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-13445 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1709 nodes 50 nps 25000 tbhits 0 time 2 pv c5b4 a3b4 a5b4
-13445 <sf12(1): bestmove c5b4 ponder a3b4
-13445 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4
-13445 >pygone(0): isready
-13445 <pygone(0): readyok
-13445 >pygone(0): go depth 1
-13983 <pygone(0): r - b - - r k - 
-13983 <pygone(0): - - p - - p p - 
-13983 <pygone(0): - - - - - - - - 
-13983 <pygone(0): p q - - - - - - 
-13983 <pygone(0): - p - - - - - p 
-13983 <pygone(0): P - - - - - b P 
-13984 <pygone(0): - - P - - - P - 
-13984 <pygone(0): - R - Q - - - K 
-13984 <pygone(0): info depth 1 score cp -1322 time 1 nodes 1229 nps 1229 pv a3b4
-13984 <pygone(0): bestmove a3b4
-13984 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4
-13984 >sf12(1): isready
-13984 <sf12(1): readyok
-13984 >sf12(1): go depth 1
-13984 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-13984 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1709 nodes 48 nps 48000 tbhits 0 time 1 pv a5b4
-13984 <sf12(1): bestmove a5b4
-13984 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4
-13985 >pygone(0): isready
-13985 <pygone(0): readyok
-13985 >pygone(0): go depth 1
-14532 <pygone(0): r - b - - r k - 
-14533 <pygone(0): - - p - - p p - 
-14533 <pygone(0): - - - - - - - - 
-14533 <pygone(0): - q - - - - - - 
-14533 <pygone(0): - p - - - - - p 
-14533 <pygone(0): - - - - - - b P 
-14533 <pygone(0): - - P - - - P - 
-14533 <pygone(0): - R - Q - - - K 
-14533 <pygone(0): info depth 1 score cp -1417 time 1 nodes 1231 nps 1231 pv h1g1
-14533 <pygone(0): bestmove h1g1
-14533 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1
-14533 >sf12(1): isready
-14533 <sf12(1): readyok
-14533 >sf12(1): go depth 1
-14533 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-14534 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1701 nodes 59 nps 59000 tbhits 0 time 1 pv c7c5
-14534 <sf12(1): bestmove c7c5
-14534 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5
-14534 >pygone(0): isready
-14534 <pygone(0): readyok
-14534 >pygone(0): go depth 1
-15061 <pygone(0): r - b - - r k - 
-15061 <pygone(0): - - - - - p p - 
-15061 <pygone(0): - - - - - - - - 
-15061 <pygone(0): - q p - - - - - 
-15061 <pygone(0): - p - - - - - p 
-15061 <pygone(0): - - - - - - b P 
-15061 <pygone(0): - - P - - - P - 
-15061 <pygone(0): - R - Q - - K - 
-15061 <pygone(0): info depth 1 score cp -1416 time 1 nodes 1145 nps 1145 pv d1d5
-15061 <pygone(0): bestmove d1d5
-15061 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5
-15062 >sf12(1): isready
-15062 <sf12(1): readyok
-15062 >sf12(1): go depth 1
-15062 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-15062 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1675 nodes 62 nps 62000 tbhits 0 time 1 pv c8e6
-15062 <sf12(1): bestmove c8e6
-15062 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6
-15062 >pygone(0): isready
-15062 <pygone(0): readyok
-15062 >pygone(0): go depth 1
-15924 <pygone(0): r - - - - r k - 
-15924 <pygone(0): - - - - - p p - 
-15924 <pygone(0): - - - - b - - - 
-15925 <pygone(0): - q p Q - - - - 
-15925 <pygone(0): - p - - - - - p 
-15925 <pygone(0): - - - - - - b P 
-15925 <pygone(0): - - P - - - P - 
-15925 <pygone(0): - R - - - - K - 
-15925 <pygone(0): info depth 1 score cp -1417 time 1 nodes 1783 nps 1783 pv d5e4
-15925 <pygone(0): bestmove d5e4
-15925 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4
-15925 >sf12(1): isready
-15925 <sf12(1): readyok
-15925 >sf12(1): go depth 1
-15925 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-15925 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1725 nodes 56 nps 56000 tbhits 0 time 1 pv c5c4
-15925 <sf12(1): bestmove c5c4
-15925 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4
-15926 >pygone(0): isready
-15926 <pygone(0): readyok
-15926 >pygone(0): go depth 1
-16740 <pygone(0): r - - - - r k - 
-16740 <pygone(0): - - - - - p p - 
-16740 <pygone(0): - - - - b - - - 
-16740 <pygone(0): - q - - - - - - 
-16740 <pygone(0): - p p - Q - - p 
-16740 <pygone(0): - - - - - - b P 
-16741 <pygone(0): - - P - - - P - 
-16741 <pygone(0): - R - - - - K - 
-16741 <pygone(0): info depth 1 score cp -1414 time 1 nodes 1657 nps 1657 pv b1d1
-16741 <pygone(0): bestmove b1d1
-16741 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1
-16741 >sf12(1): isready
-16741 <sf12(1): readyok
-16741 >sf12(1): go depth 1
-16741 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-16741 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1725 nodes 56 nps 56000 tbhits 0 time 1 pv b4b3
-16741 <sf12(1): bestmove b4b3
-16741 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3
-16741 >pygone(0): isready
-16741 <pygone(0): readyok
-16741 >pygone(0): go depth 1
-17754 <pygone(0): r - - - - r k - 
-17754 <pygone(0): - - - - - p p - 
-17754 <pygone(0): - - - - b - - - 
-17754 <pygone(0): - q - - - - - - 
-17754 <pygone(0): - - p - Q - - p 
-17754 <pygone(0): - p - - - - b P 
-17754 <pygone(0): - - P - - - P - 
-17754 <pygone(0): - - - R - - K - 
-17754 <pygone(0): info depth 1 score cp -1323 time 2 nodes 1984 nps 992 pv c2b3
-17754 <pygone(0): bestmove c2b3
-17754 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3
-17755 >sf12(1): isready
-17755 <sf12(1): readyok
-17755 >sf12(1): go depth 1
-17755 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-17755 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 1671 nodes 83 nps 41500 tbhits 0 time 2 pv b5c5 g1h1
-17755 <sf12(1): bestmove b5c5 ponder g1h1
-17755 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5
-17755 >pygone(0): isready
-17755 <pygone(0): readyok
-17755 >pygone(0): go depth 1
-18690 <pygone(0): r - - - - r k - 
-18691 <pygone(0): - - - - - p p - 
-18691 <pygone(0): - - - - b - - - 
-18691 <pygone(0): - - q - - - - - 
-18691 <pygone(0): - - p - Q - - p 
-18691 <pygone(0): - P - - - - b P 
-18691 <pygone(0): - - - - - - P - 
-18691 <pygone(0): - - - R - - K - 
-18691 <pygone(0): info depth 1 score cp -1326 time 1 nodes 1754 nps 1754 pv g1h1
-18691 <pygone(0): bestmove g1h1
-18691 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1
-18691 >sf12(1): isready
-18691 <sf12(1): readyok
-18691 >sf12(1): go depth 1
-18692 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-18692 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1671 nodes 60 nps 60000 tbhits 0 time 1 pv c4b3
-18692 <sf12(1): bestmove c4b3
-18692 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3
-18692 >pygone(0): isready
-18692 <pygone(0): readyok
-18692 >pygone(0): go depth 1
-19919 <pygone(0): r - - - - r k - 
-19920 <pygone(0): - - - - - p p - 
-19920 <pygone(0): - - - - b - - - 
-19920 <pygone(0): - - q - - - - - 
-19920 <pygone(0): - - - - Q - - p 
-19920 <pygone(0): - p - - - - b P 
-19920 <pygone(0): - - - - - - P - 
-19920 <pygone(0): - - - R - - - K 
-19920 <pygone(0): info depth 1 score cp -1418 time 2 nodes 2275 nps 1138 pv e4b7
-19920 <pygone(0): bestmove e4b7
-19920 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7
-19920 >sf12(1): isready
-19921 <sf12(1): readyok
-19921 >sf12(1): go depth 1
-19921 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-19921 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1686 nodes 63 nps 31500 tbhits 0 time 2 pv g7g5
-19921 <sf12(1): bestmove g7g5
-19921 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5
-19921 >pygone(0): isready
-19921 <pygone(0): readyok
-19921 >pygone(0): go depth 1
-20960 <pygone(0): r - - - - r k - 
-20961 <pygone(0): - Q - - - p - - 
-20961 <pygone(0): - - - - b - - - 
-20961 <pygone(0): - - q - - - p - 
-20961 <pygone(0): - - - - - - - p 
-20961 <pygone(0): - p - - - - b P 
-20961 <pygone(0): - - - - - - P - 
-20961 <pygone(0): - - - R - - - K 
-20961 <pygone(0): info depth 1 score cp -1420 time 2 nodes 1854 nps 927 pv d1f1
-20961 <pygone(0): bestmove d1f1
-20961 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1
-20961 >sf12(1): isready
-20961 <sf12(1): readyok
-20961 >sf12(1): go depth 1
-20962 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-20962 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1709 nodes 62 nps 31000 tbhits 0 time 2 pv g5g4
-20962 <sf12(1): bestmove g5g4
-20962 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4
-20962 >pygone(0): isready
-20962 <pygone(0): readyok
-20962 >pygone(0): go depth 1
-22046 <pygone(0): r - - - - r k - 
-22046 <pygone(0): - Q - - - p - - 
-22046 <pygone(0): - - - - b - - - 
-22047 <pygone(0): - - q - - - - - 
-22047 <pygone(0): - - - - - - p p 
-22047 <pygone(0): - p - - - - b P 
-22047 <pygone(0): - - - - - - P - 
-22047 <pygone(0): - - - - - R - K 
-22047 <pygone(0): info depth 1 score cp -1322 time 2 nodes 1858 nps 929 pv h3g4
-22047 <pygone(0): bestmove h3g4
-22047 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4
-22047 >sf12(1): isready
-22047 <sf12(1): readyok
-22047 >sf12(1): go depth 1
-22048 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-22048 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1501 nodes 64 nps 64000 tbhits 0 time 1 pv h4h3
-22048 <sf12(1): bestmove h4h3
-22048 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3
-22048 >pygone(0): isready
-22048 <pygone(0): readyok
-22048 >pygone(0): go depth 1
-23230 <pygone(0): r - - - - r k - 
-23230 <pygone(0): - Q - - - p - - 
-23230 <pygone(0): - - - - b - - - 
-23230 <pygone(0): - - q - - - - - 
-23231 <pygone(0): - - - - - - P - 
-23231 <pygone(0): - p - - - - b p 
-23231 <pygone(0): - - - - - - P - 
-23231 <pygone(0): - - - - - R - K 
-23231 <pygone(0): info depth 1 score cp -1226 time 2 nodes 2005 nps 1003 pv g2h3
-23231 <pygone(0): bestmove g2h3
-23231 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3
-23231 >sf12(1): isready
-23231 <sf12(1): readyok
-23231 >sf12(1): go depth 1
-23231 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-23231 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 1581 nodes 79 nps 79000 tbhits 0 time 1 pv e6d5 b7d5
-23231 <sf12(1): bestmove e6d5 ponder b7d5
-23231 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5
-23231 >pygone(0): isready
-23232 <pygone(0): readyok
-23232 >pygone(0): go depth 1
-24198 <pygone(0): r - - - - r k - 
-24199 <pygone(0): - Q - - - p - - 
-24199 <pygone(0): - - - - - - - - 
-24199 <pygone(0): - - q b - - - - 
-24199 <pygone(0): - - - - - - P - 
-24199 <pygone(0): - p - - - - b P 
-24199 <pygone(0): - - - - - - - - 
-24199 <pygone(0): - - - - - R - K 
-24199 <pygone(0): info depth 1 score cp -1737 time 1 nodes 1448 nps 1448 pv b7d5
-24199 <pygone(0): bestmove b7d5
-24199 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5 b7d5
-24200 >sf12(1): isready
-24200 <sf12(1): readyok
-24200 >sf12(1): go depth 1
-24200 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-24200 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 1581 nodes 58 nps 58000 tbhits 0 time 1 pv c5d5 h1g1
-24200 <sf12(1): bestmove c5d5 ponder h1g1
-24200 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5 b7d5 c5d5
-24200 >pygone(0): isready
-24200 <pygone(0): readyok
-24200 >pygone(0): go depth 1
-24654 <pygone(0): r - - - - r k - 
-24654 <pygone(0): - - - - - p - - 
-24655 <pygone(0): - - - - - - - - 
-24655 <pygone(0): - - - q - - - - 
-24655 <pygone(0): - - - - - - P - 
-24655 <pygone(0): - p - - - - b P 
-24655 <pygone(0): - - - - - - - - 
-24655 <pygone(0): - - - - - R - K 
-24655 <pygone(0): info depth 1 score cp -1743 time 1 nodes 721 nps 721 pv h1g1
-24655 <pygone(0): bestmove h1g1
-24655 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5 b7d5 c5d5 h1g1
-24655 >sf12(1): isready
-24655 <sf12(1): readyok
-24655 >sf12(1): go depth 1
-24655 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-24656 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1571 nodes 81 nps 81000 tbhits 0 time 1 pv b3b2
-24656 <sf12(1): bestmove b3b2
-24656 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5 b7d5 c5d5 h1g1 b3b2
-24656 >pygone(0): isready
-24656 <pygone(0): readyok
-24656 >pygone(0): go depth 1
-25202 <pygone(0): r - - - - r k - 
-25203 <pygone(0): - - - - - p - - 
-25203 <pygone(0): - - - - - - - - 
-25203 <pygone(0): - - - q - - - - 
-25203 <pygone(0): - - - - - - P - 
-25203 <pygone(0): - - - - - - b P 
-25203 <pygone(0): - p - - - - - - 
-25203 <pygone(0): - - - - - R K - 
-25203 <pygone(0): info depth 1 score cp -1748 time 1 nodes 888 nps 888 pv f1b1
-25203 <pygone(0): bestmove f1b1
-25203 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5 b7d5 c5d5 h1g1 b3b2 f1b1
-25203 >sf12(1): isready
-25204 <sf12(1): readyok
-25204 >sf12(1): go depth 1
-25204 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-25204 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 1547 nodes 107 nps 53500 tbhits 0 time 2 pv a8a1
-25204 <sf12(1): bestmove a8a1
-25204 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5 b7d5 c5d5 h1g1 b3b2 f1b1 a8a1
-25204 >pygone(0): isready
-25204 <pygone(0): readyok
-25204 >pygone(0): go depth 1
-25603 <pygone(0): - - - - - r k - 
-25603 <pygone(0): - - - - - p - - 
-25603 <pygone(0): - - - - - - - - 
-25603 <pygone(0): - - - q - - - - 
-25603 <pygone(0): - - - - - - P - 
-25604 <pygone(0): - - - - - - b P 
-25604 <pygone(0): - p - - - - - - 
-25604 <pygone(0): r R - - - - K - 
-25604 <pygone(0): info depth 1 score cp -2222 time 1 nodes 638 nps 638 pv g4g5
-25604 <pygone(0): bestmove g4g5
-25604 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5 b7d5 c5d5 h1g1 b3b2 f1b1 a8a1 g4g5
-25604 >sf12(1): isready
-25604 <sf12(1): readyok
-25604 >sf12(1): go depth 1
-25604 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-25604 <sf12(1): info depth 1 seldepth 2 multipv 1 score mate 1 nodes 61 nps 61000 tbhits 0 time 1 pv a1b1
-25604 <sf12(1): bestmove a1b1
-25604 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 e1g1 h7h5 f2f4 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 h1g1 h5h4 c1e3 e7d6 h2h3 f5e6 e3g5 d6g3 a2a3 e8g8 a1c1 e6f5 g5e3 f5e6 e3g5 e6f5 g5e3 a6a5 d4d5 f5e5 d5c6 e5e3 g1h1 b7c6 c1b1 c6c5 c3d5 e3e4 d5c3 e4e3 c3d5 e3e4 d5c3 e4c4 c3b5 c4b5 b2b4 c5b4 a3b4 a5b4 h1g1 c7c5 d1d5 c8e6 d5e4 c5c4 b1d1 b4b3 c2b3 b5c5 g1h1 c4b3 e4b7 g7g5 d1f1 g5g4 h3g4 h4h3 g2h3 e6d5 b7d5 c5d5 h1g1 b3b2 f1b1 a8a1 g4g5 a1b1
-25605 >pygone(0): isready
-25605 >sf12(1): isready
-25605 <sf12(1): readyok
-25605 <pygone(0): readyok
-Finished game 1 (pygone vs sf12): 0-1 {Black mates}
+223 >pygone(0): ucinewgame
+224 >pygone(0): position startpos
+224 >sf12(1): ucinewgame
+224 >sf12(1): setoption name Ponder value false
+224 >sf12(1): position startpos
+224 >pygone(0): position startpos moves e2e4
+224 >sf12(1): position startpos moves e2e4
+224 >sf12(1): position startpos moves e2e4 e7e5
+224 >pygone(0): position startpos moves e2e4 e7e5
+224 >pygone(0): position startpos moves e2e4 e7e5 g1f3
+224 >sf12(1): position startpos moves e2e4 e7e5 g1f3
+224 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6
+224 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6
+224 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
+224 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
+224 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
+225 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
+225 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
+225 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
+225 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
+225 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
+225 >pygone(0): isready
+225 <pygone(0): readyok
+225 >pygone(0): go wtime 301000 btime 301000 winc 1000 binc 1000 depth 1
+6933 <pygone(0): info depth 4 score cp -41 time 7 nodes 24552 nps 3508 pv a4c6
+6933 <pygone(0): bestmove a4c6
+6933 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6
+6933 >sf12(1): isready
+6934 <sf12(1): readyok
+6934 >sf12(1): go wtime 295291 btime 301000 winc 1000 binc 1000 depth 1
+6934 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+6934 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 12 nodes 28 nps 28000 tbhits 0 time 1 pv d7c6
+6934 <sf12(1): bestmove d7c6
+6934 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6
+6934 >pygone(0): isready
+6934 <pygone(0): readyok
+6934 >pygone(0): go wtime 295291 btime 302000 winc 1000 binc 1000 depth 1
+14265 <pygone(0): info depth 4 score cp -42 time 8 nodes 17677 nps 2210 pv f3e5
+14266 <pygone(0): bestmove f3e5
+14266 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5
+14266 >sf12(1): isready
+14266 <sf12(1): readyok
+14266 >sf12(1): go wtime 288960 btime 302000 winc 1000 binc 1000 depth 1
+14266 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+14267 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 23 nodes 36 nps 36000 tbhits 0 time 1 pv f6e4
+14267 <sf12(1): bestmove f6e4
+14267 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4
+14267 >pygone(0): isready
+14267 <pygone(0): readyok
+14267 >pygone(0): go wtime 288960 btime 303000 winc 1000 binc 1000 depth 1
+22980 <pygone(0): info depth 4 score cp -142 time 9 nodes 15954 nps 1773 pv f2f4
+22980 <pygone(0): bestmove f2f4
+22980 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4
+22980 >sf12(1): isready
+22981 <sf12(1): readyok
+22981 >sf12(1): go wtime 281247 btime 303000 winc 1000 binc 1000 depth 1
+22981 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+22981 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 425 nodes 58 nps 29000 tbhits 0 time 2 pv h7h5
+22981 <sf12(1): bestmove h7h5
+22981 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5
+22981 >pygone(0): isready
+22981 <pygone(0): readyok
+22981 >pygone(0): go wtime 281247 btime 304000 winc 1000 binc 1000 depth 1
+32757 <pygone(0): info depth 4 score cp -137 time 10 nodes 12739 nps 1274 pv e1g1
+32758 <pygone(0): bestmove e1g1
+32758 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1
+32758 >sf12(1): isready
+32758 <sf12(1): readyok
+32758 >sf12(1): go wtime 272471 btime 304000 winc 1000 binc 1000 depth 1
+32758 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+32758 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 440 nodes 69 nps 69000 tbhits 0 time 1 pv d8d4 g1h1 e4f2 f1f2 d4f2
+32758 <sf12(1): bestmove d8d4 ponder g1h1
+32758 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4
+32758 >pygone(0): isready
+32759 <pygone(0): readyok
+32759 >pygone(0): go wtime 272471 btime 305000 winc 1000 binc 1000 depth 1
+44297 <pygone(0): info depth 4 score cp -323 time 12 nodes 10150 nps 846 pv g1h1
+44297 <pygone(0): bestmove g1h1
+44297 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1
+44297 >sf12(1): isready
+44297 <sf12(1): readyok
+44297 >sf12(1): go wtime 261933 btime 305000 winc 1000 binc 1000 depth 1
+44297 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+44298 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 440 nodes 63 nps 63000 tbhits 0 time 1 pv e4f2 f1f2
+44298 <sf12(1): bestmove e4f2 ponder f1f2
+44298 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2
+44298 >pygone(0): isready
+44298 <pygone(0): readyok
+44298 >pygone(0): go wtime 261933 btime 306000 winc 1000 binc 1000 depth 1
+58207 <pygone(0): info depth 4 score cp -240 time 14 nodes 8681 nps 621 pv f1f2
+58207 <pygone(0): bestmove f1f2
+58207 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2
+58208 >sf12(1): isready
+58208 <sf12(1): readyok
+58208 >sf12(1): go wtime 249024 btime 306000 winc 1000 binc 1000 depth 1
+58208 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+58208 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 440 nodes 45 nps 45000 tbhits 0 time 1 pv d4f2
+58208 <sf12(1): bestmove d4f2
+58208 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2
+58208 >pygone(0): isready
+58208 <pygone(0): readyok
+58208 >pygone(0): go wtime 249024 btime 307000 winc 1000 binc 1000 depth 1
+72536 <pygone(0): info depth 4 score cp -334 time 15 nodes 7227 nps 482 pv b1c3
+72536 <pygone(0): bestmove b1c3
+72536 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3
+72536 >sf12(1): isready
+72536 <sf12(1): readyok
+72536 >sf12(1): go wtime 235696 btime 307000 winc 1000 binc 1000 depth 1
+72536 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+72537 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 494 nodes 45 nps 45000 tbhits 0 time 1 pv f2f4
+72537 <sf12(1): bestmove f2f4
+72537 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4
+72537 >pygone(0): isready
+72537 <pygone(0): readyok
+72537 >pygone(0): go wtime 235696 btime 308000 winc 1000 binc 1000 depth 1
+89540 <pygone(0): info depth 4 score cp -430 time 18 nodes 7209 nps 401 pv e5d3
+89541 <pygone(0): bestmove e5d3
+89541 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3
+89541 >sf12(1): isready
+89541 <sf12(1): readyok
+89541 >sf12(1): go wtime 219693 btime 308000 winc 1000 binc 1000 depth 1
+89541 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+89541 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 334 nodes 242 nps 242000 tbhits 0 time 1 pv f4h4 d1e2 f8e7
+89541 <sf12(1): bestmove f4h4 ponder d1e2
+89541 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4
+89541 >pygone(0): isready
+89541 <pygone(0): readyok
+89542 >pygone(0): go wtime 219693 btime 309000 winc 1000 binc 1000 depth 1
+106121 <pygone(0): info depth 4 score cp -428 time 17 nodes 6084 nps 358 pv h1g1
+106121 <pygone(0): bestmove h1g1
+106121 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1
+106121 >sf12(1): isready
+106121 <sf12(1): readyok
+106122 >sf12(1): go wtime 204114 btime 309000 winc 1000 binc 1000 depth 1
+106122 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+106122 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 570 nodes 176 nps 88000 tbhits 0 time 2 pv f8e7
+106123 <sf12(1): bestmove f8e7
+106123 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7
+106123 >pygone(0): isready
+106123 <pygone(0): readyok
+106123 >pygone(0): go wtime 204114 btime 309999 winc 1000 binc 1000 depth 1
+125493 <pygone(0): info depth 4 score cp -429 time 20 nodes 6100 nps 305 pv d3e5
+125493 <pygone(0): bestmove d3e5
+125493 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5
+125493 >sf12(1): isready
+125493 <sf12(1): readyok
+125493 >sf12(1): go wtime 185744 btime 309999 winc 1000 binc 1000 depth 1
+125493 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+125494 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 909 nodes 56 nps 56000 tbhits 0 time 1 pv h4d4 g1h1
+125494 <sf12(1): bestmove h4d4 ponder g1h1
+125494 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4
+125494 >pygone(0): isready
+125494 <pygone(0): readyok
+125494 >pygone(0): go wtime 185744 btime 310999 winc 1000 binc 1000 depth 1
+151406 <pygone(0): info depth 4 score cp -620 time 26 nodes 7028 nps 271 pv g1h1
+151406 <pygone(0): bestmove g1h1
+151406 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1
+151406 >sf12(1): isready
+151406 <sf12(1): readyok
+151407 >sf12(1): go wtime 160833 btime 310999 winc 1000 binc 1000 depth 1
+151407 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+151407 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 909 nodes 54 nps 54000 tbhits 0 time 1 pv d4e5
+151407 <sf12(1): bestmove d4e5
+151407 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5
+151407 >pygone(0): isready
+151407 <pygone(0): readyok
+151407 >pygone(0): go wtime 160833 btime 311999 winc 1000 binc 1000 depth 1
+173969 <pygone(0): info depth 4 score cp -714 time 23 nodes 5546 nps 242 pv d2d4
+173969 <pygone(0): bestmove d2d4
+173969 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4
+173969 >sf12(1): isready
+173970 <sf12(1): readyok
+173970 >sf12(1): go wtime 139271 btime 311999 winc 1000 binc 1000 depth 1
+173970 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+173970 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 839 nodes 63 nps 63000 tbhits 0 time 1 pv e5f5
+173970 <sf12(1): bestmove e5f5
+173970 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5
+173970 >pygone(0): isready
+173970 <pygone(0): readyok
+173970 >pygone(0): go wtime 139271 btime 312999 winc 1000 binc 1000 depth 1
+201715 <pygone(0): info depth 4 score cp -716 time 28 nodes 6242 nps 223 pv c1e3
+201715 <pygone(0): bestmove c1e3
+201716 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 c1e3
+201716 >sf12(1): isready
+201716 <sf12(1): readyok
+201716 >sf12(1): go wtime 112526 btime 312999 winc 1000 binc 1000 depth 1
+201716 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+201716 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 801 nodes 50 nps 25000 tbhits 0 time 2 pv h5h4
+201716 <sf12(1): bestmove h5h4
+201716 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 c1e3 h5h4
+201716 >pygone(0): isready
+201716 <pygone(0): readyok
+201716 >pygone(0): go wtime 112526 btime 313999 winc 1000 binc 1000 depth 1
+233082 <pygone(0): info depth 4 score cp -715 time 32 nodes 6487 nps 203 pv h1g1
+233082 <pygone(0): bestmove h1g1
+233082 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 c1e3 h5h4 h1g1
+233082 >sf12(1): isready
+233082 <sf12(1): readyok
+233082 >sf12(1): go wtime 82162 btime 313999 winc 1000 binc 1000 depth 1
+233082 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+233082 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 883 nodes 59 nps 59000 tbhits 0 time 1 pv e7d6
+233083 <sf12(1): bestmove e7d6
+233083 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 c1e3 h5h4 h1g1 e7d6
+233083 >pygone(0): isready
+233083 <pygone(0): readyok
+233083 >pygone(0): go wtime 82162 btime 314999 winc 1000 binc 1000 depth 1
+268805 <pygone(0): info depth 4 score cp -714 time 36 nodes 6790 nps 189 pv h2h3
+268805 <pygone(0): bestmove h2h3
+268805 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 c1e3 h5h4 h1g1 e7d6 h2h3
+268805 >sf12(1): isready
+268805 <sf12(1): readyok
+268805 >sf12(1): go wtime 47440 btime 314999 winc 1000 binc 1000 depth 1
+268806 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+268806 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1014 nodes 60 nps 60000 tbhits 0 time 1 pv f5e6
+268806 <sf12(1): bestmove f5e6
+268806 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 c1e3 h5h4 h1g1 e7d6 h2h3 f5e6
+268806 >pygone(0): isready
+268806 <pygone(0): readyok
+268806 >pygone(0): go wtime 47440 btime 315999 winc 1000 binc 1000 depth 1
+307195 <pygone(0): info depth 4 score cp -706 time 39 nodes 6706 nps 172 pv e3g5
+307195 <pygone(0): bestmove e3g5
+307195 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 c1e3 h5h4 h1g1 e7d6 h2h3 f5e6 e3g5
+307195 >sf12(1): isready
+307195 <sf12(1): readyok
+307195 >sf12(1): go wtime 10051 btime 315999 winc 1000 binc 1000 depth 1
+307196 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
+307196 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 904 nodes 53 nps 53000 tbhits 0 time 1 pv d6g3
+307196 <sf12(1): bestmove d6g3
+307196 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 a4c6 d7c6 f3e5 f6e4 f2f4 h7h5 e1g1 d8d4 g1h1 e4f2 f1f2 d4f2 b1c3 f2f4 e5d3 f4h4 h1g1 f8e7 d3e5 h4d4 g1h1 d4e5 d2d4 e5f5 c1e3 h5h4 h1g1 e7d6 h2h3 f5e6 e3g5 d6g3
+307196 >pygone(0): isready
+307196 <pygone(0): readyok
+307196 >pygone(0): go wtime 10051 btime 316999 winc 1000 binc 1000 depth 1
+317244 >pygone(0): stop
+Terminating process of engine pygone(0)
+332257 >sf12(1): isready
+332257 <sf12(1): readyok
+...      pygone playing White: 0 - 1 - 0  [0.000] 1
+...      White vs Black: 0 - 1 - 0  [0.000] 1
+Elo difference: -inf +/- nan, LOS: 15.9 %, DrawRatio: 0.0 %
+Finished match
+Finished game 1 (pygone vs sf12): 0-1 {White's connection stalls}
 Score of pygone vs sf12: 0 - 1 - 0  [0.000] 1
-Started game 2 of 200 (sf12 vs pygone)
-25606 >sf12(1): ucinewgame
-25606 >sf12(1): setoption name Ponder value false
-25606 >sf12(1): position startpos
-25606 >pygone(0): ucinewgame
-25606 >pygone(0): position startpos
-25606 >sf12(1): position startpos moves e2e4
-25606 >pygone(0): position startpos moves e2e4
-25606 >pygone(0): position startpos moves e2e4 e7e5
-25606 >sf12(1): position startpos moves e2e4 e7e5
-25607 >sf12(1): position startpos moves e2e4 e7e5 g1f3
-25607 >pygone(0): position startpos moves e2e4 e7e5 g1f3
-25607 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6
-25607 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6
-25607 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-25607 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-25607 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
-25607 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
-25607 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
-25607 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
-25607 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
-25607 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
-25608 >sf12(1): isready
-25610 <sf12(1): readyok
-25610 >sf12(1): go depth 1
-25610 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-25610 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 10 nodes 45 nps 22500 tbhits 0 time 2 pv b1c3
-25611 <sf12(1): bestmove b1c3
-25611 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3
-25611 >pygone(0): isready
-25611 <pygone(0): readyok
-25611 >pygone(0): go depth 1
-26195 <pygone(0): r - b q k b - r 
-26195 <pygone(0): - p p p - p p p 
-26195 <pygone(0): p - n - - n - - 
-26195 <pygone(0): - - - - p - - - 
-26195 <pygone(0): B - - - P - - - 
-26195 <pygone(0): - - N - - N - - 
-26195 <pygone(0): P P P P - P P P 
-26195 <pygone(0): R - B Q K - - R 
-26195 <pygone(0): info depth 1 score cp 107 time 1 nodes 845 nps 845 pv c6b4
-26196 <pygone(0): bestmove c6b4
-26196 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4
-26196 >sf12(1): isready
-26196 <sf12(1): readyok
-26196 >sf12(1): go depth 1
-26196 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-26196 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 98 nodes 33 nps 16500 tbhits 0 time 2 pv d2d4 e5d4
-26196 <sf12(1): bestmove d2d4 ponder e5d4
-26196 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4
-26196 >pygone(0): isready
-26196 <pygone(0): readyok
-26196 >pygone(0): go depth 1
-26989 <pygone(0): r - b q k b - r 
-26989 <pygone(0): - p p p - p p p 
-26989 <pygone(0): p - - - - n - - 
-26990 <pygone(0): - - - - p - - - 
-26990 <pygone(0): B n - P P - - - 
-26990 <pygone(0): - - N - - N - - 
-26990 <pygone(0): P P P - - P P P 
-26990 <pygone(0): R - B Q K - - R 
-26990 <pygone(0): info depth 1 score cp 10 time 1 nodes 1028 nps 1028 pv e5d4
-26990 <pygone(0): bestmove e5d4
-26990 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4
-26990 >sf12(1): isready
-26990 <sf12(1): readyok
-26990 >sf12(1): go depth 1
-26990 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-26990 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 286 nodes 51 nps 25500 tbhits 0 time 2 pv d1d4
-26990 <sf12(1): bestmove d1d4
-26990 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4
-26990 >pygone(0): isready
-26990 <pygone(0): readyok
-26990 >pygone(0): go depth 1
-27986 <pygone(0): r - b q k b - r 
-27986 <pygone(0): - p p p - p p p 
-27986 <pygone(0): p - - - - n - - 
-27986 <pygone(0): - - - - - - - - 
-27987 <pygone(0): B n - Q P - - - 
-27987 <pygone(0): - - N - - N - - 
-27987 <pygone(0): P P P - - P P P 
-27987 <pygone(0): R - B - K - - R 
-27987 <pygone(0): info depth 1 score cp 192 time 1 nodes 1307 nps 1307 pv f6e4
-27987 <pygone(0): bestmove f6e4
-27987 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4
-27987 >sf12(1): isready
-27987 <sf12(1): readyok
-27987 >sf12(1): go depth 1
-27987 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-27987 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 832 nodes 63 nps 63000 tbhits 0 time 1 pv c3e4
-27987 <sf12(1): bestmove c3e4
-27987 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4
-27987 >pygone(0): isready
-27988 <pygone(0): readyok
-27988 >pygone(0): go depth 1
-29191 <pygone(0): r - b q k b - r 
-29192 <pygone(0): - p p p - p p p 
-29192 <pygone(0): p - - - - - - - 
-29192 <pygone(0): - - - - - - - - 
-29192 <pygone(0): B n - Q N - - - 
-29192 <pygone(0): - - - - - N - - 
-29192 <pygone(0): P P P - - P P P 
-29192 <pygone(0): R - B - K - - R 
-29192 <pygone(0): info depth 1 score cp 374 time 2 nodes 1432 nps 716 pv b4c2
-29192 <pygone(0): bestmove b4c2
-29192 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2
-29192 >sf12(1): isready
-29192 <sf12(1): readyok
-29192 >sf12(1): go depth 1
-29193 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-29193 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1032 nodes 7 nps 7000 tbhits 0 time 1 pv a4c2
-29193 <sf12(1): bestmove a4c2
-29193 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2
-29193 >pygone(0): isready
-29193 <pygone(0): readyok
-29193 >pygone(0): go depth 1
-30427 <pygone(0): r - b q k b - r 
-30427 <pygone(0): - p p p - p p p 
-30427 <pygone(0): p - - - - - - - 
-30427 <pygone(0): - - - - - - - - 
-30427 <pygone(0): - - - Q N - - - 
-30428 <pygone(0): - - - - - N - - 
-30428 <pygone(0): P P B - - P P P 
-30428 <pygone(0): R - B - K - - R 
-30428 <pygone(0): info depth 1 score cp 477 time 2 nodes 1416 nps 708 pv d7d5
-30428 <pygone(0): bestmove d7d5
-30428 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5
-30428 >sf12(1): isready
-30428 <sf12(1): readyok
-30428 >sf12(1): go depth 1
-30428 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-30428 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1402 nodes 141 nps 141000 tbhits 0 time 1 pv c1g5
-30429 <sf12(1): bestmove c1g5
-30429 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5
-30429 >pygone(0): isready
-30429 <pygone(0): readyok
-30429 >pygone(0): go depth 1
-32053 <pygone(0): r - b q k b - r 
-32053 <pygone(0): - p p - - p p p 
-32054 <pygone(0): p - - - - - - - 
-32054 <pygone(0): - - - p - - B - 
-32054 <pygone(0): - - - Q N - - - 
-32054 <pygone(0): - - - - - N - - 
-32054 <pygone(0): P P B - - P P P 
-32054 <pygone(0): R - - - K - - R 
-32054 <pygone(0): info depth 1 score cp 479 time 2 nodes 1690 nps 845 pv d8d7
-32054 <pygone(0): bestmove d8d7
-32054 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7
-32054 >sf12(1): isready
-32054 <sf12(1): readyok
-32054 >sf12(1): go depth 1
-32054 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-32054 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1822 nodes 211 nps 211000 tbhits 0 time 1 pv c2a4
-32055 <sf12(1): bestmove c2a4
-32055 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4
-32055 >pygone(0): isready
-32055 <pygone(0): readyok
-32055 >pygone(0): go depth 1
-33469 <pygone(0): r - b - k b - r 
-33469 <pygone(0): - p p q - p p p 
-33469 <pygone(0): p - - - - - - - 
-33470 <pygone(0): - - - p - - B - 
-33470 <pygone(0): B - - Q N - - - 
-33470 <pygone(0): - - - - - N - - 
-33470 <pygone(0): P P - - - P P P 
-33470 <pygone(0): R - - - K - - R 
-33470 <pygone(0): info depth 1 score cp 478 time 2 nodes 1336 nps 668 pv c7c6
-33470 <pygone(0): bestmove c7c6
-33470 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6
-33470 >sf12(1): isready
-33471 <sf12(1): readyok
-33471 >sf12(1): go depth 1
-33471 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-33471 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1265 nodes 119 nps 119000 tbhits 0 time 1 pv e4c5
-33471 <sf12(1): bestmove e4c5
-33471 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5
-33471 >pygone(0): isready
-33471 <pygone(0): readyok
-33471 >pygone(0): go depth 1
-34864 <pygone(0): r - b - k b - r 
-34864 <pygone(0): - p - q - p p p 
-34864 <pygone(0): p - p - - - - - 
-34864 <pygone(0): - - N p - - B - 
-34864 <pygone(0): B - - Q - - - - 
-34865 <pygone(0): - - - - - N - - 
-34865 <pygone(0): P P - - - P P P 
-34865 <pygone(0): R - - - K - - R 
-34865 <pygone(0): info depth 1 score cp 410 time 2 nodes 1263 nps 632 pv f8c5
-34865 <pygone(0): bestmove f8c5
-34865 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5
-34865 >sf12(1): isready
-34865 <sf12(1): readyok
-34865 >sf12(1): go depth 1
-34865 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-34865 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1025 nodes 97 nps 97000 tbhits 0 time 1 pv d4c5
-34865 <sf12(1): bestmove d4c5
-34865 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5
-34866 >pygone(0): isready
-34866 <pygone(0): readyok
-34866 >pygone(0): go depth 1
-36071 <pygone(0): r - b - k - - r 
-36071 <pygone(0): - p - q - p p p 
-36071 <pygone(0): p - p - - - - - 
-36071 <pygone(0): - - Q p - - B - 
-36071 <pygone(0): B - - - - - - - 
-36071 <pygone(0): - - - - - N - - 
-36071 <pygone(0): P P - - - P P P 
-36071 <pygone(0): R - - - K - - R 
-36071 <pygone(0): info depth 1 score cp 509 time 2 nodes 1161 nps 581 pv f7f5
-36071 <pygone(0): bestmove f7f5
-36071 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5 f7f5
-36071 >sf12(1): isready
-36071 <sf12(1): readyok
-36071 >sf12(1): go depth 1
-36072 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-36072 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 1593 nodes 148 nps 148000 tbhits 0 time 1 pv e1c1
-36072 <sf12(1): bestmove e1c1
-36072 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5 f7f5 e1c1
-36072 >pygone(0): isready
-36072 <pygone(0): readyok
-36072 >pygone(0): go depth 1
-37360 <pygone(0): r - b - k - - r 
-37361 <pygone(0): - p - q - - p p 
-37361 <pygone(0): p - p - - - - - 
-37361 <pygone(0): - - Q p - p B - 
-37361 <pygone(0): B - - - - - - - 
-37361 <pygone(0): - - - - - N - - 
-37361 <pygone(0): P P - - - P P P 
-37361 <pygone(0): - - K R - - - R 
-37361 <pygone(0): info depth 1 score cp 511 time 2 nodes 1089 nps 545 pv d7f7
-37361 <pygone(0): bestmove d7f7
-37361 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5 f7f5 e1c1 d7f7
-37362 >sf12(1): isready
-37362 <sf12(1): readyok
-37362 >sf12(1): go depth 1
-37362 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-37362 <sf12(1): info depth 1 seldepth 2 multipv 1 score cp 1763 nodes 116 nps 116000 tbhits 0 time 1 pv g2g4
-37362 <sf12(1): bestmove g2g4
-37362 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5 f7f5 e1c1 d7f7 g2g4
-37362 >pygone(0): isready
-37362 <pygone(0): readyok
-37362 >pygone(0): go depth 1
-39111 <pygone(0): r - b - k - - r 
-39111 <pygone(0): - p - - - q p p 
-39111 <pygone(0): p - p - - - - - 
-39111 <pygone(0): - - Q p - p B - 
-39111 <pygone(0): B - - - - - P - 
-39111 <pygone(0): - - - - - N - - 
-39112 <pygone(0): P P - - - P - P 
-39112 <pygone(0): - - K R - - - R 
-39112 <pygone(0): info depth 1 score cp 410 time 2 nodes 1394 nps 697 pv f5g4
-39112 <pygone(0): bestmove f5g4
-39112 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5 f7f5 e1c1 d7f7 g2g4 f5g4
-39112 >sf12(1): isready
-39112 <sf12(1): readyok
-39112 >sf12(1): go depth 1
-39112 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-39112 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 2067 nodes 89 nps 89000 tbhits 0 time 1 pv d1d5 g4f3
-39112 <sf12(1): bestmove d1d5 ponder g4f3
-39112 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5 f7f5 e1c1 d7f7 g2g4 f5g4 d1d5
-39112 >pygone(0): isready
-39113 <pygone(0): readyok
-39113 >pygone(0): go depth 1
-41422 <pygone(0): r - b - k - - r 
-41422 <pygone(0): - p - - - q p p 
-41422 <pygone(0): p - p - - - - - 
-41422 <pygone(0): - - Q R - - B - 
-41423 <pygone(0): B - - - - - p - 
-41423 <pygone(0): - - - - - N - - 
-41423 <pygone(0): P P - - - P - P 
-41423 <pygone(0): - - K - - - - R 
-41423 <pygone(0): info depth 1 score cp 226 time 3 nodes 1669 nps 557 pv f7f3
-41423 <pygone(0): bestmove f7f3
-41423 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5 f7f5 e1c1 d7f7 g2g4 f5g4 d1d5 f7f3
-41423 >sf12(1): isready
-41423 <sf12(1): readyok
-41423 >sf12(1): go depth 1
-41423 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-41423 <sf12(1): info depth 1 seldepth 2 multipv 1 score mate 1 nodes 176 nps 176000 tbhits 0 time 1 pv c5e7
-41423 <sf12(1): bestmove c5e7
-41423 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6 b1c3 c6b4 d2d4 e5d4 d1d4 f6e4 c3e4 b4c2 a4c2 d7d5 c1g5 d8d7 c2a4 c7c6 e4c5 f8c5 d4c5 f7f5 e1c1 d7f7 g2g4 f5g4 d1d5 f7f3 c5e7
-41423 >sf12(1): isready
-41424 >pygone(0): isready
-41424 <sf12(1): readyok
-41424 <pygone(0): readyok
-Finished game 2 (sf12 vs pygone): 1-0 {White mates}
-Score of pygone vs sf12: 0 - 2 - 0  [0.000] 2
-Started game 3 of 200 (pygone vs sf12)
-41424 >pygone(0): ucinewgame
-41424 >pygone(0): position startpos
-41425 >sf12(1): ucinewgame
-41425 >sf12(1): setoption name Ponder value false
-41425 >sf12(1): position startpos
-41425 >pygone(0): position startpos moves e2e4
-41425 >sf12(1): position startpos moves e2e4
-41425 >sf12(1): position startpos moves e2e4 e7e5
-41425 >pygone(0): position startpos moves e2e4 e7e5
-41425 >pygone(0): position startpos moves e2e4 e7e5 g1f3
-41425 >sf12(1): position startpos moves e2e4 e7e5 g1f3
-41425 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6
-41425 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6
-41425 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-41426 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-41426 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
-41426 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
-41426 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
-41426 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
-41426 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5
-41426 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5
-41426 >pygone(0): isready
-41426 <pygone(0): readyok
-41426 >pygone(0): go depth 1
-42727 <pygone(0): r - b q k b n r 
-42727 <pygone(0): - - p p - p p p 
-42728 <pygone(0): p - n - - - - - 
-42728 <pygone(0): - p - - p - - - 
-42728 <pygone(0): B - - - P - - - 
-42728 <pygone(0): - - - - - N - - 
-42728 <pygone(0): P P P P - P P P 
-42728 <pygone(0): R N B Q K - - R 
-42728 <pygone(0): info depth 1 score cp 3 time 2 nodes 882 nps 441 pv a4b3
-42728 <pygone(0): bestmove a4b3
-42728 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3
-42728 >sf12(1): isready
-42728 <sf12(1): readyok
-42728 >sf12(1): go depth 1
-42729 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-42729 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp -32 nodes 33 nps 33000 tbhits 0 time 1 pv g8f6
-42729 <sf12(1): bestmove g8f6
-42729 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6
-42729 >pygone(0): isready
-42729 <pygone(0): readyok
-42729 >pygone(0): go depth 1
-44223 <pygone(0): r - b q k b - r 
-44223 <pygone(0): - - p p - p p p 
-44223 <pygone(0): p - n - - n - - 
-44223 <pygone(0): - p - - p - - - 
-44224 <pygone(0): - - - - P - - - 
-44224 <pygone(0): - B - - - N - - 
-44224 <pygone(0): P P P P - P P P 
-44224 <pygone(0): R N B Q K - - R 
-44224 <pygone(0): info depth 1 score cp -93 time 2 nodes 876 nps 438 pv e1g1
-44224 <pygone(0): bestmove e1g1
-44224 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1
-44224 >sf12(1): isready
-44224 <sf12(1): readyok
-44224 >sf12(1): go depth 1
-44224 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-44225 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp -24 nodes 32 nps 32000 tbhits 0 time 1 pv f6e4
-44225 <sf12(1): bestmove f6e4
-44225 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4
-44225 >pygone(0): isready
-44225 <pygone(0): readyok
-44225 >pygone(0): go depth 1
-46198 <pygone(0): r - b q k b - r 
-46198 <pygone(0): - - p p - p p p 
-46199 <pygone(0): p - n - - - - - 
-46199 <pygone(0): - p - - p - - - 
-46199 <pygone(0): - - - - n - - - 
-46199 <pygone(0): - B - - - N - - 
-46199 <pygone(0): P P P P - P P P 
-46199 <pygone(0): R N B Q - R K - 
-46199 <pygone(0): info depth 1 score cp -194 time 2 nodes 1019 nps 510 pv d2d4
-46199 <pygone(0): bestmove d2d4
-46199 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4
-46199 >sf12(1): isready
-46200 <sf12(1): readyok
-46200 >sf12(1): go depth 1
-46200 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-46200 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 8 nodes 52 nps 52000 tbhits 0 time 1 pv e5d4 f3d4 c6d4 d1d4
-46200 <sf12(1): bestmove e5d4 ponder f3d4
-46200 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4
-46200 >pygone(0): isready
-46200 <pygone(0): readyok
-46200 >pygone(0): go depth 1
-48788 <pygone(0): r - b q k b - r 
-48788 <pygone(0): - - p p - p p p 
-48788 <pygone(0): p - n - - - - - 
-48788 <pygone(0): - p - - - - - - 
-48788 <pygone(0): - - - p n - - - 
-48788 <pygone(0): - B - - - N - - 
-48789 <pygone(0): P P P - - P P P 
-48789 <pygone(0): R N B Q - R K - 
-48789 <pygone(0): info depth 1 score cp -292 time 3 nodes 1361 nps 454 pv c1f4
-48789 <pygone(0): bestmove c1f4
-48789 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4
-48789 >sf12(1): isready
-48789 <sf12(1): readyok
-48789 >sf12(1): go depth 1
-48789 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-48789 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 114 nodes 84 nps 42000 tbhits 0 time 2 pv d7d5
-48789 <sf12(1): bestmove d7d5
-48790 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5
-48790 >pygone(0): isready
-48790 <pygone(0): readyok
-48790 >pygone(0): go depth 1
-52398 <pygone(0): r - b q k b - r 
-52399 <pygone(0): - - p - - p p p 
-52399 <pygone(0): p - n - - - - - 
-52399 <pygone(0): - p - p - - - - 
-52399 <pygone(0): - - - p n B - - 
-52399 <pygone(0): - B - - - N - - 
-52399 <pygone(0): P P P - - P P P 
-52399 <pygone(0): R N - Q - R K - 
-52399 <pygone(0): info depth 1 score cp -294 time 4 nodes 1704 nps 426 pv c2c4
-52400 <pygone(0): bestmove c2c4
-52400 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4
-52400 >sf12(1): isready
-52400 <sf12(1): readyok
-52400 >sf12(1): go depth 1
-52400 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-52400 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 517 nodes 49 nps 24500 tbhits 0 time 2 pv d5c4
-52400 <sf12(1): bestmove d5c4
-52400 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4
-52400 >pygone(0): isready
-52401 <pygone(0): readyok
-52401 >pygone(0): go depth 1
-56665 <pygone(0): r - b q k b - r 
-56665 <pygone(0): - - p - - p p p 
-56665 <pygone(0): p - n - - - - - 
-56665 <pygone(0): - p - - - - - - 
-56665 <pygone(0): - - p p n B - - 
-56666 <pygone(0): - B - - - N - - 
-56666 <pygone(0): P P - - - P P P 
-56666 <pygone(0): R N - Q - R K - 
-56666 <pygone(0): info depth 1 score cp -396 time 5 nodes 1758 nps 352 pv b3c2
-56666 <pygone(0): bestmove b3c2
-56666 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2
-56666 >sf12(1): isready
-56666 <sf12(1): readyok
-56666 >sf12(1): go depth 1
-56666 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-56666 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 609 nodes 49 nps 49000 tbhits 0 time 1 pv d4d3
-56666 <sf12(1): bestmove d4d3
-56666 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3
-56666 >pygone(0): isready
-56666 <pygone(0): readyok
-56666 >pygone(0): go depth 1
-61379 <pygone(0): r - b q k b - r 
-61380 <pygone(0): - - p - - p p p 
-61380 <pygone(0): p - n - - - - - 
-61380 <pygone(0): - p - - - - - - 
-61380 <pygone(0): - - p - n B - - 
-61380 <pygone(0): - - - p - N - - 
-61380 <pygone(0): P P B - - P P P 
-61380 <pygone(0): R N - Q - R K - 
-61380 <pygone(0): info depth 1 score cp -519 time 5 nodes 1823 nps 365 pv f4c7
-61380 <pygone(0): bestmove f4c7
-61381 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7
-61381 >sf12(1): isready
-61381 <sf12(1): readyok
-61381 >sf12(1): go depth 1
-61381 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-61381 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 948 nodes 64 nps 32000 tbhits 0 time 2 pv d8c7
-61381 <sf12(1): bestmove d8c7
-61381 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7
-61381 >pygone(0): isready
-61381 <pygone(0): readyok
-61381 >pygone(0): go depth 1
-66557 <pygone(0): r - b - k b - r 
-66557 <pygone(0): - - q - - p p p 
-66558 <pygone(0): p - n - - - - - 
-66558 <pygone(0): - p - - - - - - 
-66558 <pygone(0): - - p - n - - - 
-66558 <pygone(0): - - - p - N - - 
-66558 <pygone(0): P P B - - P P P 
-66558 <pygone(0): R N - Q - R K - 
-66558 <pygone(0): info depth 1 score cp -740 time 6 nodes 1555 nps 260 pv c2d3
-66558 <pygone(0): bestmove c2d3
-66558 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3
-66558 >sf12(1): isready
-66558 <sf12(1): readyok
-66558 >sf12(1): go depth 1
-66558 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-66558 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 882 nodes 61 nps 61000 tbhits 0 time 1 pv c4d3 d1d3
-66558 <sf12(1): bestmove c4d3 ponder d1d3
-66558 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3
-66558 >pygone(0): isready
-66558 <pygone(0): readyok
-66559 >pygone(0): go depth 1
-71002 <pygone(0): r - b - k b - r 
-71002 <pygone(0): - - q - - p p p 
-71002 <pygone(0): p - n - - - - - 
-71002 <pygone(0): - p - - - - - - 
-71002 <pygone(0): - - - - n - - - 
-71002 <pygone(0): - - - p - N - - 
-71002 <pygone(0): P P - - - P P P 
-71002 <pygone(0): R N - Q - R K - 
-71002 <pygone(0): info depth 1 score cp -740 time 5 nodes 1504 nps 301 pv d1d3
-71003 <pygone(0): bestmove d1d3
-71003 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3
-71003 >sf12(1): isready
-71003 <sf12(1): readyok
-71003 >sf12(1): go depth 1
-71003 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-71003 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 862 nodes 135 nps 135000 tbhits 0 time 1 pv c8f5
-71003 <sf12(1): bestmove c8f5
-71003 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5
-71003 >pygone(0): isready
-71003 <pygone(0): readyok
-71003 >pygone(0): go depth 1
-76765 <pygone(0): r - - - k b - r 
-76765 <pygone(0): - - q - - p p p 
-76765 <pygone(0): p - n - - - - - 
-76765 <pygone(0): - p - - - b - - 
-76766 <pygone(0): - - - - n - - - 
-76766 <pygone(0): - - - Q - N - - 
-76766 <pygone(0): P P - - - P P P 
-76766 <pygone(0): R N - - - R K - 
-76766 <pygone(0): info depth 1 score cp -741 time 6 nodes 2087 nps 348 pv d3d5
-76766 <pygone(0): bestmove d3d5
-76766 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5 d3d5
-76766 >sf12(1): isready
-76766 <sf12(1): readyok
-76766 >sf12(1): go depth 1
-76766 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-76766 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 878 nodes 99 nps 99000 tbhits 0 time 1 pv g7g6
-76766 <sf12(1): bestmove g7g6
-76766 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5 d3d5 g7g6
-76766 >pygone(0): isready
-76766 <pygone(0): readyok
-76766 >pygone(0): go depth 1
-83462 <pygone(0): r - - - k b - r 
-83463 <pygone(0): - - q - - p - p 
-83463 <pygone(0): p - n - - - p - 
-83463 <pygone(0): - p - Q - b - - 
-83463 <pygone(0): - - - - n - - - 
-83463 <pygone(0): - - - - - N - - 
-83463 <pygone(0): P P - - - P P P 
-83463 <pygone(0): R N - - - R K - 
-83463 <pygone(0): info depth 1 score cp -739 time 7 nodes 2128 nps 304 pv f1d1
-83463 <pygone(0): bestmove f1d1
-83464 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5 d3d5 g7g6 f1d1
-83464 >sf12(1): isready
-83464 <sf12(1): readyok
-83464 >sf12(1): go depth 1
-83464 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-83464 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 928 nodes 106 nps 106000 tbhits 0 time 1 pv e4f2 d1e1 f8e7
-83464 <sf12(1): bestmove e4f2 ponder d1e1
-83464 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5 d3d5 g7g6 f1d1 e4f2
-83464 >pygone(0): isready
-83464 <pygone(0): readyok
-83464 >pygone(0): go depth 1
-93760 <pygone(0): r - - - k b - r 
-93760 <pygone(0): - - q - - p - p 
-93760 <pygone(0): p - n - - - p - 
-93760 <pygone(0): - p - Q - b - - 
-93760 <pygone(0): - - - - - - - - 
-93760 <pygone(0): - - - - - N - - 
-93760 <pygone(0): P P - - - n P P 
-93760 <pygone(0): R N - R - - K - 
-93760 <pygone(0): info depth 1 score cp -728 time 11 nodes 2429 nps 221 pv g1f2
-93761 <pygone(0): bestmove g1f2
-93761 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5 d3d5 g7g6 f1d1 e4f2 g1f2
-93761 >sf12(1): isready
-93761 <sf12(1): readyok
-93761 >sf12(1): go depth 1
-93761 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-93761 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 824 nodes 139 nps 69500 tbhits 0 time 2 pv f8b4
-93761 <sf12(1): bestmove f8b4
-93761 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5 d3d5 g7g6 f1d1 e4f2 g1f2 f8b4
-93761 >pygone(0): isready
-93761 <pygone(0): readyok
-93761 >pygone(0): go depth 1
-103009 <pygone(0): r - - - k - - r 
-103009 <pygone(0): - - q - - p - p 
-103009 <pygone(0): p - n - - - p - 
-103009 <pygone(0): - p - Q - b - - 
-103009 <pygone(0): - b - - - - - - 
-103009 <pygone(0): - - - - - N - - 
-103010 <pygone(0): P P - - - K P P 
-103010 <pygone(0): R N - R - - - - 
-103010 <pygone(0): info depth 1 score cp -724 time 10 nodes 2502 nps 251 pv f2g1
-103010 <pygone(0): bestmove f2g1
-103010 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5 d3d5 g7g6 f1d1 e4f2 g1f2 f8b4 f2g1
-103010 >sf12(1): isready
-103010 <sf12(1): readyok
-103010 >sf12(1): go depth 1
-103010 <sf12(1): info string NNUE evaluation using nn-308d71810dff.nnue enabled
-103010 <sf12(1): info depth 1 seldepth 1 multipv 1 score cp 859 nodes 59 nps 59000 tbhits 0 time 1 pv e8g8
-103010 <sf12(1): bestmove e8g8
-103010 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 b7b5 a4b3 g8f6 e1g1 f6e4 d2d4 e5d4 c1f4 d7d5 c2c4 d5c4 b3c2 d4d3 f4c7 d8c7 c2d3 c4d3 d1d3 c8f5 d3d5 g7g6 f1d1 e4f2 g1f2 f8b4 f2g1 e8g8
-103010 >pygone(0): isready
-103010 <pygone(0): readyok
-103010 >pygone(0): go depth 1
+332259 >sf12(1): quit

@@ -52,7 +52,7 @@ kPSQT = [[ 4,54,47,-99,-99,60,83,-62],
   [-55,-43,-52,-28,-51,-47,-8,-50],
   [-47,-42,-43,-79,-64,-32,-29,-32],
   [-4,3,-14,-50,-57,-18,13,4],
-  [17,30,-3,-14,6,-1,40,18]] 
+  [22,30,-3,-14,6,-1,40,26]] 
 
 allPSGT={'p': pPSQT,'n': nPSQT,'b':bPSQT,'r':rPSQT,'q':qPSQT,'k':kPSQT}
 
@@ -72,6 +72,7 @@ class Board:
   moveList = []
   lastMove = ''
   nodes = 0
+  depth = 0
   whiteCanCastleShort = True
   whiteCanCastleLong = True
   blackCanCastleShort = True
@@ -447,26 +448,36 @@ class Board:
 
     return bEval
 
-  def minimaxRoot(self, depth, localBoard, isMaxingWhite, maxTime):
+  def minimaxRoot(self, depth, localBoard, maxTime):
     lglMvs = localBoard.getSideMoves(localBoard.playedMoveCount % 2 == 0)
     if (localBoard.playedMoveCount == 0):
       possMvs = ['e2e4', 'd2d4', 'c2c4', 'g1f3']
-      return [0, possMvs[0], '', 1]
+      localBoard.depth = 1
+      return [0, possMvs[0]]
     elif localBoard.playedMoveCount == 1:
       try:
+        localBoard.depth = 1
         move = openingBook[localBoard.moveList[0]]
-        return [0, move, '', 1]
+        return [0, move]
       except:
         possMvs = lglMvs
     else:
       possMvs = lglMvs
     if(len(possMvs) == 1):
-      return [localBoard.boardEvaluation(), possMvs[0], '', 1]
+      localBoard.depth = 1
+      return [localBoard.boardEvaluation(), possMvs[0]]
 
+    isMaxingWhite = (localBoard.playedMoveCount % 2 == 0)
     global_score = -50000 if isMaxingWhite else 50000
     chosen_move = None
 
     originalState = [x[:] for x in localBoard.boardState]
+
+    localBoard.depth = depth
+
+    maxTime = maxTime / len(possMvs)
+    # if maxTime < 2:
+    #   maxTime = 20
 
     for move in possMvs:
       localBoard.nodes += 1
@@ -474,7 +485,7 @@ class Board:
 
       startTime = time.perf_counter() + maxTime
 
-      local_score = self.minimax(depth - 1, not isMaxingWhite, -50000, 50000, localBoard, startTime, move)
+      local_score = self.minimax(depth - 1, -50000, 50000, localBoard, startTime, move)
 
       if isMaxingWhite and local_score > global_score:
         global_score = local_score
@@ -487,9 +498,10 @@ class Board:
       localBoard.playedMoveCount -= 1
 
     gameBoard.lastMove = chosen_move
-    return [global_score, chosen_move, '', 1]
+    return [global_score, chosen_move]
 
-  def minimax(self, depth, isMaxingWhite, alpha, beta, localBoard, endTime, lastMove):
+  def minimax(self, depth, alpha, beta, localBoard, endTime, lastMove):
+    isMaxingWhite = (localBoard.playedMoveCount % 2 == 0)
     localBoard.getValidMoves()
     possMvs = localBoard.getSideMoves(isMaxingWhite)
     startTime = time.perf_counter()
@@ -509,12 +521,12 @@ class Board:
       return localBoard.boardEvaluation()
 
     originalState = [x[:] for x in localBoard.boardState]
-    best_score = -1e8 if isMaxingWhite else 1e8
+    best_score = -50000 if isMaxingWhite else 50000
     for move in possMvs:
       localBoard.nodes += 1
       localBoard.makeMove(move)
 
-      local_score = self.minimax(depth - 1, not isMaxingWhite, alpha, beta, localBoard, endTime, move)
+      local_score = self.minimax(depth - 1, alpha, beta, localBoard, endTime, move)
 
       if isMaxingWhite:
         best_score = max(best_score, local_score)
@@ -560,23 +572,47 @@ while True:
         offsetMoves += 1
       gameBoard.playedMoveCount = (offsetMoves - 3)
     elif l.startswith("go"):
-      gameBoard.showBoard()
       goBoard = Board()
       goBoard.setBoardState([x[:] for x in gameBoard.boardState.copy()])
       goBoard.playedMoveCount = gameBoard.playedMoveCount
       goBoard.getValidMoves()
       
-      if (gameBoard.playedMoveCount % 2 == 0):
-        moveTime = 250 / len(goBoard.whiteValidMoves)
+      whiteTime = 300
+      blackTime = 300
+      depth = 4
+
+      args = l.split()
+      for key, arg in enumerate(args):
+        if (arg == 'wtime'):
+          whiteTime = int(args[key + 1])
+        if (arg == 'btime'):
+          blackTime = int(args[key + 1])
+        # if (arg == 'depth')
+        #   depth = int(args[key + 1])
+
+      timeMoveCalc = 40
+      if (gameBoard.playedMoveCount > 38):
+        timeMoveCalc = 2
       else:
-        moveTime = 250 / len(goBoard.blackValidMoves)
+        timeMoveCalc = 40 - gameBoard.playedMoveCount
+
+      if (gameBoard.playedMoveCount % 2 == 0):
+        moveTime = whiteTime / (timeMoveCalc * 1000)
+      else:
+        moveTime = blackTime / (timeMoveCalc * 1000)
+
+      moveTime -= 3
+
+      if moveTime < 5:
+        moveTime = 5
+
       startTime = time.perf_counter()
-      (score, move, pv, calcDepth) = goBoard.minimaxRoot(2, goBoard, (gameBoard.playedMoveCount % 2 == 0), moveTime)
+      (score, move) = goBoard.minimaxRoot(depth, goBoard, moveTime)
       elapsedTime = math.ceil(time.perf_counter() - startTime)
       nps = math.ceil(goBoard.nodes / elapsedTime)
       # if (gameBoard.playedMoveCount % 2 != 0):
       #   score = score * -1
-      print("info depth " + str(calcDepth) + " score cp " + str(math.ceil(score)) + " time " + str(elapsedTime) + " nodes " + str(goBoard.nodes) + " nps " + str(nps) + " pv " + move)
+      print("info depth " + str(goBoard.depth) + " score cp " + str(math.ceil(score)) + " time " + str(elapsedTime) + " nodes " + str(goBoard.nodes) + " nps " + str(nps) + " pv " + move)
       print("bestmove " + move)
   except (KeyboardInterrupt, SystemExit):
     print('quit')
