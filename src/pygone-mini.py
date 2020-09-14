@@ -41,17 +41,17 @@ class H9:
   self.B3=[['r','n','b','q','k','b','n','r'],['p']*8,['-']*8,['-']*8,['-']*8,['-']*8,['P']*8,['R','N','B','Q','K','B','N','R']]
  def B32(self,state):
   self.B3=state
- def D1(self,C2,C3=False,C4=False,override_C9='',override_C0=''):
+ def D1(self,C2,C3=False,C4=False,C91='',C01=''):
   C5=B1(C2[0:1])
   C6=abs(int(C2[1:2])-8)
   C7=B1(C2[2:3])
   C8=abs(int(C2[3:4])-8)
   C9=self.B3[C6][C5]
   C0=self.B3[C8][C7]
-  if len(override_C9)>0:
-   C9=override_C9
-  if len(override_C0)>0:
-   C0=override_C0
+  if len(C91)>0:
+   C9=C91
+  if len(C01)>0:
+   C0=C01
   if C3:
    C9='-'
    C0='P' if(self.B4%2==0)else 'p'
@@ -69,7 +69,7 @@ class H9:
   D3=""
   if len(C2)>4:
    D3=C2[4:5]
-  if(C9 in('P','p')and C0=='-' and C2[0:1]!=C2[2:3]and len(override_C9)==0 and len(override_C0)==0):
+  if(C9 in('P','p')and C0=='-' and C2[0:1]!=C2[2:3]and len(C91)==0 and len(C01)==0):
    self.B3[C6][C5]='-'
    self.B3[C8][C7]=C9
    self.B3[C6][C7]='-'
@@ -92,20 +92,20 @@ class H9:
    else:
     self.B3[C8][C7]='k'
   else:
-   if len(override_C0)==0:
+   if len(C01)==0:
     self.B3[C6][C5]='-'
    else:
-    self.B3[C6][C5]=override_C0
+    self.B3[C6][C5]=C01
    if D3!="":
     if self.B4%2==0:
      self.B3[C8][C7]=D3.upper()
     else:
      self.B3[C8][C7]=D3
    else:
-    if len(override_C9)==0:
+    if len(C91)==0:
      self.B3[C8][C7]=C9
     else:
-     self.B3[C8][C7]=override_C9
+     self.B3[C8][C7]=C91
   return[C9,C0]
  def D4(self,C2):
   (C9,C0)=self.D1(C2)
@@ -140,13 +140,13 @@ class H9:
   E1=self.B3.copy()
   for E2 in range(8):
    for E3 in range(8):
-    piece=E1[E2][E3]
-    if piece=="-":
+    Z1=E1[E2][E3]
+    if Z1=="-":
      continue
     E5=B2(E3+1)+str(abs(E2-8))
     E6=B2(E3+1)+str(abs(E2-8))
-    if piece in('k','K'):
-     if piece=='K':
+    if Z1 in('k','K'):
+     if Z1=='K':
       E7=True
       self.B9=E5
      else:
@@ -178,13 +178,13 @@ class H9:
          B6.append(E6+F1)
        if E0:
         if E7:
-         D9.append([E9,piece])
+         D9.append([E9,Z1])
          self.B7+=F1
         else:
-         D0.append([E9,piece])
+         D0.append([E9,Z1])
          self.B8+=F1
-    if piece in('p','P'):
-     if piece=='P':
+    if Z1 in('p','P'):
+     if Z1=='P':
       if E2>1 and E1[E2-1][E3]=='-':
        B5.append(E5+B2(E3+1)+str(abs(E2-9)))
       if E2==6 and E1[E2-1][E3]=='-' and E1[E2-2][E3]=='-':
@@ -198,11 +198,11 @@ class H9:
        if(E3-1)>=0 and E1[E2-1][E3-1]!='-' and E1[E2-1][E3-1].islower():
         B5.append(E5+B2(E3)+str(abs(E2-9))+prom)
         self.B7+=B2(E3)+str(abs(E2-9))
-        D9.append([E1[E2-1][E3-1],piece])
+        D9.append([E1[E2-1][E3-1],Z1])
        if(E3+1)<8 and E1[E2-1][E3+1]!='-' and E1[E2-1][E3+1].islower():
         B5.append(E5+B2(E3+2)+str(abs(E2-9))+prom)
         self.B7+=B2(E3+2)+str(abs(E2-9))
-        D9.append([E1[E2-1][E3+1],piece])
+        D9.append([E1[E2-1][E3+1],Z1])
      else:
       if E2<6 and E1[E2+1][E3]=='-':
        B6.append(E6+B2(E3+1)+str(abs(E2-7)))
@@ -217,13 +217,13 @@ class H9:
        if(E3+1)<8 and E1[E2+1][E3+1]!='-' and E1[E2+1][E3+1].isupper():
         B6.append(E6+B2(E3+2)+str(abs(E2-7))+prom)
         self.B8+=B2(E3+2)+str(abs(E2-7))
-        D0.append([E1[E2+1][E3+1],piece])
+        D0.append([E1[E2+1][E3+1],Z1])
        if(E3-1)>=0 and E1[E2+1][E3-1]!='-' and E1[E2+1][E3-1].isupper():
         B6.append(E6+B2(E3)+str(abs(E2-7))+prom)
         self.B8+=B2(E3)+str(abs(E2-7))
-        D0.append([E1[E2+1][E3-1],piece])
-    if piece in('n','N'):
-     E7=(piece=='N')
+        D0.append([E1[E2+1][E3-1],Z1])
+    if Z1 in('n','N'):
+     E7=(Z1=='N')
      F3={1:{'E3':(E3+1),'E2':(E2-2)},2:{'E3':(E3-1),'E2':(E2-2)},3:{'E3':(E3+2),'E2':(E2-1)},4:{'E3':(E3-2),'E2':(E2-1)},5:{'E3':(E3+1),'E2':(E2+2)},6:{'E3':(E3-1),'E2':(E2+2)},7:{'E3':(E3+2),'E2':(E2+1)},8:{'E3':(E3-2),'E2':(E2+1)}}
      for _,F4 in F3.items():
       if F4['E3']>=0 and F4['E3']<=7 and F4['E2']>=0 and F4['E2']<=7:
@@ -238,14 +238,14 @@ class H9:
          B5.append(E5+F1)
          if E0:
           self.B7+=F1
-          D9.append([E9,piece])
+          D9.append([E9,Z1])
         else:
          B6.append(E6+F1)
          if E0:
           self.B8+=F1
-          D0.append([E9,piece])
-    if piece in('r','R')or piece in('q','Q'):
-     E7=piece in('R','Q')
+          D0.append([E9,Z1])
+    if Z1 in('r','R')or Z1 in('q','Q'):
+     E7=Z1 in('R','Q')
      F5={1:{'E3':E3,'E2':(E2-1),'E24':0,'E23':-1},2:{'E3':E3,'E2':(E2+1),'E24':0,'E23':1},3:{'E3':(E3-1),'E2':E2,'E24':-1,'E23':0},4:{'E3':(E3+1),'E2':E2,'E24':1,'E23':0}}
      for _,F6 in F5.items():
       E21=F6['E2']
@@ -259,20 +259,20 @@ class H9:
          B5.append(E5+F1)
          if E0:
           self.B7+=F1
-          D9.append([E9,piece])
+          D9.append([E9,Z1])
         else:
          B6.append(E6+F1)
          if E0:
           self.B8+=F1
-          D0.append([E9,piece])
+          D0.append([E9,Z1])
         if E0:
          break
        else:
         break
        E21+=F6['E23']
        E22+=F6['E24']
-    if piece in('b','B')or piece in('q','Q'):
-     E7=piece in('B','Q')
+    if Z1 in('b','B')or Z1 in('q','Q'):
+     E7=Z1 in('B','Q')
      F7={1:{'E3':(E3-1),'E2':(E2-1),'E24':-1,'E23':-1},2:{'E3':(E3+1),'E2':(E2+1),'E24':1,'E23':1},3:{'E3':(E3-1),'E2':(E2+1),'E24':-1,'E23':1},4:{'E3':(E3+1),'E2':(E2-1),'E24':1,'E23':-1}}
      for _,F8 in F7.items():
       E21=F8['E2']
@@ -286,12 +286,12 @@ class H9:
          B5.append(E5+F1)
          if E0:
           self.B7+=F1
-          D9.append([E9,piece])
+          D9.append([E9,Z1])
         else:
          B6.append(E6+F1)
          if E0:
           self.B8+=F1
-          D0.append([E9,piece])
+          D0.append([E9,Z1])
         if E0:
          break
        else:
@@ -331,15 +331,15 @@ class H9:
   b_eval=0
   for E2 in range(8):
    for E3 in range(8):
-    piece=self.B3[E2][E3]
-    E7=piece.isupper()
-    if piece!='-':
+    Z1=self.B3[E2][E3]
+    E7=Z1.isupper()
+    if Z1!='-':
      if E7:
-      b_eval+=A1[piece.lower()]
-      b_eval+=(A9[piece.lower()][E2][E3]/2)
+      b_eval+=A1[Z1.lower()]
+      b_eval+=(A9[Z1.lower()][E2][E3]/2)
      else:
-      b_eval-=A1[piece]
-      b_eval-=(A9[piece][abs(E2-7)][abs(E3-7)]/2)
+      b_eval-=A1[Z1]
+      b_eval-=(A9[Z1][abs(E2-7)][abs(E3-7)]/2)
   return b_eval
 class G4:
  G5=''
@@ -355,8 +355,6 @@ class G4:
   H4=A0
   H1=G9.G2(E7)
   G8=move_time/len(H1)
-  if G8<3:
-   G8=3
   for move in H1:
    self.nodes+=1
    G9.D4(move)
@@ -418,11 +416,6 @@ def main():
    elif line=="uci":
     print("pygone 1.0 by rcostheta")
     print("uciok")
-    H8.D7()
-    H8.D4('a8a7')
-    H8.D7()
-    H8.D6()
-    H8.D7()
    elif line=="ucinewgame":
     H8=H9()
     H8.B4=0
@@ -442,44 +435,43 @@ def main():
      H0+=1
     H8.B4=(H0-3)
    elif line.startswith("go"):
-    go_board=H9()
-    go_board.B32([x[:]for x in H8.B3.copy()])
-    go_board.B4=H8.B4
-    go_board.D8()
-    white_time=1000000
-    black_time=1000000
-    go_depth=28
-    args=line.split()
-    for key,arg in enumerate(args):
+    I1=H9()
+    I1.B32([x[:]for x in H8.B3.copy()])
+    I1.B4=H8.B4
+    I1.D8()
+    I2=1000000
+    I3=1000000
+    I4=28
+    I5=line.split()
+    for key,arg in enumerate(I5):
      if arg=='wtime':
-      white_time=int(args[key+1])
+      I2=int(I5[key+1])
      if arg=='btime':
-      black_time=int(args[key+1])
+      I3=int(I5[key+1])
      if arg=='depth':
-      go_depth=int(args[key+1])
-    if go_depth<2:
-     go_depth=2
+      I4=int(I5[key+1])
+    if I4<2:
+     I4=2
     time_move_calc=40
     if H8.B4>38:
      time_move_calc=2
     else:
      time_move_calc=40-H8.B4
     if H8.B4%2==0:
-     move_time=white_time/(time_move_calc*1000)
+     move_time=I2/(time_move_calc*1000)
     else:
-     move_time=black_time/(time_move_calc*1000)
+     move_time=I3/(time_move_calc*1000)
     move_time-=3
     if move_time<8:
      move_time=8
-    if move_time<10 and go_depth>5:
-     go_depth=5
-    go_depth=4
+    if move_time<10 and I4>5:
+     I4=5
     G7er=G4()
     start_time=time.perf_counter()
-    (score,move)=G7er.G7(go_depth,go_board,move_time)
-    elapsed_time=math.ceil(time.perf_counter()-start_time)
-    nps=math.ceil(G7er.nodes/elapsed_time)
-    print("info depth "+str(G7er.depth)+" score cp "+str(math.ceil(score))+" time "+str(elapsed_time)+" nodes "+str(G7er.nodes)+" nps "+str(nps)+" pv "+move)
+    (score,move)=G7er.G7(I4,I1,move_time)
+    I6=math.ceil(time.perf_counter()-start_time)
+    nps=math.ceil(G7er.nodes/I6)
+    print("info depth "+str(G7er.depth)+" score cp "+str(math.ceil(score))+" time "+str(I6)+" nodes "+str(G7er.nodes)+" nps "+str(nps)+" pv "+move)
     print("bestmove "+move)
   except(KeyboardInterrupt,SystemExit):
    print('quit')

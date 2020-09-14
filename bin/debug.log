@@ -1,43 +1,19 @@
-3 >pygone(0): uci
-4 >sf12(1): uci
+4 >pygone(0): uci
+5 >sf12(1): uci
 5 <sf12(1): Stockfish 040920 by the Stockfish developers (see AUTHORS file)
 27 <pygone(0): pygone 1.0 by rcostheta
 27 <pygone(0): uciok
 27 >pygone(0): isready
-27 <pygone(0): r n b q k b n r 
-27 <pygone(0): p p p p p p p p 
-27 <pygone(0): - - - - - - - - 
-27 <pygone(0): - - - - - - - - 
-27 <pygone(0): - - - - - - - - 
-28 <pygone(0): - - - - - - - - 
-28 <pygone(0): P P P P P P P P 
-28 <pygone(0): R N B Q K B N R 
-28 <pygone(0): - n b q k b n r 
-28 <pygone(0): r p p p p p p p 
-28 <pygone(0): - - - - - - - - 
-28 <pygone(0): - - - - - - - - 
-28 <pygone(0): - - - - - - - - 
-28 <pygone(0): - - - - - - - - 
-28 <pygone(0): P P P P P P P P 
-28 <pygone(0): R N B Q K B N R 
-28 <pygone(0): r n b q k b n r 
-28 <pygone(0): p p p p p p p p 
-28 <pygone(0): - - - - - - - - 
-28 <pygone(0): - - - - - - - - 
-28 <pygone(0): - - - - - - - - 
-29 <pygone(0): - - - - - - - - 
-29 <pygone(0): P P P P P P P P 
-29 <pygone(0): R N B Q K B N R 
-29 <pygone(0): readyok
+27 <pygone(0): readyok
 196 <sf12(1): id name Stockfish 040920
 196 <sf12(1): id author the Stockfish developers (see AUTHORS file)
 196 <sf12(1): option name Debug Log File type string default 
-196 <sf12(1): option name Contempt type spin default 24 min -100 max 100
-196 <sf12(1): option name Analysis Contempt type combo default Both var Off var White var Black var Both
-196 <sf12(1): option name Threads type spin default 1 min 1 max 512
-196 <sf12(1): option name Hash type spin default 16 min 1 max 33554432
-196 <sf12(1): option name Clear Hash type button
-196 <sf12(1): option name Ponder type check default false
+197 <sf12(1): option name Contempt type spin default 24 min -100 max 100
+197 <sf12(1): option name Analysis Contempt type combo default Both var Off var White var Black var Both
+197 <sf12(1): option name Threads type spin default 1 min 1 max 512
+197 <sf12(1): option name Hash type spin default 16 min 1 max 33554432
+197 <sf12(1): option name Clear Hash type button
+197 <sf12(1): option name Ponder type check default false
 197 <sf12(1): option name MultiPV type spin default 1 min 1 max 500
 197 <sf12(1): option name Skill Level type spin default 20 min 0 max 20
 197 <sf12(1): option name Move Overhead type spin default 10 min 0 max 5000
@@ -46,11 +22,11 @@
 197 <sf12(1): option name UCI_Chess960 type check default false
 197 <sf12(1): option name UCI_AnalyseMode type check default false
 197 <sf12(1): option name UCI_LimitStrength type check default false
-197 <sf12(1): option name UCI_Elo type spin default 1350 min 1350 max 2850
-197 <sf12(1): option name UCI_ShowWDL type check default false
-197 <sf12(1): option name SyzygyPath type string default <empty>
-197 <sf12(1): option name SyzygyProbeDepth type spin default 1 min 1 max 100
-197 <sf12(1): option name Syzygy50MoveRule type check default true
+198 <sf12(1): option name UCI_Elo type spin default 1350 min 1350 max 2850
+198 <sf12(1): option name UCI_ShowWDL type check default false
+198 <sf12(1): option name SyzygyPath type string default <empty>
+198 <sf12(1): option name SyzygyProbeDepth type spin default 1 min 1 max 100
+198 <sf12(1): option name Syzygy50MoveRule type check default true
 198 <sf12(1): option name SyzygyProbeLimit type spin default 7 min 0 max 7
 198 <sf12(1): option name Use NNUE type check default true
 198 <sf12(1): option name EvalFile type string default nn-308d71810dff.nnue
@@ -62,9 +38,9 @@
 211 <sf12(1): readyok
 Started game 1 of 200 (pygone vs sf12)
 211 >pygone(0): ucinewgame
-211 >pygone(0): position startpos
-211 >sf12(1): ucinewgame
-211 >sf12(1): setoption name Ponder value false
+212 >pygone(0): position startpos
+212 >sf12(1): ucinewgame
+212 >sf12(1): setoption name Ponder value false
 212 >sf12(1): position startpos
 212 >pygone(0): position startpos moves e2e4
 212 >sf12(1): position startpos moves e2e4
@@ -74,9 +50,9 @@ Started game 1 of 200 (pygone vs sf12)
 212 >sf12(1): position startpos moves e2e4 e7e5 g1f3
 212 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6
 212 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6
-212 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-212 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
-212 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
+213 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
+213 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5
+213 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
 213 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6
 213 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
 213 >sf12(1): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4
@@ -84,4 +60,13 @@ Started game 1 of 200 (pygone vs sf12)
 213 >pygone(0): position startpos moves e2e4 e7e5 g1f3 b8c6 f1b5 a7a6 b5a4 g8f6
 213 >pygone(0): isready
 213 <pygone(0): readyok
-213 >pygone(0): go wtime 302000 btime 302000 winc 2000 binc 2000
+213 >pygone(0): go depth 2
+15253 >pygone(0): stop
+15253 >sf12(1): isready
+15253 <pygone(0): quit
+Terminating process of engine sf12(1)
+Terminating process of engine pygone(0)
+Finished game 1 (pygone vs sf12): * {No result}
+Score of pygone vs sf12: 0 - 0 - 0  [nan] 0
+Elo difference: nan +/- nan, LOS: nan %, DrawRatio: nan %
+Finished match

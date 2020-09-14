@@ -579,11 +579,6 @@ def main():
             elif line == "uci":
                 print("pygone 1.0 by rcostheta")
                 print("uciok")
-                game_board.show_board()
-                game_board.make_move('a8a7')
-                game_board.show_board()
-                game_board.undo_move()
-                game_board.show_board()
             elif line == "ucinewgame":
                 game_board = Board()
                 game_board.played_move_count = 0
@@ -610,7 +605,7 @@ def main():
 
                 white_time = 1000000
                 black_time = 1000000
-                go_depth = 28
+                go_depth = 8
 
                 args = line.split()
                 for key, arg in enumerate(args):
@@ -642,8 +637,6 @@ def main():
 
                 if move_time < 10 and go_depth > 5:
                     go_depth = 5
-
-                go_depth = 4
 
                 searcher = Search()
 

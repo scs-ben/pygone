@@ -28,7 +28,9 @@ sed -i -e 's/from_letter_number/C5/g' pygone-mini.py
 sed -i -e 's/from_number/C6/g' pygone-mini.py
 sed -i -e 's/to_letter_number/C7/g' pygone-mini.py
 sed -i -e 's/to_number/C8/g' pygone-mini.py
+sed -i -e 's/override_from_piece/C91/g' pygone-mini.py
 sed -i -e 's/from_piece/C9/g' pygone-mini.py
+sed -i -e 's/override_to_piece/C01/g' pygone-mini.py
 sed -i -e 's/to_piece/C0/g' pygone-mini.py
 sed -i -e 's/apply_move/D1/g' pygone-mini.py
 sed -i -e 's/rook_offset/D2/g' pygone-mini.py
@@ -85,5 +87,12 @@ sed -i -e 's/check_terminal/H7/g' pygone-mini.py
 sed -i -e 's/game_board/H8/g' pygone-mini.py
 sed -i -e 's/Board/H9/g' pygone-mini.py
 sed -i -e 's/offset_moves/H0/g' pygone-mini.py
+sed -i -e 's/go_board/I1/g' pygone-mini.py
+sed -i -e 's/white_time/I2/g' pygone-mini.py
+sed -i -e 's/black_time/I3/g' pygone-mini.py
+sed -i -e 's/go_depth/I4/g' pygone-mini.py
+sed -i -e 's/args/I5/g' pygone-mini.py
+sed -i -e 's/elapsed_time/I6/g' pygone-mini.py
+sed -i -e 's/piece/Z1/g' pygone-mini.py
 
 sed -i -e 's/# Created by pyminifier (https:\/\/github.com\/liftoff\/pyminifier)//g' pygone-mini.py
