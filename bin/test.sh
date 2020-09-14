@@ -3,13 +3,14 @@
     -engine \
         name=pygone \
         cmd=pygone \
-        depth=2 \
+        depth=5 \
     -engine \
         name=sf12 \
         cmd=stockfish_20090418_x64 \
         option.Hash=16 \
         option.Contempt=0 \
         option.Threads=1 \
+        option.'Use NNUE'=false \
         depth=1 \
     -each \
         proto=uci \

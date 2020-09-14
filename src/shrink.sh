@@ -64,6 +64,7 @@ sed -i -e 's/n_move/F4/g' pygone-mini.py
 sed -i -e 's/horizontal_moves/F5/g' pygone-mini.py
 sed -i -e 's/h_move/F6/g' pygone-mini.py
 sed -i -e 's/diag_moves/F7/g' pygone-mini.py
+sed -i -e 's/old_move/F81/g' pygone-mini.py
 sed -i -e 's/d_move/F8/g' pygone-mini.py
 sed -i -e 's/move_copy/F9/g' pygone-mini.py
 sed -i -e 's/move_string/F0/g' pygone-mini.py
@@ -93,6 +94,9 @@ sed -i -e 's/black_time/I3/g' pygone-mini.py
 sed -i -e 's/go_depth/I4/g' pygone-mini.py
 sed -i -e 's/args/I5/g' pygone-mini.py
 sed -i -e 's/elapsed_time/I6/g' pygone-mini.py
+sed -i -e 's/move_time/I7/g' pygone-mini.py
+sed -i -e 's/start_time/I8/g' pygone-mini.py
+sed -i -e 's/in_check/I9/g' pygone-mini.py
 sed -i -e 's/piece/Z1/g' pygone-mini.py
 
 sed -i -e 's/# Created by pyminifier (https:\/\/github.com\/liftoff\/pyminifier)//g' pygone-mini.py

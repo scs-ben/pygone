@@ -78,6 +78,7 @@ class Board:
     black_attack_locations = ''
     white_king_location = 'e1'
     black_king_location = 'e8'
+    move_list_pieces = []
     move_list = []
 
     def __init__(self):
@@ -175,19 +176,21 @@ class Board:
 
     def make_move(self, uci_coordinate):
         (from_piece, to_piece) = self.apply_move(uci_coordinate)
-        self.move_list.append([uci_coordinate, from_piece, to_piece])
+        self.move_list.append(uci_coordinate)
+        self.move_list_pieces.append([uci_coordinate, from_piece, to_piece])
         self.played_move_count += 1
 
 
     def undo_move(self):
-        old_move = self.move_list.pop()
-        self.played_move_count -= 1
+        self.move_list.pop()
+        old_move = self.move_list_pieces.pop()
         uci_coordinate = old_move[0]
         from_piece = old_move[1]
         to_piece = old_move[2]
 
         self.apply_move(uci_coordinate[2:4] + uci_coordinate[0:2], len(uci_coordinate) > 4, \
                         uci_coordinate in ('e1g1', 'e1c1', 'e8g8', 'e8c8'), from_piece, to_piece)
+        self.played_move_count -= 1
 
 
     def show_board(self):
@@ -411,11 +414,9 @@ class Board:
                             temp_row += d_move['rowIncrement']
                             temp_col += d_move['colIncrement']
 
-        sep = ''
+        move_string = ''.join(self.move_list)
         if self.played_move_count % 2 == 0:
             move_copy = white_valid_moves.copy()
-
-            move_string = sep.join(black_valid_moves)
 
             for move in move_copy:
                 override_remove = ((move == 'e1g1' and ('e1' in move_string or 'f1' in move_string or 'g1' in move_string)) or (move == 'e1c1' and ('e1' in move_string or 'd1' in move_string or 'c1' in move_string)))
@@ -428,7 +429,6 @@ class Board:
         else:
             move_copy = black_valid_moves.copy()
 
-            move_string = sep.join(white_valid_moves)
 
             for move in move_copy:
                 override_remove = ((move == 'e8g8' and ('e8' in move_string or 'f8' in move_string or 'g8' in move_string)) or (move == 'e8c8' and ('e8' in move_string or 'd8' in move_string or 'c8' in move_string)))
@@ -443,6 +443,17 @@ class Board:
         self.black_valid_moves = black_valid_moves
         self.white_attack_pieces = white_attack_pieces
         self.black_attack_pieces = black_attack_pieces
+
+    def in_check(self, is_white, debug=False):
+        if is_white:
+            for (attacked, attacker) in self.black_attack_pieces:
+                if attacked == 'K':
+                    return True
+            return False
+        else:
+            for (attacked, attacker) in self.white_attack_pieces:
+                if attacked == 'k':
+                    return True
 
     def get_side_moves(self, is_white):
         if is_white:
@@ -459,10 +470,10 @@ class Board:
                 if piece != '-':
                     if is_white:
                         b_eval += PIECEPOINTS[piece.lower()]
-                        b_eval += (ALLPSGT[piece.lower()][row][column] / 2)
+                        b_eval += (ALLPSGT[piece.lower()][row][column] / 1)
                     else:
                         b_eval -= PIECEPOINTS[piece]
-                        b_eval -= (ALLPSGT[piece][abs(row-7)][abs(column-7)] / 2)
+                        b_eval -= (ALLPSGT[piece][abs(row-7)][abs(column-7)] / 1)
 
         # for (attacked, attacker) in self.white_attack_pieces:
         #   b_eval += ATTACKPOINTS[attacked.lower()] / 10
@@ -481,13 +492,13 @@ class Search:
     def search(self, depth, local_board, move_time):
         is_white = local_board.played_move_count % 2 == 0
 
-        global_score = -MATESCORE - 1 if is_white else MATESCORE + 1
+        global_score = -1e8 if is_white else 1e8
         chosen_move = None
 
         self.depth = depth
 
-        alpha = -MATESCORE
-        beta = MATESCORE
+        alpha = -1e8
+        beta = 1e8
 
         poss_mvs = local_board.get_side_moves(is_white)
         max_time = move_time / len(poss_mvs)
@@ -496,41 +507,49 @@ class Search:
             self.nodes += 1
 
             local_board.make_move(move)
+            local_board.get_valid_moves()
 
-            self.end_time = time.perf_counter() + max_time
+            if not local_board.in_check(is_white):
+                self.end_time = time.perf_counter() + max_time
 
-            if is_white:
-                local_score = self.min_value(local_board, alpha, beta, depth - 1)
-                if local_score > global_score:
-                    global_score = local_score
-                    chosen_move = move
-            else:
-                local_score = self.max_value(local_board, alpha, beta, depth - 1)
-                if local_score < global_score:
-                    global_score = local_score
-                    chosen_move = move
+                if is_white:
+                    local_score = self.min_value(local_board, alpha, beta, depth - 1)
+                    if local_score >= global_score:
+                        global_score = local_score
+                        chosen_move = move
+                else:
+                    local_score = self.max_value(local_board, alpha, beta, depth - 1)
+                    if local_score <= global_score:
+                        global_score = local_score
+                        chosen_move = move
 
             local_board.undo_move()
 
+        if chosen_move is None:
+            chosen_move = poss_mvs[0]
         self.last_move = chosen_move
         return [global_score, chosen_move]
 
     def max_value(self, local_board, alpha, beta, depth):
+        is_white = local_board.played_move_count % 2 == 0
+
         local_board.get_valid_moves()
-        poss_mvs = local_board.get_side_moves(local_board.played_move_count % 2 == 0)
+        poss_mvs = local_board.get_side_moves(is_white)
 
         local_time = time.perf_counter()
 
         if self.check_terminal(poss_mvs) or local_time >= self.end_time or (depth <= 0):
             return local_board.board_evaluation()
 
-        value = -MATESCORE
+        value = -1e8
 
         for move in poss_mvs:
-            self.nodes += 1
-
             local_board.make_move(move)
-            value = max(value, self.min_value(local_board, alpha, beta, depth - 1))
+            local_board.get_valid_moves()
+
+            if not local_board.in_check(is_white):
+                self.nodes += 1
+                value = max(value, self.min_value(local_board, alpha, beta, depth - 1))
             local_board.undo_move()
 
             if value >= beta:
@@ -541,21 +560,24 @@ class Search:
         return value
 
     def min_value(self, local_board, alpha, beta, depth):
+        is_white = local_board.played_move_count % 2 == 0
+
         local_board.get_valid_moves()
-        poss_mvs = local_board.get_side_moves(local_board.played_move_count % 2 == 0)
+        poss_mvs = local_board.get_side_moves(is_white)
 
         local_time = time.perf_counter()
 
         if self.check_terminal(poss_mvs) or local_time >= self.end_time or (depth <= 0):
             return local_board.board_evaluation()
 
-        value = MATESCORE
+        value = 1e8
 
         for move in poss_mvs:
-            self.nodes += 1
-
             local_board.make_move(move)
-            value = min(value, self.max_value(local_board, alpha, beta, depth - 1))
+            local_board.get_valid_moves()
+            if not local_board.in_check(is_white):
+                self.nodes += 1
+                value = min(value, self.max_value(local_board, alpha, beta, depth - 1))
             local_board.undo_move()
 
             if value <= alpha:
@@ -616,8 +638,8 @@ def main():
                     if arg == 'depth':
                       go_depth = int(args[key + 1])
 
-                if go_depth < 2:
-                    go_depth = 2
+                # if go_depth < 2:
+                #     go_depth = 2
 
                 time_move_calc = 40
                 if game_board.played_move_count > 38:
@@ -635,8 +657,8 @@ def main():
                 if move_time < 8:
                     move_time = 8
 
-                if move_time < 10 and go_depth > 5:
-                    go_depth = 5
+                if move_time < 10 and go_depth > 4:
+                    go_depth = 4
 
                 searcher = Search()
 
@@ -645,7 +667,7 @@ def main():
                 elapsed_time = math.ceil(time.perf_counter() - start_time)
                 nps = math.ceil(searcher.nodes / elapsed_time)
 
-                print("info depth " + str(searcher.depth) + " score cp " + str(math.ceil(score)) + " time " + str(elapsed_time) + " nodes " + str(searcher.nodes) + " nps " + str(nps) + " pv " + move)
+                print("info depth " + str(searcher.depth) + " score cp " + str(math.ceil(score)) + " time " + str(elapsed_time) + " nodes " + str(searcher.nodes) + " nps " + str(nps) + " pv " + str(move))
                 print("bestmove " + move)
         except (KeyboardInterrupt, SystemExit):
             print('quit')

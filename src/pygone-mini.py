@@ -27,6 +27,7 @@ class H9:
  B8=''
  B9='e1'
  B0='e8'
+ C1_Z1s=[]
  C1=[]
  def __init__(self):
   self.B31()
@@ -109,15 +110,17 @@ class H9:
   return[C9,C0]
  def D4(self,C2):
   (C9,C0)=self.D1(C2)
-  self.C1.append([C2,C9,C0])
+  self.C1.append(C2)
+  self.C1_Z1s.append([C2,C9,C0])
   self.B4+=1
  def D6(self):
-  olF8=self.C1.pop()
-  self.B4-=1
-  C2=olF8[0]
-  C9=olF8[1]
-  C0=olF8[2]
+  self.C1.pop()
+  F81=self.C1_Z1s.pop()
+  C2=F81[0]
+  C9=F81[1]
+  C0=F81[2]
   self.D1(C2[2:4]+C2[0:2],len(C2)>4,C2 in('e1g1','e1c1','e8g8','e8c8'),C9,C0)
+  self.B4-=1
  def D7(self):
   for i in range(8):
    for j in range(8):
@@ -298,10 +301,9 @@ class H9:
         break
        E21+=F8['E23']
        E22+=F8['E24']
-  sep=''
+  F0=''.join(self.C1)
   if self.B4%2==0:
    F9=B5.copy()
-   F0=sep.join(B6)
    for move in F9:
     G1=((move=='e1g1' and('e1' in F0 or 'f1' in F0 or 'g1' in F0))or(move=='e1c1' and('e1' in F0 or 'd1' in F0 or 'c1' in F0)))
     if G1:
@@ -311,7 +313,6 @@ class H9:
       continue
   else:
    F9=B6.copy()
-   F0=sep.join(B5)
    for move in F9:
     G1=((move=='e8g8' and('e8' in F0 or 'f8' in F0 or 'g8' in F0))or(move=='e8c8' and('e8' in F0 or 'd8' in F0 or 'c8' in F0)))
     if G1:
@@ -323,6 +324,16 @@ class H9:
   self.B6=B6
   self.D9=D9
   self.D0=D0
+ def in_check(self,E7,debug=False):
+  if E7:
+   for(attacked,attacker)in self.D0:
+    if attacked=='K':
+     return True
+   return False
+  else:
+   for(attacked,attacker)in self.D9:
+    if attacked=='k':
+     return True
  def G2(self,E7):
   if E7:
    return self.B5.copy()
@@ -336,69 +347,79 @@ class H9:
     if Z1!='-':
      if E7:
       b_eval+=A1[Z1.lower()]
-      b_eval+=(A9[Z1.lower()][E2][E3]/2)
+      b_eval+=(A9[Z1.lower()][E2][E3]/1)
      else:
       b_eval-=A1[Z1]
-      b_eval-=(A9[Z1][abs(E2-7)][abs(E3-7)]/2)
+      b_eval-=(A9[Z1][abs(E2-7)][abs(E3-7)]/1)
   return b_eval
 class G4:
  G5=''
  nodes=0
  depth=0
  G6=0
- def G7(self,depth,G9,move_time):
+ def G7(self,depth,G9,I7):
   E7=G9.B4%2==0
-  G0=-A0-1 if E7 else A0+1
+  G0=-1e8 if E7 else 1e8
   F41=None
   self.depth=depth
-  H3=-A0
-  H4=A0
+  H3=-1e8
+  H4=1e8
   H1=G9.G2(E7)
-  G8=move_time/len(H1)
+  G8=I7/len(H1)
   for move in H1:
    self.nodes+=1
    G9.D4(move)
-   self.G6=time.perf_counter()+G8
-   if E7:
-    H2=self.H5(G9,H3,H4,depth-1)
-    if H2>G0:
-     G0=H2
-     F41=move
-   else:
-    H2=self.H6(G9,H3,H4,depth-1)
-    if H2<G0:
-     G0=H2
-     F41=move
+   G9.D8()
+   if not G9.in_check(E7):
+    self.G6=time.perf_counter()+G8
+    if E7:
+     H2=self.H5(G9,H3,H4,depth-1)
+     if H2>=G0:
+      G0=H2
+      F41=move
+    else:
+     H2=self.H6(G9,H3,H4,depth-1)
+     if H2<=G0:
+      G0=H2
+      F41=move
    G9.D6()
+  if F41 is None:
+   F41=H1[0]
   self.G5=F41
   return[G0,F41]
  def H6(self,G9,H3,H4,depth):
+  E7=G9.B4%2==0
   G9.D8()
-  H1=G9.G2(G9.B4%2==0)
+  H1=G9.G2(E7)
   local_time=time.perf_counter()
   if self.H7(H1)or local_time>=self.G6 or(depth<=0):
    return G9.G3()
-  value=-A0
+  value=-1e8
   for move in H1:
-   self.nodes+=1
    G9.D4(move)
-   value=max(value,self.H5(G9,H3,H4,depth-1))
+   G9.D8()
+   if not G9.in_check(E7):
+    self.nodes+=1
+    value=max(value,self.H5(G9,H3,H4,depth-1))
    G9.D6()
    if value>=H4:
     return value
    H3=max(H3,value)
   return value
  def H5(self,G9,H3,H4,depth):
+  E7=G9.B4%2==0
   G9.D8()
-  H1=G9.G2(G9.B4%2==0)
+  H1=G9.G2(E7)
   local_time=time.perf_counter()
   if self.H7(H1)or local_time>=self.G6 or(depth<=0):
    return G9.G3()
-  value=A0
+  value=1e8
   for move in H1:
-   self.nodes+=1
    G9.D4(move)
-   value=min(value,self.H6(G9,H3,H4,depth-1))
+   G9.D8()
+   if not G9.in_check(E7):
+    self.nodes+=1
+    value=min(value,self.H6(G9,H3,H4,depth-1))
    G9.D6()
    if value<=H3:
     return value
@@ -441,7 +462,7 @@ def main():
     I1.D8()
     I2=1000000
     I3=1000000
-    I4=28
+    I4=8
     I5=line.split()
     for key,arg in enumerate(I5):
      if arg=='wtime':
@@ -450,28 +471,26 @@ def main():
       I3=int(I5[key+1])
      if arg=='depth':
       I4=int(I5[key+1])
-    if I4<2:
-     I4=2
     time_move_calc=40
     if H8.B4>38:
      time_move_calc=2
     else:
      time_move_calc=40-H8.B4
     if H8.B4%2==0:
-     move_time=I2/(time_move_calc*1000)
+     I7=I2/(time_move_calc*1000)
     else:
-     move_time=I3/(time_move_calc*1000)
-    move_time-=3
-    if move_time<8:
-     move_time=8
-    if move_time<10 and I4>5:
-     I4=5
+     I7=I3/(time_move_calc*1000)
+    I7-=3
+    if I7<8:
+     I7=8
+    if I7<10 and I4>4:
+     I4=4
     G7er=G4()
-    start_time=time.perf_counter()
-    (score,move)=G7er.G7(I4,I1,move_time)
-    I6=math.ceil(time.perf_counter()-start_time)
+    I8=time.perf_counter()
+    (score,move)=G7er.G7(I4,I1,I7)
+    I6=math.ceil(time.perf_counter()-I8)
     nps=math.ceil(G7er.nodes/I6)
-    print("info depth "+str(G7er.depth)+" score cp "+str(math.ceil(score))+" time "+str(I6)+" nodes "+str(G7er.nodes)+" nps "+str(nps)+" pv "+move)
+    print("info depth "+str(G7er.depth)+" score cp "+str(math.ceil(score))+" time "+str(I6)+" nodes "+str(G7er.nodes)+" nps "+str(nps)+" pv "+str(move))
     print("bestmove "+move)
   except(KeyboardInterrupt,SystemExit):
    print('quit')
