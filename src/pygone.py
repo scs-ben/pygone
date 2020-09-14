@@ -57,6 +57,8 @@ KPSQT = [[4, 54, 47, -99, -99, 60, 83, -62],
 
 ALLPSGT = {'p': PPSQT, 'n': NPSQT, 'b':BPSQT, 'r':RPSQT, 'q':QPSQT, 'k':KPSQT}
 
+MATESCORE = 50000
+
 isupper = lambda c: 'A' <= c <= 'Z'
 islower = lambda c: 'a' <= c <= 'z'
 
@@ -76,10 +78,7 @@ class Board:
     black_attack_locations = ''
     white_king_location = 'e1'
     black_king_location = 'e8'
-    moveList = []
-    last_move = ''
-    nodes = 0
-    depth = 0
+    move_list = []
 
     def __init__(self):
         self.set_default_board_state()
@@ -100,21 +99,39 @@ class Board:
                             ['-']*8,
                             ['P']*8,
                             ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']]
+
     def set_board_state(self, state):
         self.board_state = state
 
-    def make_move(self, uci_coordinate):
+    def apply_move(self, uci_coordinate, reverse_promotion=False, reverse_castle=False, override_from_piece='', override_to_piece=''):
         from_letter_number = letter_to_number(uci_coordinate[0:1])
         from_number = abs(int(uci_coordinate[1:2]) - 8)
         to_letter_number = letter_to_number(uci_coordinate[2:3])
         to_number = abs(int(uci_coordinate[3:4]) - 8)
         from_piece = self.board_state[from_number][from_letter_number]
         to_piece = self.board_state[to_number][to_letter_number]
+        if len(override_from_piece) > 0:
+            from_piece = override_from_piece
+        if len(override_to_piece) > 0:
+            to_piece = override_to_piece
+        if reverse_promotion:
+            from_piece = '-'
+            to_piece = 'P' if (self.played_move_count % 2 == 0) else 'p'
+        if reverse_castle:
+            rook_offset = 1
+            if uci_coordinate[0:1] == 'c':
+                rook_offset = -2
+                self.board_state[to_number][to_letter_number - 1] = '-'
+            else:
+                self.board_state[to_number][to_letter_number + 2] = '-'
+            self.board_state[from_number][from_letter_number + rook_offset] = 'R' if (self.played_move_count % 2 == 0) else 'r'
+            self.board_state[to_number][to_letter_number] = 'K' if (self.played_move_count % 2 == 0) else 'k'
+            self.board_state[to_number][to_letter_number + rook_offset] = '-'
+            return [from_piece, to_piece]
         promote = ""
         if len(uci_coordinate) > 4:
             promote = uci_coordinate[4:5]
-        if (from_piece in ('P', 'p') and to_piece == '-' and \
-            uci_coordinate[0:1] != uci_coordinate[2:3]):
+        if (from_piece in ('P', 'p') and to_piece == '-' and uci_coordinate[0:1] != uci_coordinate[2:3] and len(override_from_piece) == 0 and len(override_to_piece) == 0):
             self.board_state[from_number][from_letter_number] = '-'
             self.board_state[to_number][to_letter_number] = from_piece
             self.board_state[from_number][to_letter_number] = '-'
@@ -128,34 +145,64 @@ class Board:
                 else:
                     self.board_state[from_number][from_letter_number + 1] = 'r'
             else:
-                self.board_state[from_number][to_letter_number - 2] = '-'
+                self.board_state[to_number][to_letter_number - 2] = '-'
                 if self.played_move_count % 2 == 0:
                     self.board_state[from_number][from_letter_number - 1] = 'R'
                 else:
                     self.board_state[from_number][from_letter_number - 1] = 'r'
 
             if self.played_move_count % 2 == 0:
-                self.board_state[from_number][to_letter_number] = 'K'
+                self.board_state[to_number][to_letter_number] = 'K'
             else:
-                self.board_state[from_number][to_letter_number] = 'k'
+                self.board_state[to_number][to_letter_number] = 'k'
         else:
-            self.board_state[from_number][from_letter_number] = '-'
+            if len(override_to_piece) == 0:
+                self.board_state[from_number][from_letter_number] = '-'
+            else:
+                self.board_state[from_number][from_letter_number] = override_to_piece
             if promote != "":
                 if self.played_move_count % 2 == 0:
                     self.board_state[to_number][to_letter_number] = promote.upper()
                 else:
                     self.board_state[to_number][to_letter_number] = promote
             else:
-                self.board_state[to_number][to_letter_number] = from_piece
+                if len(override_from_piece) == 0:
+                    self.board_state[to_number][to_letter_number] = from_piece
+                else:
+                    self.board_state[to_number][to_letter_number] = override_from_piece
 
-        self.moveList.append(uci_coordinate)
+        return [from_piece, to_piece]
+
+    def make_move(self, uci_coordinate):
+        (from_piece, to_piece) = self.apply_move(uci_coordinate)
+        self.move_list.append([uci_coordinate, from_piece, to_piece])
         self.played_move_count += 1
+
+
+    def undo_move(self):
+        old_move = self.move_list.pop()
+        self.played_move_count -= 1
+        uci_coordinate = old_move[0]
+        from_piece = old_move[1]
+        to_piece = old_move[2]
+
+        self.apply_move(uci_coordinate[2:4] + uci_coordinate[0:2], len(uci_coordinate) > 4, \
+                        uci_coordinate in ('e1g1', 'e1c1', 'e8g8', 'e8c8'), from_piece, to_piece)
+
 
     def show_board(self):
         for i in range(8):
             for j in range(8):
                 print(self.board_state[i][j], end=" ")
             print()
+
+    def board_to_string(self):
+        board_string = ''
+        for i in range(8):
+            for j in range(8):
+                board_string += self.board_state[i][j]
+            board_string += '|'
+        return board_string
 
     def get_valid_moves(self):
         white_valid_moves = []
@@ -190,31 +237,24 @@ class Board:
                         8: {'column': (column - 1), 'row': (row - 1)},
                     }
                     if is_white:
-                        if white_start_coordinate == 'e1' and eval_state[7][5] == '-' and \
-                        eval_state[7][6] == '-' and eval_state[7][7] == 'R':
+                        if white_start_coordinate == 'e1' and eval_state[7][5] == '-' and eval_state[7][6] == '-' and eval_state[7][7] == 'R':
                             white_valid_moves.append(white_start_coordinate + 'g1')
-                        if white_start_coordinate == 'e1' and eval_state[7][1] == '-' and \
-                        eval_state[7][2] == '-' and eval_state[7][3] == '-' and \
-                        eval_state[7][0] == 'R':
+                        if white_start_coordinate == 'e1' and eval_state[7][1] == '-' and eval_state[7][2] == '-' and eval_state[7][3] == '-' and eval_state[7][0] == 'R':
                             white_valid_moves.append(white_start_coordinate + 'c1')
                     else:
-                        if black_valid_moves == 'e8' and eval_state[0][1] == '-' and \
-                        eval_state[0][1] == '-' and eval_state[0][2] == '-' and \
-                        eval_state[0][0] == 'r':
+                        if black_valid_moves == 'e8' and eval_state[0][1] == '-' and eval_state[0][1] == '-' and eval_state[0][2] == '-' and eval_state[0][0] == 'r':
                             black_valid_moves.append(black_start_coordinate + 'c8')
-                        if black_valid_moves == 'e8' and eval_state[0][5] == '-' and \
-                        eval_state[0][6] == '-' and eval_state[0][7] == 'r':
+                        if black_valid_moves == 'e8' and eval_state[0][5] == '-' and eval_state[0][6] == '-' and eval_state[0][7] == 'r':
                             black_valid_moves.append(black_start_coordinate + 'g8')
-                    for n_move in king_moves.items():
-                        if (n_move['column'] >= 0 and n_move['column'] <= 7 and \
-                            n_move['row'] >= 0 and n_move['row'] <= 7):
-                            eval_piece = eval_state[n_move['row']][n_move['column']]
+                    for _, k_move in king_moves.items():
+                        if (k_move['column'] >= 0 and k_move['column'] <= 7 and k_move['row'] >= 0 and k_move['row'] <= 7):
+                            eval_piece = eval_state[k_move['row']][k_move['column']]
                             if is_white:
                                 can_capture = (eval_piece != '-' and eval_piece.islower())
                             else:
                                 can_capture = (eval_piece != '-' and eval_piece.isupper())
 
-                            dest = number_to_letter(n_move['column'] + 1) + str(abs(n_move['row'] - 8))
+                            dest = number_to_letter(k_move['column'] + 1) + str(abs(k_move['row'] - 8))
 
                             if eval_piece == '-' or can_capture:
                                 if is_white:
@@ -278,9 +318,9 @@ class Board:
                         5: {'column': (column + 1), 'row': (row + 2)},
                         6: {'column': (column - 1), 'row': (row + 2)},
                         7: {'column': (column + 2), 'row': (row + 1)},
-                        8: {'column': (column - 2), 'row': (row + 1)},
+                        8: {'column': (column - 2), 'row': (row + 1)}
                     }
-                    for n_move in night_moves.items():
+                    for _, n_move in night_moves.items():
                         if n_move['column'] >= 0 and n_move['column'] <= 7 and n_move['row'] >= 0 and n_move['row'] <= 7:
                             eval_piece = eval_state[n_move['row']][n_move['column']]
                             if is_white:
@@ -403,7 +443,6 @@ class Board:
         self.black_valid_moves = black_valid_moves
         self.white_attack_pieces = white_attack_pieces
         self.black_attack_pieces = black_attack_pieces
-        return {'white_valid_moves': white_valid_moves, 'black_valid_moves': black_valid_moves}
 
     def get_side_moves(self, is_white):
         if is_white:
@@ -420,10 +459,10 @@ class Board:
                 if piece != '-':
                     if is_white:
                         b_eval += PIECEPOINTS[piece.lower()]
-                        b_eval += (ALLPSGT[piece.lower()][row][column] / 10)
+                        b_eval += (ALLPSGT[piece.lower()][row][column] / 2)
                     else:
                         b_eval -= PIECEPOINTS[piece]
-                        b_eval -= (ALLPSGT[piece][abs(row-7)][abs(column-7)] / 10)
+                        b_eval -= (ALLPSGT[piece][abs(row-7)][abs(column-7)] / 2)
 
         # for (attacked, attacker) in self.white_attack_pieces:
         #   b_eval += ATTACKPOINTS[attacked.lower()] / 10
@@ -433,163 +472,193 @@ class Board:
 
         return b_eval
 
-    def minimax_root(self, depth, local_board, max_time):
-        lgl_mvs = local_board.get_side_moves(local_board.played_move_count % 2 == 0)
-        poss_mvs = lgl_mvs
-        if len(poss_mvs) == 1:
-            local_board.depth = 1
-            return [local_board.board_evaluation(), poss_mvs[0]]
+class Search:
+    last_move = ''
+    nodes = 0
+    depth = 0
+    end_time = 0
 
-        is_maxing_white = (local_board.played_move_count % 2 == 0)
-        global_score = -50000 if is_maxing_white else 50000
+    def search(self, depth, local_board, move_time):
+        is_white = local_board.played_move_count % 2 == 0
+
+        global_score = -MATESCORE - 1 if is_white else MATESCORE + 1
         chosen_move = None
 
-        original_state = [x[:] for x in local_board.board_state]
+        self.depth = depth
 
-        local_board.depth = depth
+        alpha = -MATESCORE
+        beta = MATESCORE
 
-        max_time = max_time / len(poss_mvs)
-        # if max_time < 2:
-        #   max_time = 20
+        poss_mvs = local_board.get_side_moves(is_white)
+        max_time = move_time / len(poss_mvs)
 
         for move in poss_mvs:
-            local_board.nodes += 1
+            self.nodes += 1
+
             local_board.make_move(move)
 
-            local_start_time = time.perf_counter() + max_time
+            self.end_time = time.perf_counter() + max_time
 
-            local_score = self.minimax(depth - 1, -50000, 50000, local_board, local_start_time, move)
+            if is_white:
+                local_score = self.min_value(local_board, alpha, beta, depth - 1)
+                if local_score > global_score:
+                    global_score = local_score
+                    chosen_move = move
+            else:
+                local_score = self.max_value(local_board, alpha, beta, depth - 1)
+                if local_score < global_score:
+                    global_score = local_score
+                    chosen_move = move
 
-            if is_maxing_white and local_score > global_score:
-                global_score = local_score
-                chosen_move = move
-            elif not is_maxing_white and local_score < global_score:
-                global_score = local_score
-                chosen_move = move
+            local_board.undo_move()
 
-            local_board.set_board_state([x[:] for x in original_state])
-            local_board.played_move_count -= 1
-
-        GAMEBOARD.last_move = chosen_move
+        self.last_move = chosen_move
         return [global_score, chosen_move]
 
-    def minimax(self, depth, alpha, beta, local_board, end_time, last_move):
-        is_maxing_white = (local_board.played_move_count % 2 == 0)
+    def max_value(self, local_board, alpha, beta, depth):
         local_board.get_valid_moves()
-        poss_mvs = local_board.get_side_moves(is_maxing_white)
-        local_start_time = time.perf_counter()
+        poss_mvs = local_board.get_side_moves(local_board.played_move_count % 2 == 0)
 
-        if depth == 0 or local_start_time >= end_time or len(poss_mvs) == 0:
-            offset = 0
-            if last_move == GAMEBOARD.last_move:
-                if is_maxing_white:
-                    offset = -30.0
-                else:
-                    offset = 30.0
-            return local_board.board_evaluation() + offset
+        local_time = time.perf_counter()
 
-        initial_score = local_board.board_evaluation()
-
-        if (is_maxing_white and initial_score < -50000) or (not is_maxing_white and initial_score > 50000):
+        if self.check_terminal(poss_mvs) or local_time >= self.end_time or (depth <= 0):
             return local_board.board_evaluation()
 
-        original_state = [x[:] for x in local_board.board_state]
-        best_score = -50000 if is_maxing_white else 50000
+        value = -MATESCORE
+
         for move in poss_mvs:
-            local_board.nodes += 1
+            self.nodes += 1
+
             local_board.make_move(move)
+            value = max(value, self.min_value(local_board, alpha, beta, depth - 1))
+            local_board.undo_move()
 
-            local_score = self.minimax(depth - 1, alpha, beta, local_board, end_time, move)
+            if value >= beta:
+                return value
 
-            if is_maxing_white:
-                best_score = max(best_score, local_score)
-                alpha = max(alpha, best_score)
-            else:
-                best_score = min(best_score, local_score)
-                beta = min(beta, best_score)
+            alpha = max(alpha, value)
 
-            local_board.set_board_state([x[:] for x in original_state])
-            local_board.played_move_count -= 1
+        return value
 
-            if beta <= alpha:
-                break
+    def min_value(self, local_board, alpha, beta, depth):
+        local_board.get_valid_moves()
+        poss_mvs = local_board.get_side_moves(local_board.played_move_count % 2 == 0)
 
-        return best_score
+        local_time = time.perf_counter()
 
-GAMEBOARD = Board()
+        if self.check_terminal(poss_mvs) or local_time >= self.end_time or (depth <= 0):
+            return local_board.board_evaluation()
 
-while True:
-    try:
-        LINE = input()
-        if LINE == "quit":
+        value = MATESCORE
+
+        for move in poss_mvs:
+            self.nodes += 1
+
+            local_board.make_move(move)
+            value = min(value, self.max_value(local_board, alpha, beta, depth - 1))
+            local_board.undo_move()
+
+            if value <= alpha:
+                return value
+
+            beta = min(beta, value)
+
+        return value
+
+    def check_terminal(self, poss_mvs):
+        return len(poss_mvs) == 0
+
+def main():
+    game_board = Board()
+
+    while True:
+        try:
+            line = input()
+            if line == "quit":
+                sys.exit()
+            elif line == "uci":
+                print("pygone 1.0 by rcostheta")
+                print("uciok")
+                game_board.show_board()
+                game_board.make_move('a8a7')
+                game_board.show_board()
+                game_board.undo_move()
+                game_board.show_board()
+            elif line == "ucinewgame":
+                game_board = Board()
+                game_board.played_move_count = 0
+            elif line == "eval":
+                game_board.get_valid_moves()
+                print('wval: ', game_board.get_side_moves(1))
+                print('bval: ', game_board.get_side_moves(0))
+                print(game_board.board_evaluation())
+                game_board.show_board()
+            elif line == "isready":
+                print("readyok")
+            elif line.startswith("position"):
+                moves = line.split()
+                offset_moves = game_board.played_move_count + 3
+                for position_move in moves[offset_moves:]:
+                    game_board.make_move(position_move)
+                    offset_moves += 1
+                game_board.played_move_count = (offset_moves - 3)
+            elif line.startswith("go"):
+                go_board = Board()
+                go_board.set_board_state([x[:] for x in game_board.board_state.copy()])
+                go_board.played_move_count = game_board.played_move_count
+                go_board.get_valid_moves()
+
+                white_time = 1000000
+                black_time = 1000000
+                go_depth = 28
+
+                args = line.split()
+                for key, arg in enumerate(args):
+                    if arg == 'wtime':
+                        white_time = int(args[key + 1])
+                    if arg == 'btime':
+                        black_time = int(args[key + 1])
+                    if arg == 'depth':
+                      go_depth = int(args[key + 1])
+
+                if go_depth < 2:
+                    go_depth = 2
+
+                time_move_calc = 40
+                if game_board.played_move_count > 38:
+                    time_move_calc = 2
+                else:
+                    time_move_calc = 40 - game_board.played_move_count
+
+                if game_board.played_move_count % 2 == 0:
+                    move_time = white_time / (time_move_calc * 1000)
+                else:
+                    move_time = black_time / (time_move_calc * 1000)
+
+                move_time -= 3
+
+                if move_time < 8:
+                    move_time = 8
+
+                if move_time < 10 and go_depth > 5:
+                    go_depth = 5
+
+                go_depth = 4
+
+                searcher = Search()
+
+                start_time = time.perf_counter()
+                (score, move) = searcher.search(go_depth, go_board, move_time)
+                elapsed_time = math.ceil(time.perf_counter() - start_time)
+                nps = math.ceil(searcher.nodes / elapsed_time)
+
+                print("info depth " + str(searcher.depth) + " score cp " + str(math.ceil(score)) + " time " + str(elapsed_time) + " nodes " + str(searcher.nodes) + " nps " + str(nps) + " pv " + move)
+                print("bestmove " + move)
+        except (KeyboardInterrupt, SystemExit):
+            print('quit')
             sys.exit()
-        elif LINE == "uci":
-            print("pygone 1.0 by rcostheta")
-            print("uciok")
-        elif LINE == "ucinewgame":
-            GAMEBOARD = Board()
-            GAMEBOARD.played_move_count = 0
-        elif LINE == "eval":
-            GAMEBOARD.get_valid_moves()
-            GAMEBOARD.get_side_moves(1)
-            # GAMEBOARD.get_side_moves(0)
-            print(GAMEBOARD.board_evaluation())
-            GAMEBOARD.show_board()
-        elif LINE == "isready":
-            print("readyok")
-        elif LINE.startswith("position"):
-            MOVES = LINE.split()
-            OFFSETMOVES = GAMEBOARD.played_move_count + 3
-            for position_move in MOVES[OFFSETMOVES:]:
-                GAMEBOARD.make_move(position_move)
-                OFFSETMOVES += 1
-            GAMEBOARD.played_move_count = (OFFSETMOVES - 3)
-        elif LINE.startswith("go"):
-            GOBOARD = Board()
-            GOBOARD.set_board_state([x[:] for x in GAMEBOARD.board_state.copy()])
-            GOBOARD.played_move_count = GAMEBOARD.played_move_count
-            GOBOARD.get_valid_moves()
+        except Exception as exc:
+            print(exc)
+            raise
 
-            WHITETIME = 300
-            BLACKTIME = 300
-            GODEPTH = 3
-
-            ARGS = LINE.split()
-            for key, arg in enumerate(ARGS):
-                if arg == 'wtime':
-                    WHITETIME = int(ARGS[key + 1])
-                if arg == 'btime':
-                    BLACKTIME = int(ARGS[key + 1])
-                # if arg == 'depth':
-                #   depth = int(ARGS[key + 1])
-
-            TIMEMOVECALC = 40
-            if GAMEBOARD.played_move_count > 38:
-                TIMEMOVECALC = 2
-            else:
-                TIMEMOVECALC = 40 - GAMEBOARD.played_move_count
-
-            if GAMEBOARD.played_move_count % 2 == 0:
-                MOVETIME = WHITETIME / (TIMEMOVECALC * 1000)
-            else:
-                MOVETIME = BLACKTIME / (TIMEMOVECALC * 1000)
-
-            MOVETIME -= 3
-
-            if MOVETIME < 5:
-                MOVETIME = 5
-
-            STARTTIME = time.perf_counter()
-            (SCORE, MOVE) = GOBOARD.minimax_root(GODEPTH, GOBOARD, MOVETIME)
-            ELAPSEDTIME = math.ceil(time.perf_counter() - STARTTIME)
-            NPS = math.ceil(GOBOARD.nodes / ELAPSEDTIME)
-            # if GAMEBOARD.played_move_count % 2 != 0:
-            #   score = score * -1
-            print("info depth " + str(GOBOARD.depth) + " score cp " + str(math.ceil(SCORE)) + " time " + str(ELAPSEDTIME) + " nodes " + str(GOBOARD.nodes) + " nps " + str(NPS) + " pv " + MOVE)
-            print("bestmove " + MOVE)
-    except (KeyboardInterrupt, SystemExit):
-        print('quit')
-        sys.exit()
-    except Exception as exc:
-        print(exc)
-        raise
+main()

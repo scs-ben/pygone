@@ -113,3 +113,35 @@ Kh8 33. Qxh6# 1-0
 1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 d6 5. O-O Qf6 6. Bxc6+ bxc6 7. Ne1 d5
 8. exd5 cxd5 9. d4 e4 *
 
+[Event "?"]
+[Site "?"]
+[Date "2020.09.14"]
+[Round "1"]
+[White "pygone"]
+[Black "sf12"]
+[Result "0-1"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. Bb3 Nxe4 6. Ba4 Nf6 7. Bb3 d5 8. Ba4
+b5 9. Bb3 e4 10. Ba4 exf3 11. Bb3 fxg2 12. Ba4 Qe7+ 0-1
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.14"]
+[Round "1"]
+[White "pygone"]
+[Black "sf12"]
+[Result "*"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. Bb3 Nxe4 6. Ba4 Nf6 7. Bb3 d5 8. Ba4
+b5 *
+
+[Event "?"]
+[Site "?"]
+[Date "2020.09.14"]
+[Round "1"]
+[White "pygone"]
+[Black "sf12"]
+[Result "*"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 *
+

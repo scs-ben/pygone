@@ -9,10 +9,10 @@
         option.Hash=16 \
         option.Contempt=0 \
         option.Threads=1 \
+        depth=1 \
     -each \
         proto=uci \
-        tc=inf \
-        depth=1 \
+        tc=0/300+2 \
         restart=off \
         -openings file=book.pgn \
         -repeat \
