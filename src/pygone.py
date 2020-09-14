@@ -4,7 +4,6 @@ import sys
 import time
 
 PIECEPOINTS = {'p': 100.0, 'r': 479.0, 'n': 280.0, 'b': 320.0, 'q': 929.0, 'k': 60000.0}
-ATTACKPOINTS = {'p': 5.0, 'r': 18.0, 'n': 10.0, 'b': 10.0, 'q': 20.0, 'k': 30.0}
 
 PPSQT = [[0, 0, 0, 0, 0, 0, 0, 0],
          [78, 83, 86, 73, 102, 82, 85, 90],
@@ -475,12 +474,6 @@ class Board:
                         b_eval -= PIECEPOINTS[piece]
                         b_eval -= (ALLPSGT[piece][abs(row-7)][abs(column-7)] / 1)
 
-        # for (attacked, attacker) in self.white_attack_pieces:
-        #   b_eval += ATTACKPOINTS[attacked.lower()] / 10
-        # for (attacked, attacker) in self.black_attack_pieces:
-        #   b_eval -= ATTACKPOINTS[attacked.lower()] / 10
-
-
         return b_eval
 
 class Search:
@@ -525,8 +518,6 @@ class Search:
 
             local_board.undo_move()
 
-        if chosen_move is None:
-            chosen_move = poss_mvs[0]
         self.last_move = chosen_move
         return [global_score, chosen_move]
 
@@ -538,7 +529,7 @@ class Search:
 
         local_time = time.perf_counter()
 
-        if self.check_terminal(poss_mvs) or local_time >= self.end_time or (depth <= 0):
+        if len(poss_mvs) == 0 or local_time >= self.end_time or (depth <= 0):
             return local_board.board_evaluation()
 
         value = -1e8
@@ -567,7 +558,7 @@ class Search:
 
         local_time = time.perf_counter()
 
-        if self.check_terminal(poss_mvs) or local_time >= self.end_time or (depth <= 0):
+        if len(poss_mvs) == 0 or local_time >= self.end_time or (depth <= 0):
             return local_board.board_evaluation()
 
         value = 1e8
@@ -586,9 +577,6 @@ class Search:
             beta = min(beta, value)
 
         return value
-
-    def check_terminal(self, poss_mvs):
-        return len(poss_mvs) == 0
 
 def main():
     game_board = Board()

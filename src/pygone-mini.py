@@ -3,7 +3,6 @@ import math
 import sys
 import time
 A1={'p':100.0,'r':479.0,'n':280.0,'b':320.0,'q':929.0,'k':60000.0}
-A2={'p':5.0,'r':18.0,'n':10.0,'b':10.0,'q':20.0,'k':30.0}
 A3=[[0,0,0,0,0,0,0,0],[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0,0,0,0,0,0,0,0]]
 A4=[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,27,62,-2],[24,24,45,37,33,41,25,17],[-1,5,31,21,22,35,2,0],[-18,10,13,22,18,15,11,-14],[-23,-15,2,0,2,0,-23,-20],[-74,-23,-26,-24,-19,-35,-22,-69]]
 A5=[[-59,-78,-82,-76,-23,-107,-37,-50],[-11,20,35,-42,-39,31,2,-22],[-9,39,-32,41,52,-10,28,-14],[25,17,20,34,26,25,15,10],[13,10,17,23,17,16,0,7],[14,25,24,15,8,25,20,15],[19,20,11,6,7,6,20,16],[-7,2,-15,-12,-14,-15,-10,-10]]
@@ -324,7 +323,7 @@ class H9:
   self.B6=B6
   self.D9=D9
   self.D0=D0
- def in_check(self,E7,debug=False):
+ def I9(self,E7,debug=False):
   if E7:
    for(attacked,attacker)in self.D0:
     if attacked=='K':
@@ -370,7 +369,7 @@ class G4:
    self.nodes+=1
    G9.D4(move)
    G9.D8()
-   if not G9.in_check(E7):
+   if not G9.I9(E7):
     self.G6=time.perf_counter()+G8
     if E7:
      H2=self.H5(G9,H3,H4,depth-1)
@@ -383,8 +382,6 @@ class G4:
       G0=H2
       F41=move
    G9.D6()
-  if F41 is None:
-   F41=H1[0]
   self.G5=F41
   return[G0,F41]
  def H6(self,G9,H3,H4,depth):
@@ -392,13 +389,13 @@ class G4:
   G9.D8()
   H1=G9.G2(E7)
   local_time=time.perf_counter()
-  if self.H7(H1)or local_time>=self.G6 or(depth<=0):
+  if len(H1)==0 or local_time>=self.G6 or(depth<=0):
    return G9.G3()
   value=-1e8
   for move in H1:
    G9.D4(move)
    G9.D8()
-   if not G9.in_check(E7):
+   if not G9.I9(E7):
     self.nodes+=1
     value=max(value,self.H5(G9,H3,H4,depth-1))
    G9.D6()
@@ -411,13 +408,13 @@ class G4:
   G9.D8()
   H1=G9.G2(E7)
   local_time=time.perf_counter()
-  if self.H7(H1)or local_time>=self.G6 or(depth<=0):
+  if len(H1)==0 or local_time>=self.G6 or(depth<=0):
    return G9.G3()
   value=1e8
   for move in H1:
    G9.D4(move)
    G9.D8()
-   if not G9.in_check(E7):
+   if not G9.I9(E7):
     self.nodes+=1
     value=min(value,self.H6(G9,H3,H4,depth-1))
    G9.D6()
@@ -425,8 +422,6 @@ class G4:
     return value
    H4=min(H4,value)
   return value
- def H7(self,H1):
-  return len(H1)==0
 def main():
  H8=H9()
  while True:
