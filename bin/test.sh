@@ -3,14 +3,12 @@
     -engine \
         name=pygone \
         cmd=pygone \
-        depth=5 \
+        depth=1 \
     -engine \
-        name=sf12 \
-        cmd=stockfish_20090418_x64 \
+        name=weiss \
+        cmd=weiss/src/weiss \
         option.Hash=16 \
-        option.Contempt=0 \
         option.Threads=1 \
-        option.'Use NNUE'=false \
         depth=1 \
     -each \
         proto=uci \
@@ -19,4 +17,4 @@
         -openings file=book.pgn \
         -repeat \
         -pgnout games.pgn min \
-        -games 2 -rounds 100 > debug.log
+        -games 2 -rounds 2700 > debug.log
