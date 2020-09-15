@@ -574,7 +574,6 @@ class Search:
             else:
                 return -1 * local_board.board_evaluation()
 
-
         value = -1e8
 
         for move in poss_mvs:
@@ -583,7 +582,7 @@ class Search:
 
             if not local_board.in_check(is_white):
                 self.nodes += 1
-                value = max(value, -self.negamax(local_board, -alpha, -beta, depth - 1))
+                value = max(value, -self.negamax(local_board, -beta, -alpha, depth - 1))
                 alpha = max(alpha, value)
             local_board.undo_move()
 

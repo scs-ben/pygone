@@ -428,7 +428,7 @@ class G4:
    G9.D8()
    if not G9.I9(E7):
     self.nodes+=1
-    value=max(value,-self.J5(G9,-H3,-H4,depth-1))
+    value=max(value,-self.J5(G9,-H4,-H3,depth-1))
     H3=max(H3,value)
    G9.D6()
    if H3>=H4:
