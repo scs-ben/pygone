@@ -1,5 +1,8 @@
 bin/cutechess*
 bin/stockfish*
+bin/ethereal*
+bin/ethy*
+bin/weiss*
 src/__pycache__*
 bin/debug.log
 bin/games.pgn
