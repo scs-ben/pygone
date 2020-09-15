@@ -1,16 +1,16 @@
-#!/usr/bin/env python3
+#!/usr/bin/env pypy3
 import math, sys, time
 
-PIECEPOINTS = {'p': 100.0, 'r': 500.0, 'n': 300.0, 'b': 300.0, 'q': 1000.0, 'k': 60000.0}
+PIECEPOINTS = {'p': 100, 'r': 500, 'n': 300, 'b': 300, 'q': 1000, 'k': 60000}
 
-PPSQT = [[0, 0, 0, 0, 0, 0, 0, 0],
+PPSQT = [[0]*8,
          [78, 83, 86, 73, 102, 82, 85, 90],
          [7, 29, 21, 44, 40, 31, 44, 7],
          [-17, 16, -2, 15, 14, 0, 15, -13],
          [-26, 3, 10, 9, 6, 1, 0, -23],
          [-22, 9, 5, -11, -10, -2, 3, -19],
          [-31, 8, -7, -37, -36, -14, 3, -31],
-         [0, 0, 0, 0, 0, 0, 0, 0]]
+         [0]*8]
 NPSQT = [[-66, -53, -75, -75, -10, -55, -58, -70],
          [-3, -6, 100, -36, 4, 62, -4, -14],
          [10, 67, 1, 74, 73, 27, 62, -2],
@@ -80,7 +80,6 @@ class Board:
     black_king_location = 'e8'
     move_list_pieces = []
     move_list = []
-    tt_set = {}
 
     def __init__(self):
         self.reset()
@@ -94,6 +93,10 @@ class Board:
         self.black_attack_pieces = []
         self.white_attack_locations = ''
         self.black_attack_locations = ''
+        self.white_king_location = 'e1'
+        self.black_king_location = 'e8'
+        self.move_list_pieces = []
+        self.move_list = []
 
     def set_default_board_state(self):
         self.board_state = [['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
@@ -201,8 +204,8 @@ class Board:
     def show_board(self):
         for i in range(8):
             for j in range(8):
-                pr(self.board_state[i][j], end=" ")
-            pr()
+                print(self.board_state[i][j], end=" ")
+            print()
 
     def board_to_hash(self):
         result = []
@@ -345,22 +348,34 @@ class Board:
                                     if can_capture:
                                         self.black_attack_locations += dest
                                         self.black_attack_pieces.append([eval_piece, piece])
-                if piece in ('r', 'R') or piece in ('q', 'Q'):
-                    is_white = piece in ('R', 'Q')
+                if piece in ('b', 'B', 'r', 'R', 'q', 'Q'):
+                    is_white = piece in ('B', 'R', 'Q')
 
-                    horizontal_moves = {
+                    all_moves = {
+                        # rook/queen
                         1: {'column': column, 'row': (row - 1), 'colIncrement': 0, 'rowIncrement': -1},
                         2: {'column': column, 'row': (row + 1), 'colIncrement': 0, 'rowIncrement': 1},
                         3: {'column': (column - 1), 'row': row, 'colIncrement': -1, 'rowIncrement': 0},
-                        4: {'column': (column + 1), 'row': row, 'colIncrement': 1, 'rowIncrement': 0}
+                        4: {'column': (column + 1), 'row': row, 'colIncrement': 1, 'rowIncrement': 0},
+                        # bish/queen
+                        5: {'column': (column - 1), 'row': (row - 1), 'colIncrement': -1, 'rowIncrement': -1},
+                        6: {'column': (column + 1), 'row': (row + 1), 'colIncrement': 1, 'rowIncrement': 1},
+                        7: {'column': (column - 1), 'row': (row + 1), 'colIncrement': -1, 'rowIncrement': 1},
+                        8: {'column': (column + 1), 'row': (row - 1), 'colIncrement': 1, 'rowIncrement': -1},
                     }
 
-                    for _, h_move in horizontal_moves.items():
-                        temp_row = h_move['row']
-                        temp_col = h_move['column']
+                    for key, a_move in all_moves.items():
+                        if key <= 4 and piece in ('b', 'B'):
+                            continue
+                        if key >= 5 and piece in ('r', 'R'):
+                            continue
+                        temp_row = a_move['row']
+                        temp_col = a_move['column']
                         while temp_row in range(8) and temp_col in range(8):
                             eval_piece = eval_state[temp_row][temp_col]
-                            can_capture = (is_white and eval_piece != '-' and eval_piece.islower()) or (not is_white and eval_piece != '-' and eval_piece.isupper())
+
+
+                            can_capture = (is_white and eval_piece in ('p', 'r', 'n', 'b', 'q', 'k')) or (not is_white and eval_piece in ('P', 'R', 'N', 'B', 'Q', 'K'))
 
                             if eval_piece == '-' or can_capture:
                                 dest = number_to_letter(temp_col + 1) + str(abs(temp_row - 8))
@@ -378,48 +393,13 @@ class Board:
                                     break
                             else:
                                 break
-                            temp_row += h_move['rowIncrement']
-                            temp_col += h_move['colIncrement']
-
-                if piece in ('b', 'B') or piece in ('q', 'Q'):
-                    is_white = piece in ('B', 'Q')
-
-                    diag_moves = {
-                        1: {'column': (column - 1), 'row': (row - 1), 'colIncrement': -1, 'rowIncrement': -1},
-                        2: {'column': (column + 1), 'row': (row + 1), 'colIncrement': 1, 'rowIncrement': 1},
-                        3: {'column': (column - 1), 'row': (row + 1), 'colIncrement': -1, 'rowIncrement': 1},
-                        4: {'column': (column + 1), 'row': (row - 1), 'colIncrement': 1, 'rowIncrement': -1}
-                    }
-
-                    for _, d_move in diag_moves.items():
-                        temp_row = d_move['row']
-                        temp_col = d_move['column']
-                        while temp_row in range(8) and temp_col in range(8):
-                            eval_piece = eval_state[temp_row][temp_col]
-                            can_capture = (is_white and eval_piece in ('p', 'r', 'b', 'q', 'k')) or (not is_white and eval_piece in ('P', 'R', 'B', 'Q', 'K'))
-
-                            if eval_piece == '-' or can_capture:
-                                dest = number_to_letter(temp_col + 1) + str(abs(temp_row - 8))
-                                if is_white:
-                                    self.white_valid_moves.append(white_start_coordinate + dest)
-                                    if can_capture:
-                                        self.white_attack_locations += dest
-                                        self.white_attack_pieces.append([eval_piece, piece])
-                                else:
-                                    self.black_valid_moves.append(black_start_coordinate + dest)
-                                    if can_capture:
-                                        self.black_attack_locations += dest
-                                        self.black_attack_pieces.append([eval_piece, piece])
-                                if can_capture:
-                                    break
-                            else:
-                                break
-                            temp_row += d_move['rowIncrement']
-                            temp_col += d_move['colIncrement']
+                            temp_row += a_move['rowIncrement']
+                            temp_col += a_move['colIncrement']
 
         move_string = ''.join(self.move_list)
         if self.played_move_count % 2 == 0:
             move_copy = self.white_valid_moves.copy()
+            move_string += ''.join(self.black_valid_moves.copy())
 
             for move in move_copy:
                 override_remove = ((move == 'e1g1' and ('e1' in move_string or 'f1' in move_string or 'g1' in move_string)) or (move == 'e1c1' and ('e1' in move_string or 'd1' in move_string or 'c1' in move_string)))
@@ -431,6 +411,7 @@ class Board:
                         continue
         else:
             move_copy = self.black_valid_moves.copy()
+            move_string += ''.join(self.white_valid_moves.copy())
 
             for move in move_copy:
                 override_remove = ((move == 'e8g8' and ('e8' in move_string or 'f8' in move_string or 'g8' in move_string)) or (move == 'e8c8' and ('e8' in move_string or 'd8' in move_string or 'c8' in move_string)))
@@ -461,17 +442,18 @@ class Board:
 
     def board_evaluation(self):
         b_eval = 0
-        for row in range(8):
-            for column in range(8):
-                piece = self.board_state[row][column]
-                is_white = piece.isupper()
-                if piece != '-':
-                    if is_white:
-                        b_eval += PIECEPOINTS[piece.lower()]
-                        b_eval += (ALLPSQT[piece.lower()][row][column] / 100)
-                    else:
-                        b_eval -= PIECEPOINTS[piece]
-                        b_eval -= (ALLPSQT[piece][abs(row-7)][abs(column-7)] / 100)
+        for table in range(64):
+            row = math.floor(table / 8)
+            column = table % 8
+            piece = self.board_state[row][column]
+            is_white = piece.isupper()
+            if piece != '-':
+                if is_white:
+                    b_eval += PIECEPOINTS[piece.lower()]
+                    b_eval += (ALLPSQT[piece.lower()][row][column] / 8)
+                else:
+                    b_eval -= PIECEPOINTS[piece]
+                    b_eval -= (ALLPSQT[piece][abs(row-7)][abs(column-7)] / 8)
 
         return b_eval
 
@@ -579,8 +561,7 @@ def main():
                 game_board.get_valid_moves()
                 print('wval: ', game_board.get_side_moves(1))
                 print('bval: ', game_board.get_side_moves(0))
-                print(game_board.board_evaluation(1))
-                print(game_board.tt_set)
+                print(game_board.board_evaluation())
                 game_board.show_board()
             elif line == "isready":
                 print("readyok")
@@ -592,11 +573,6 @@ def main():
                     offset_moves += 1
                 game_board.played_move_count = (offset_moves - 3)
             elif line.startswith("go"):
-                go_board = Board()
-                go_board.set_board_state([x[:] for x in game_board.board_state.copy()])
-                go_board.played_move_count = game_board.played_move_count
-                go_board.get_valid_moves()
-
                 white_time = 1000000
                 black_time = 1000000
                 go_depth = 8
@@ -635,7 +611,7 @@ def main():
                 searcher = Search()
 
                 start_time = time.perf_counter()
-                (score, move) = searcher.iterative_search(go_board, go_depth, move_time)
+                (score, move) = searcher.iterative_search(game_board, go_depth, move_time)
                 print("bestmove " + move)
         except (KeyboardInterrupt, SystemExit):
             print('quit')

@@ -20,6 +20,7 @@ sed -i -e 's/white_attack_locations/B7/g' pygone-mini.py
 sed -i -e 's/black_attack_locations/B8/g' pygone-mini.py
 sed -i -e 's/white_king_location/B9/g' pygone-mini.py
 sed -i -e 's/black_king_location/B0/g' pygone-mini.py
+sed -i -e 's/move_list_pieces/C11/g' pygone-mini.py
 sed -i -e 's/move_list/C1/g' pygone-mini.py
 sed -i -e 's/uci_coordinate/C2/g' pygone-mini.py
 sed -i -e 's/reverse_promotion/C3/g' pygone-mini.py
@@ -63,9 +64,9 @@ sed -i -e 's/position_move/F42/g' pygone-mini.py
 sed -i -e 's/n_move/F4/g' pygone-mini.py
 sed -i -e 's/horizontal_moves/F5/g' pygone-mini.py
 sed -i -e 's/h_move/F6/g' pygone-mini.py
-sed -i -e 's/diag_moves/F7/g' pygone-mini.py
+sed -i -e 's/all_moves/F7/g' pygone-mini.py
 sed -i -e 's/old_move/F81/g' pygone-mini.py
-sed -i -e 's/d_move/F8/g' pygone-mini.py
+sed -i -e 's/a_move/F8/g' pygone-mini.py
 sed -i -e 's/move_copy/F9/g' pygone-mini.py
 sed -i -e 's/move_string/F0/g' pygone-mini.py
 sed -i -e 's/override_remove/G1/g' pygone-mini.py
@@ -113,6 +114,8 @@ sed -i -e 's/board_hash/J0/g' pygone-mini.py
 sed -i -e 's/TranspositionTableEntry/K1/g' pygone-mini.py
 sed -i -e 's/tt_set/K2/g' pygone-mini.py
 sed -i -e 's/reset/K3/g' pygone-mini.py
+sed -i -e 's/time_move_calc/K4/g' pygone-mini.py
 
 sed -i -e 's/piece/Z1/g' pygone-mini.py
+sed -i -e 's/table/Z2/g' pygone-mini.py
 sed -i -e 's/# Created by pyminifier (https:\/\/github.com\/liftoff\/pyminifier)//g' pygone-mini.py

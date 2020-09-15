@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env pypy3
 import math,sys,time
-A1={'p':100.0,'r':500.0,'n':300.0,'b':300.0,'q':1000.0,'k':60000.0}
-A3=[[0,0,0,0,0,0,0,0],[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0,0,0,0,0,0,0,0]]
+A1={'p':100,'r':500,'n':300,'b':300,'q':1000,'k':60000}
+A3=[[0]*8,[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0]*8]
 A4=[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,27,62,-2],[24,24,45,37,33,41,25,17],[-1,5,31,21,22,35,2,0],[-18,10,13,22,18,15,11,-14],[-23,-15,2,0,2,0,-23,-20],[-74,-23,-26,-24,-19,-35,-22,-69]]
 A5=[[-59,-78,-82,-76,-23,-107,-37,-50],[-11,20,35,-42,-39,31,2,-22],[-9,39,-32,41,52,-10,28,-14],[25,17,20,34,26,25,15,10],[13,10,17,23,17,16,0,7],[14,25,24,15,8,25,20,15],[19,20,11,6,7,6,20,16],[-7,2,-15,-12,-14,-15,-10,-10]]
 A6=[[35,29,33,4,37,33,56,50],[55,29,56,67,55,62,34,60],[19,35,28,33,45,27,25,15],[0,5,16,13,18,-4,-9,-6],[-28,-35,-16,-21,-13,-29,-46,-30],[-42,-28,-42,-25,-25,-35,-26,-46],[-53,-38,-31,-26,-29,-43,-44,-53],[-30,-24,-18,5,-2,-18,-31,-32]]
@@ -29,7 +29,6 @@ class H9:
  B0='e8'
  C1_Z1s=[]
  C1=[]
- K2={}
  def __init__(self):
   self.K3()
  def K3(self):
@@ -41,6 +40,10 @@ class H9:
   self.D0=[]
   self.B7=''
   self.B8=''
+  self.B9='e1'
+  self.B0='e8'
+  self.C1_Z1s=[]
+  self.C1=[]
  def B31(self):
   self.B3=[['r','n','b','q','k','b','n','r'],['p']*8,['-']*8,['-']*8,['-']*8,['-']*8,['P']*8,['R','N','B','Q','K','B','N','R']]
  def B32(self,state):
@@ -128,8 +131,8 @@ class H9:
  def D7(self):
   for i in range(8):
    for j in range(8):
-    pr(self.B3[i][j],end=" ")
-   pr()
+    print(self.B3[i][j],end=" ")
+   print()
  def J9(self):
   result=[]
   for _list in self.B3:
@@ -249,15 +252,19 @@ class H9:
          if E0:
           self.B8+=F1
           self.D0.append([E9,Z1])
-    if Z1 in('r','R')or Z1 in('q','Q'):
-     E7=Z1 in('R','Q')
-     F5={1:{'E3':E3,'E2':(E2-1),'E24':0,'E23':-1},2:{'E3':E3,'E2':(E2+1),'E24':0,'E23':1},3:{'E3':(E3-1),'E2':E2,'E24':-1,'E23':0},4:{'E3':(E3+1),'E2':E2,'E24':1,'E23':0}}
-     for _,F6 in F5.items():
-      E21=F6['E2']
-      E22=F6['E3']
+    if Z1 in('b','B','r','R','q','Q'):
+     E7=Z1 in('B','R','Q')
+     all_moves={1:{'E3':E3,'E2':(E2-1),'E24':0,'E23':-1},2:{'E3':E3,'E2':(E2+1),'E24':0,'E23':1},3:{'E3':(E3-1),'E2':E2,'E24':-1,'E23':0},4:{'E3':(E3+1),'E2':E2,'E24':1,'E23':0},5:{'E3':(E3-1),'E2':(E2-1),'E24':-1,'E23':-1},6:{'E3':(E3+1),'E2':(E2+1),'E24':1,'E23':1},7:{'E3':(E3-1),'E2':(E2+1),'E24':-1,'E23':1},8:{'E3':(E3+1),'E2':(E2-1),'E24':1,'E23':-1},}
+     for key,a_move in all_moves.items():
+      if key<=4 and Z1 in('b','B'):
+       continue
+      if key>=5 and Z1 in('r','R'):
+       continue
+      E21=a_move['E2']
+      E22=a_move['E3']
       while E21 in range(8)and E22 in range(8):
        E9=E1[E21][E22]
-       E0=(E7 and E9!='-' and E9.islower())or(not E7 and E9!='-' and E9.isupper())
+       E0=(E7 and E9 in('p','r','n','b','q','k'))or(not E7 and E9 in('P','R','N','B','Q','K'))
        if E9=='-' or E0:
         F1=B2(E22+1)+str(abs(E21-8))
         if E7:
@@ -274,38 +281,12 @@ class H9:
          break
        else:
         break
-       E21+=F6['E23']
-       E22+=F6['E24']
-    if Z1 in('b','B')or Z1 in('q','Q'):
-     E7=Z1 in('B','Q')
-     F7={1:{'E3':(E3-1),'E2':(E2-1),'E24':-1,'E23':-1},2:{'E3':(E3+1),'E2':(E2+1),'E24':1,'E23':1},3:{'E3':(E3-1),'E2':(E2+1),'E24':-1,'E23':1},4:{'E3':(E3+1),'E2':(E2-1),'E24':1,'E23':-1}}
-     for _,F8 in F7.items():
-      E21=F8['E2']
-      E22=F8['E3']
-      while E21 in range(8)and E22 in range(8):
-       E9=E1[E21][E22]
-       E0=(E7 and E9 in('p','r','b','q','k'))or(not E7 and E9 in('P','R','B','Q','K'))
-       if E9=='-' or E0:
-        F1=B2(E22+1)+str(abs(E21-8))
-        if E7:
-         self.B5.append(E5+F1)
-         if E0:
-          self.B7+=F1
-          self.D9.append([E9,Z1])
-        else:
-         self.B6.append(E6+F1)
-         if E0:
-          self.B8+=F1
-          self.D0.append([E9,Z1])
-        if E0:
-         break
-       else:
-        break
-       E21+=F8['E23']
-       E22+=F8['E24']
+       E21+=a_move['E23']
+       E22+=a_move['E24']
   F0=''.join(self.C1)
   if self.B4%2==0:
    F9=self.B5.copy()
+   F0+=''.join(self.B6.copy())
    for move in F9:
     G1=((move=='e1g1' and('e1' in F0 or 'f1' in F0 or 'g1' in F0))or(move=='e1c1' and('e1' in F0 or 'd1' in F0 or 'c1' in F0)))
     if G1:
@@ -315,6 +296,7 @@ class H9:
       continue
   else:
    F9=self.B6.copy()
+   F0+=''.join(self.B5.copy())
    for move in F9:
     G1=((move=='e8g8' and('e8' in F0 or 'f8' in F0 or 'g8' in F0))or(move=='e8c8' and('e8' in F0 or 'd8' in F0 or 'c8' in F0)))
     if G1:
@@ -339,17 +321,18 @@ class H9:
   return self.B6
  def G3(self):
   b_eval=0
-  for E2 in range(8):
-   for E3 in range(8):
-    Z1=self.B3[E2][E3]
-    E7=Z1.isupper()
-    if Z1!='-':
-     if E7:
-      b_eval+=A1[Z1.lower()]
-      b_eval+=(A9[Z1.lower()][E2][E3]/100)
-     else:
-      b_eval-=A1[Z1]
-      b_eval-=(A9[Z1][abs(E2-7)][abs(E3-7)]/100)
+  for table in range(64):
+   E2=math.floor(table/8)
+   E3=table%8
+   Z1=self.B3[E2][E3]
+   E7=Z1.isupper()
+   if Z1!='-':
+    if E7:
+     b_eval+=A1[Z1.lower()]
+     b_eval+=(A9[Z1.lower()][E2][E3]/8)
+    else:
+     b_eval-=A1[Z1]
+     b_eval-=(A9[Z1][abs(E2-7)][abs(E3-7)]/8)
   return b_eval
 class G4:
  nodes=0
@@ -427,8 +410,7 @@ def main():
     H8.D8()
     print('wval: ',H8.G2(1))
     print('bval: ',H8.G2(0))
-    print(H8.G3(1))
-    print(H8.K2)
+    print(H8.G3())
     H8.D7()
    elif line=="isready":
     print("readyok")
@@ -440,10 +422,6 @@ def main():
      H0+=1
     H8.B4=(H0-3)
    elif line.startswith("go"):
-    I1=H9()
-    I1.B32([x[:]for x in H8.B3.copy()])
-    I1.B4=H8.B4
-    I1.D8()
     I2=1000000
     I3=1000000
     I4=8
@@ -455,15 +433,15 @@ def main():
       I3=int(I5[key+1])
      if arg=='depth':
       I4=int(I5[key+1])
-    time_move_calc=40
+    K4=40
     if H8.B4>38:
-     time_move_calc=2
+     K4=2
     else:
-     time_move_calc=40-H8.B4
+     K4=40-H8.B4
     if H8.B4%2==0:
-     I7=I2/(time_move_calc*1000)
+     I7=I2/(K4*1000)
     else:
-     I7=I3/(time_move_calc*1000)
+     I7=I3/(K4*1000)
     I7-=3
     if I7<8:
      I7=8
@@ -471,7 +449,7 @@ def main():
      I4=4
     G7er=G4()
     I8=time.perf_counter()
-    (score,move)=G7er.G71(I1,I4,I7)
+    (score,move)=G7er.G71(H8,I4,I7)
     print("bestmove "+move)
   except(KeyboardInterrupt,SystemExit):
    print('quit')
