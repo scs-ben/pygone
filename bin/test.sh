@@ -3,7 +3,7 @@
     -engine \
         name=pygone \
         cmd=pygone \
-        depth=1 \
+        depth=4 \
     -engine \
         name=weiss \
         cmd=weiss/src/weiss \

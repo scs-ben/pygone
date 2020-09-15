@@ -459,22 +459,6 @@ class Board:
 
         return self.black_valid_moves
 
-    def order_moves(self, moves, is_white):
-        sort_moves = {}
-
-        for move in moves:
-            self.make_move(move)
-            sort_moves[self.board_evaluation()] = move
-            self.undo_move()
-
-        sort_moves = sorted(sort_moves.items(), key=lambda x:x[0], reverse=not is_white)
-
-        return_moves = []
-        for sort_move in sort_moves:
-            return_moves.append(sort_move[1])
-
-        return return_moves
-
     def board_evaluation(self):
         b_eval = 0
         for row in range(8):
@@ -527,7 +511,6 @@ class Search:
 
         local_board.get_valid_moves()
         poss_mvs = local_board.get_side_moves(is_white)
-        poss_mvs = local_board.order_moves(poss_mvs, is_white)
         depth = max(depth, 1)
 
         for move in poss_mvs:
@@ -537,7 +520,7 @@ class Search:
             local_board.get_valid_moves()
 
             if not local_board.in_check(is_white):
-                local_score = self.negamax(local_board, alpha, beta, depth - 1)
+                local_score = -self.negamax(local_board, -beta, -alpha, depth - 1)
                 if local_score >= global_score:
                     global_score = local_score
                     chosen_move = move
@@ -550,23 +533,10 @@ class Search:
     def negamax(self, local_board, alpha, beta, depth):
         original_alpha = alpha
 
-        tt_entry = self.transposition_table_lookup(local_board)
-        if tt_entry.depth >= depth:
-            if tt_entry.flag == TTEXACT:
-                return tt_entry.value
-            elif tt_entry.flag == TTLOWER:
-                alpha = max(alpha, tt_entry.value)
-            elif tt_entry.flag == TTUPPER:
-                beta = min(beta, tt_entry.value)
-
-            if alpha >= beta:
-                return tt_entry.value
-
         is_white = local_board.played_move_count % 2 == 0
 
         local_board.get_valid_moves()
         poss_mvs = local_board.get_side_moves(is_white)
-        poss_mvs = local_board.order_moves(poss_mvs, is_white)
 
         if len(poss_mvs) == 0 or (depth <= 0):
             if is_white:
@@ -589,41 +559,7 @@ class Search:
             if alpha >= beta:
                 break
 
-        tt_entry.value = value
-        if value <= original_alpha:
-            tt_entry.flag = TTUPPER
-        elif value >= beta:
-            tt_entry.flag = TTLOWER
-        else:
-            tt_entry.flag = TTEXACT
-        tt_entry.depth = depth
-        self.update_transposition_table_entry(tt_entry)
-
         return value
-
-    def transposition_table_lookup(self, local_board):
-        board_hash = local_board.board_to_hash()
-
-        if board_hash in game_board.tt_set.keys():
-            tt_entry = game_board.tt_set[board_hash]
-        else:
-            tt_entry = TranspositionTableEntry()
-            tt_entry.board_hash = board_hash
-            game_board.tt_set[board_hash] = tt_entry
-
-        return tt_entry
-
-    def update_transposition_table_entry(self, tt_entry):
-        game_board.tt_set[tt_entry.board_hash].value = tt_entry.value
-        game_board.tt_set[tt_entry.board_hash].flag = tt_entry.flag
-        game_board.tt_set[tt_entry.board_hash].depth = tt_entry.depth
-        game_board.tt_set[tt_entry.board_hash].value = tt_entry.value
-
-class TranspositionTableEntry:
-    value = -1e8
-    flag = TTLOWER
-    depth = 0
-    board_hash = ''
 
 game_board = Board()
 
