@@ -505,9 +505,6 @@ class Search:
 
             local_board.undo_move()
 
-            if self.nodes % 1e5 == 0:
-                print("info calculating", flush=True)
-
         return [global_score, chosen_move]
 
 
@@ -539,6 +536,9 @@ class Search:
                     if local_score > alpha and local_score < beta:
                         local_score = -self.negamax_pvs(local_board, -beta, -alpha, depth - 1, not is_white)
             local_board.undo_move()
+
+            if self.nodes % 5e5 == 0:
+                print("info calculating", flush=True)
 
             if local_score >= beta:
                 return beta

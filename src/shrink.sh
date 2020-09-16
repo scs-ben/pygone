@@ -126,4 +126,5 @@ sed -i -e 's/ping_time/L1/g' pygone-mini.py
 
 sed -i -e 's/piece/Z1/g' pygone-mini.py
 sed -i -e 's/table/Z2/g' pygone-mini.py
+sed -i -e 's/ping/Z3/g' pygone-mini.py
 sed -i -e 's/# Created by pyminifier (https:\/\/github.com\/liftoff\/pyminifier)//g' pygone-mini.py
