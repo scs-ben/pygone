@@ -467,7 +467,7 @@ class Search:
         self.end_time = time.perf_counter() + move_time
 
         self.depth = 0
-        while True:
+        while depth > 0:
             self.depth += 1
             depth -= 1
 
@@ -475,7 +475,8 @@ class Search:
 
             elapsed_time = math.ceil(time.perf_counter() - start_time)
             nps = math.ceil(self.nodes / elapsed_time)
-            print("info depth " + str(self.depth) + " score cp " + str(math.ceil(iterative_score)) + " time " + str(elapsed_time) + " nodes " + str(self.nodes) + " nps " + str(nps) + " pv " + str(iterative_move))
+
+            print("info depth " + str(self.depth) + " score cp " + str(math.ceil(iterative_score)) + " time " + str(elapsed_time) + " nodes " + str(self.nodes) + " nps " + str(nps) + " pv " + str(iterative_move), flush=True)
 
             if time.perf_counter() >= self.end_time or depth < 1:
                 break
@@ -547,7 +548,6 @@ game_board = Board()
 
 def main():
 
-    searcher = Search()
     init_time = time.perf_counter()
 
     while True:
@@ -556,18 +556,16 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print("pygone 1.0 by rcostheta")
-                print("uciok")
+                print("pygone 1.0 by rcostheta", flush=True)
+                print("uciok", flush=True)
             elif line == "ucinewgame":
                 game_board.reset()
             elif line == "eval":
                 game_board.get_valid_moves()
-                print('wval: ', game_board.get_side_moves(1))
-                print('bval: ', game_board.get_side_moves(0))
                 print(game_board.board_evaluation())
                 game_board.show_board()
             elif line == "isready":
-                print("readyok")
+                print("readyok", flush=True)
             elif line.startswith("position"):
                 moves = line.split()
                 offset_moves = game_board.played_move_count + 3
@@ -607,9 +605,10 @@ def main():
                 if move_time < 2:
                     go_depth = 2
 
+                searcher = Search()
                 start_time = time.perf_counter()
                 (score, move) = searcher.iterative_search(game_board, go_depth, move_time)
-                print("bestmove " + move)
+                print("bestmove " + move, flush=True)
         except (KeyboardInterrupt, SystemExit):
             print('quit')
             sys.exit()

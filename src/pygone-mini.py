@@ -342,13 +342,13 @@ class G4:
   I8=time.perf_counter()
   self.G6=time.perf_counter()+I7
   self.depth=0
-  while True:
+  while depth>0:
    self.depth+=1
    depth-=1
    (J3,J4)=self.G7(G9,self.depth)
    I6=math.ceil(time.perf_counter()-I8)
    nps=math.ceil(self.nodes/I6)
-   print("info depth "+str(self.depth)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(self.nodes)+" nps "+str(nps)+" pv "+str(J4))
+   print("info depth "+str(self.depth)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(self.nodes)+" nps "+str(nps)+" pv "+str(J4),flush=True)
    if time.perf_counter()>=self.G6 or depth<1:
     break
   return[J3,J4]
@@ -396,7 +396,6 @@ class G4:
   return value
 H8=H9()
 def main():
- G7er=G4()
  init_time=time.perf_counter()
  while True:
   try:
@@ -404,18 +403,16 @@ def main():
    if line=="quit":
     sys.exit()
    elif line=="uci":
-    print("pygone 1.0 by rcostheta")
-    print("uciok")
+    print("pygone 1.0 by rcostheta",flush=True)
+    print("uciok",flush=True)
    elif line=="ucinewgame":
     H8.K3()
    elif line=="eval":
     H8.D8()
-    print('wval: ',H8.G2(1))
-    print('bval: ',H8.G2(0))
     print(H8.G3())
     H8.D7()
    elif line=="isready":
-    print("readyok")
+    print("readyok",flush=True)
    elif line.startswith("position"):
     moves=line.split()
     H0=H8.B4+3
@@ -449,9 +446,10 @@ def main():
      I4=4
     if I7<2:
      I4=2
+    G7er=G4()
     I8=time.perf_counter()
     (score,move)=G7er.G71(H8,I4,I7)
-    print("bestmove "+move)
+    print("bestmove "+move,flush=True)
   except(KeyboardInterrupt,SystemExit):
    print('quit')
    sys.exit()
