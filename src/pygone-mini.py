@@ -389,8 +389,8 @@ class G4:
      if H2>H3 and H2<H4:
       H2=-self.J5(G9,-H4,-H3,depth-1,not E7)
    G9.D6()
-   if self.nodes%5e5==0:
-    print("info calculating",flush=True)
+   if self.nodes%1e5==0:
+    print("info nodes "+str(self.nodes),flush=True)
    if H2>=H4:
     return H4
    if H2>H3:
