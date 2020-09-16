@@ -1,7 +1,8 @@
 #!/usr/bin/env pypy3
-import math, sys, time
+import math, sys
+from time import perf_counter
 
-PIECEPOINTS = {'p': 100, 'r': 500, 'n': 300, 'b': 300, 'q': 1000, 'k': 60000}
+PIECEPOINTS = {'p': 100, 'r': 500, 'n': 300, 'b': 300, 'q': 1e3, 'k': 6e4}
 
 PPSQT = [[0]*8,
          [78, 83, 86, 73, 102, 82, 85, 90],
@@ -54,11 +55,10 @@ KPSQT = [[4, 54, 47, -99, -99, 60, 83, -62],
 
 ALLPSQT = {'p': PPSQT, 'n': NPSQT, 'b':BPSQT, 'r':RPSQT, 'q':QPSQT, 'k':KPSQT}
 
-MATESCORE = 50000
-
 WHITE_PIECES = ['P', 'R', 'N', 'B', 'Q', 'K']
 BLACK_PIECES = ['p', 'r', 'n', 'b', 'q', 'k']
 
+pc = perf_counter()
 isupper = lambda c: 'A' <= c <= 'Z'
 islower = lambda c: 'a' <= c <= 'z'
 
@@ -458,8 +458,8 @@ class Search:
     end_time = 0
 
     def iterative_search(self, local_board, depth, move_time):
-        start_time = time.perf_counter()
-        self.end_time = time.perf_counter() + move_time
+        start_time = perf_counter()
+        self.end_time = perf_counter() + move_time
 
         self.depth = 0
         while depth > 0:
@@ -468,12 +468,12 @@ class Search:
 
             (iterative_score, iterative_move) = self.search(local_board, self.depth)
 
-            elapsed_time = math.ceil(time.perf_counter() - start_time)
+            elapsed_time = math.ceil(perf_counter() - start_time)
             nps = math.ceil(self.nodes / elapsed_time)
 
             print("info depth " + str(self.depth) + " score cp " + str(math.ceil(iterative_score)) + " time " + str(elapsed_time) + " nodes " + str(self.nodes) + " nps " + str(nps) + " pv " + str(iterative_move), flush=True)
 
-            if time.perf_counter() >= self.end_time or depth < 1:
+            if perf_counter() >= self.end_time or depth < 1:
                 break
 
         return [iterative_score, iterative_move]
@@ -504,6 +504,9 @@ class Search:
                     chosen_move = s_move
 
             local_board.undo_move()
+
+            if self.nodes % 1e5 == 0:
+                print("info calculating", flush=True)
 
         return [global_score, chosen_move]
 
@@ -573,8 +576,8 @@ def main():
                     offset_moves += 1
                 game_board.played_move_count = (offset_moves - 3)
             elif line.startswith("go"):
-                white_time = 1000000
-                black_time = 1000000
+                white_time = 1e8
+                black_time = 1e8
                 go_depth = 8
 
                 args = line.split()
@@ -586,26 +589,25 @@ def main():
                     if arg == 'depth':
                       go_depth = int(args[key + 1])
 
-                time_move_calc = 40
-                if game_board.played_move_count > 38:
-                    time_move_calc = 2
-                else:
-                    time_move_calc = abs(game_board.played_move_count - 40)
+                time_move_calc = max(40 - game_board.played_move_count, 2)
 
-                if game_board.played_move_count % 2 == 0 and white_time < 50000:
-                    move_time = white_time / (time_move_calc * 1000)
-                else:
-                    move_time = black_time / (time_move_calc * 1000)
+                move_time = 1e8
 
-                move_time -= 5
+                is_white = game_board.played_move_count % 2 == 0
+
+                if is_white:
+                    move_time = white_time / (time_move_calc * 1e3)
+                else:
+                    move_time = black_time / (time_move_calc * 1e3)
 
                 if move_time < 10:
                     go_depth = 5
                 if move_time < 4:
+                    move_time = 2
                     go_depth = 3
 
                 searcher = Search()
-                start_time = time.perf_counter()
+                start_time = perf_counter()
                 (score, s_move) = searcher.iterative_search(game_board, go_depth, move_time)
                 print("bestmove " + s_move, flush=True)
         except (KeyboardInterrupt, SystemExit):

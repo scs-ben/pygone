@@ -122,6 +122,7 @@ sed -i -e 's/s_move/K7/g' pygone-mini.py
 sed -i -e 's/attacked/K8/g' pygone-mini.py
 sed -i -e 's/attacker/K9/g' pygone-mini.py
 sed -i -e 's/b_eval/K0/g' pygone-mini.py
+sed -i -e 's/ping_time/L1/g' pygone-mini.py
 
 sed -i -e 's/piece/Z1/g' pygone-mini.py
 sed -i -e 's/table/Z2/g' pygone-mini.py

@@ -1,6 +1,7 @@
 #!/usr/bin/env pypy3
-import math,sys,time
-A1={'p':100,'r':500,'n':300,'b':300,'q':1000,'k':60000}
+import math,sys
+from time import perf_counter
+A1={'p':100,'r':500,'n':300,'b':300,'q':1e3,'k':6e4}
 A3=[[0]*8,[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0]*8]
 A4=[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,27,62,-2],[24,24,45,37,33,41,25,17],[-1,5,31,21,22,35,2,0],[-18,10,13,22,18,15,11,-14],[-23,-15,2,0,2,0,-23,-20],[-74,-23,-26,-24,-19,-35,-22,-69]]
 A5=[[-59,-78,-82,-76,-23,-107,-37,-50],[-11,20,35,-42,-39,31,2,-22],[-9,39,-32,41,52,-10,28,-14],[25,17,20,34,26,25,15,10],[13,10,17,23,17,16,0,7],[14,25,24,15,8,25,20,15],[19,20,11,6,7,6,20,16],[-7,2,-15,-12,-14,-15,-10,-10]]
@@ -8,9 +9,9 @@ A6=[[35,29,33,4,37,33,56,50],[55,29,56,67,55,62,34,60],[19,35,28,33,45,27,25,15]
 A7=[[6,1,-8,-104,69,24,88,26],[14,32,60,-10,20,76,57,24],[-2,43,32,60,72,63,43,2],[1,-16,22,17,25,20,-13,-6],[-14,-15,-2,-5,-1,-10,-20,-22],[-30,-6,-13,-11,-16,-11,-16,-27],[-36,-18,0,-19,-15,-15,-21,-38],[-39,-30,-31,-13,-31,-36,-34,-42]]
 A8=[[4,54,47,-99,-99,60,83,-62],[-32,10,55,56,56,55,10,3],[-62,12,-57,44,-67,28,37,-31],[-55,50,11,-4,-19,13,0,-49],[-55,-43,-52,-28,-51,-47,-8,-50],[-47,-42,-43,-79,-64,-32,-29,-32],[-4,3,-14,-50,-57,-18,13,4],[22,30,-3,-14,6,-1,40,26]]
 A9={'p':A3,'n':A4,'b':A5,'r':A6,'q':A7,'k':A8}
-A0=50000
 K5=['P','R','N','B','Q','K']
 K6=['p','r','n','b','q','k']
+pc=perf_counter()
 isupper=lambda c:'A'<=c<='Z'
 islower=lambda c:'a'<=c<='z'
 def B1(letter):
@@ -333,17 +334,17 @@ class G4:
  depth=0
  G6=0
  def G71(self,G9,depth,I7):
-  I8=time.perf_counter()
-  self.G6=time.perf_counter()+I7
+  I8=perf_counter()
+  self.G6=perf_counter()+I7
   self.depth=0
   while depth>0:
    self.depth+=1
    depth-=1
    (J3,J4)=self.G7(G9,self.depth)
-   I6=math.ceil(time.perf_counter()-I8)
+   I6=math.ceil(perf_counter()-I8)
    nps=math.ceil(self.nodes/I6)
    print("info depth "+str(self.depth)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(self.nodes)+" nps "+str(nps)+" pv "+str(J4),flush=True)
-   if time.perf_counter()>=self.G6 or depth<1:
+   if perf_counter()>=self.G6 or depth<1:
     break
   return[J3,J4]
  def G7(self,G9,depth):
@@ -365,6 +366,8 @@ class G4:
      G0=H2
      F41=K7
    G9.D6()
+   if self.nodes%1e5==0:
+    print("info calculating",flush=True)
   return[G0,F41]
  def J5(self,G9,H3,H4,depth,E7):
   G9.D8()
@@ -420,8 +423,8 @@ def main():
      H0+=1
     H8.B4=(H0-3)
    elif line.startswith("go"):
-    I2=1000000
-    I3=1000000
+    I2=1e8
+    I3=1e8
     I4=8
     I5=line.split()
     for key,arg in enumerate(I5):
@@ -431,22 +434,20 @@ def main():
       I3=int(I5[key+1])
      if arg=='depth':
       I4=int(I5[key+1])
-    K4=40
-    if H8.B4>38:
-     K4=2
+    K4=max(40-H8.B4,2)
+    I7=1e8
+    E7=H8.B4%2==0
+    if E7:
+     I7=I2/(K4*1e3)
     else:
-     K4=abs(H8.B4-40)
-    if H8.B4%2==0 and I2<50000:
-     I7=I2/(K4*1000)
-    else:
-     I7=I3/(K4*1000)
-    I7-=5
+     I7=I3/(K4*1e3)
     if I7<10:
      I4=5
     if I7<4:
+     I7=2
      I4=3
     G7er=G4()
-    I8=time.perf_counter()
+    I8=perf_counter()
     (score,K7)=G7er.G71(H8,I4,I7)
     print("bestmove "+K7,flush=True)
   except(KeyboardInterrupt,SystemExit):
