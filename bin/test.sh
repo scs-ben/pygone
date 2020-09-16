@@ -3,14 +3,11 @@
     -engine \
         name=pygone \
         cmd=pygone \
-        depth=3 \
+        depth=4 \
     -engine \
-        name=stockfish_20090418_x64 \
-        cmd=stockfish_20090418_x64 \
-        option.Hash=16 \
-        option.Threads=1 \
-        option."Use NNUE"=false \
-        depth=1 \
+        name=sunfish \
+        cmd=sunfish/sunfish \
+        depth=4 \
     -each \
         proto=uci \
         tc=inf \
@@ -18,4 +15,4 @@
         -openings file=book.pgn \
         -repeat \
         -pgnout games.pgn min \
-        -games 2 -rounds 2700 > debug.log
+        -games 2 -rounds 1350 > debug.log

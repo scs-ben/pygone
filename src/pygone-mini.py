@@ -300,13 +300,13 @@ class H9:
       continue
  def I9(self,E7):
   if E7:
-   for(attacked,attacker)in self.D0:
-    if attacked=='K':
+   for(K8,K9)in self.D0:
+    if K8=='K':
      return True
    return False
   else:
-   for(attacked,attacker)in self.D9:
-    if attacked=='k':
+   for(K8,K9)in self.D9:
+    if K8=='k':
      return True
    return False
  def G2(self,E7):
@@ -314,7 +314,7 @@ class H9:
    return self.B5
   return self.B6
  def G3(self):
-  b_eval=0
+  K0=0
   for Z2 in range(64):
    E2=math.floor(Z2/8)
    E3=Z2%8
@@ -322,12 +322,12 @@ class H9:
    E7=Z1.isupper()
    if Z1!='-':
     if E7:
-     b_eval+=A1[Z1.lower()]
-     b_eval+=(A9[Z1.lower()][E2][E3]/8)
+     K0+=A1[Z1.lower()]
+     K0+=(A9[Z1.lower()][E2][E3]/8)
     else:
-     b_eval-=A1[Z1]
-     b_eval-=(A9[Z1][abs(E2-7)][abs(E3-7)]/8)
-  return b_eval
+     K0-=A1[Z1]
+     K0-=(A9[Z1][abs(E2-7)][abs(E3-7)]/8)
+  return K0
 class G4:
  nodes=0
  depth=0
@@ -374,21 +374,28 @@ class G4:
     return G9.G3()
    else:
     return-1*G9.G3()
-  value=-1e8
+  b_G7_pv=True
+  H2=-1e8
   for K7 in H1:
    G9.D4(K7)
    G9.D8()
    if not G9.I9(E7):
     self.nodes+=1
-    value=max(value,-self.J5(G9,-H4,-H3,depth-1,not E7))
-    H3=max(H3,value)
+    if b_G7_pv:
+     H2=-self.J5(G9,-H4,-H3,depth-1,not E7)
+    else:
+     H2=-self.J5(G9,-H3-1,-H3,depth-1,not E7)
+     if H2>H3 and H2<H4:
+      H2=-self.J5(G9,-H4,-H3,depth-1,not E7)
    G9.D6()
-   if H3>=H4:
-    break
-  return value
+   if H2>=H4:
+    return H4
+   if H2>H3:
+    H3=H2
+    b_G7_pv=False
+  return H3
 H8=H9()
 def main():
- init_time=time.perf_counter()
  while True:
   try:
    line=input()

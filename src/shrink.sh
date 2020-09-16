@@ -105,7 +105,7 @@ sed -i -e 's/TTLOWER/J1/g' pygone-mini.py
 sed -i -e 's/TTUPPER/J2/g' pygone-mini.py
 sed -i -e 's/iterative_score/J3/g' pygone-mini.py
 sed -i -e 's/iterative_move/J4/g' pygone-mini.py
-sed -i -e 's/negamax/J5/g' pygone-mini.py
+sed -i -e 's/negamax_pvs/J5/g' pygone-mini.py
 sed -i -e 's/transposition_table_lookup/J6/g' pygone-mini.py
 sed -i -e 's/tt_entry/J7/g' pygone-mini.py
 sed -i -e 's/update_transposition_table_entry/J8/g' pygone-mini.py

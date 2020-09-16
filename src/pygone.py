@@ -498,7 +498,7 @@ class Search:
             local_board.get_valid_moves()
 
             if not local_board.in_check(is_white):
-                local_score = -self.negamax(local_board, -beta, -alpha, depth - 1, not is_white)
+                local_score = -self.negamax_pvs(local_board, -beta, -alpha, depth - 1, not is_white)
                 if local_score >= global_score:
                     global_score = local_score
                     chosen_move = s_move
@@ -508,7 +508,7 @@ class Search:
         return [global_score, chosen_move]
 
 
-    def negamax(self, local_board, alpha, beta, depth, is_white):
+    def negamax_pvs(self, local_board, alpha, beta, depth, is_white):
         local_board.get_valid_moves()
         poss_mvs = local_board.get_side_moves(is_white)
 
@@ -518,7 +518,9 @@ class Search:
             else:
                 return -1 * local_board.board_evaluation()
 
-        value = -1e8
+        b_search_pv = True
+
+        local_score = -1e8
 
         for s_move in poss_mvs:
             local_board.make_move(s_move)
@@ -526,14 +528,23 @@ class Search:
 
             if not local_board.in_check(is_white):
                 self.nodes += 1
-                value = max(value, -self.negamax(local_board, -beta, -alpha, depth - 1, not is_white))
-                alpha = max(alpha, value)
+
+                if b_search_pv:
+                    local_score = -self.negamax_pvs(local_board, -beta, -alpha, depth - 1, not is_white)
+                else:
+                    local_score = -self.negamax_pvs(local_board, -alpha-1, -alpha, depth - 1, not is_white)
+                    if local_score > alpha and local_score < beta:
+                        local_score = -self.negamax_pvs(local_board, -beta, -alpha, depth - 1, not is_white)
             local_board.undo_move()
 
-            if alpha >= beta:
-                break
+            if local_score >= beta:
+                return beta
 
-        return value
+            if local_score > alpha:
+                alpha = local_score
+                b_search_pv = False
+
+        return alpha
 
 game_board = Board()
 
