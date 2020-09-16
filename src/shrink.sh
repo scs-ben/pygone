@@ -115,6 +115,13 @@ sed -i -e 's/TranspositionTableEntry/K1/g' pygone-mini.py
 sed -i -e 's/tt_set/K2/g' pygone-mini.py
 sed -i -e 's/reset/K3/g' pygone-mini.py
 sed -i -e 's/time_move_calc/K4/g' pygone-mini.py
+sed -i -e 's/WHITE_PIECES/K5/g' pygone-mini.py
+sed -i -e 's/BLACK_PIECES/K6/g' pygone-mini.py
+sed -i -e 's/start_coordinate/K7/g' pygone-mini.py
+sed -i -e 's/s_move/K7/g' pygone-mini.py
+sed -i -e 's/attacked/K8/g' pygone-mini.py
+sed -i -e 's/attacker/K9/g' pygone-mini.py
+sed -i -e 's/b_eval/K0/g' pygone-mini.py
 
 sed -i -e 's/piece/Z1/g' pygone-mini.py
 sed -i -e 's/table/Z2/g' pygone-mini.py

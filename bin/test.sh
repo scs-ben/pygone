@@ -3,13 +3,14 @@
     -engine \
         name=pygone \
         cmd=pygone \
-        depth=4 \
+        depth=3 \
     -engine \
-        name=Ethereal \
-        cmd=ethereal/src/Ethereal \
+        name=stockfish_20090418_x64 \
+        cmd=stockfish_20090418_x64 \
         option.Hash=16 \
         option.Threads=1 \
-        depth=4 \
+        option."Use NNUE"=false \
+        depth=1 \
     -each \
         proto=uci \
         tc=inf \
