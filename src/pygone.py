@@ -547,6 +547,9 @@ game_board = Board()
 
 def main():
 
+    searcher = Search()
+    init_time = time.perf_counter()
+
     while True:
         try:
             line = input()
@@ -575,7 +578,7 @@ def main():
             elif line.startswith("go"):
                 white_time = 1000000
                 black_time = 1000000
-                go_depth = 8
+                go_depth = 5
 
                 args = line.split()
                 for key, arg in enumerate(args):
@@ -586,29 +589,23 @@ def main():
                     if arg == 'depth':
                       go_depth = int(args[key + 1])
 
-                # if go_depth < 2:
-                #     go_depth = 2
-
                 time_move_calc = 40
                 if game_board.played_move_count > 38:
                     time_move_calc = 2
                 else:
-                    time_move_calc = 40 - game_board.played_move_count
+                    time_move_calc = abs(game_board.played_move_count - 40)
 
-                if game_board.played_move_count % 2 == 0:
+                if game_board.played_move_count % 2 == 0 and white_time < 50000:
                     move_time = white_time / (time_move_calc * 1000)
                 else:
                     move_time = black_time / (time_move_calc * 1000)
 
-                move_time -= 3
+                move_time -= 5
 
-                if move_time < 8:
-                    move_time = 8
-
-                if move_time < 10 and go_depth > 4:
+                if move_time < 10:
                     go_depth = 4
-
-                searcher = Search()
+                if move_time < 2:
+                    go_depth = 2
 
                 start_time = time.perf_counter()
                 (score, move) = searcher.iterative_search(game_board, go_depth, move_time)
