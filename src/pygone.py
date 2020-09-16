@@ -575,7 +575,7 @@ def main():
             elif line.startswith("go"):
                 white_time = 1000000
                 black_time = 1000000
-                go_depth = 5
+                go_depth = 8
 
                 args = line.split()
                 for key, arg in enumerate(args):
@@ -600,9 +600,9 @@ def main():
                 move_time -= 5
 
                 if move_time < 10:
-                    go_depth = 4
-                if move_time < 2:
-                    go_depth = 2
+                    go_depth = 5
+                if move_time < 4:
+                    go_depth = 3
 
                 searcher = Search()
                 start_time = time.perf_counter()

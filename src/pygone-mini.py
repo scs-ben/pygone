@@ -422,7 +422,7 @@ def main():
    elif line.startswith("go"):
     I2=1000000
     I3=1000000
-    I4=5
+    I4=8
     I5=line.split()
     for key,arg in enumerate(I5):
      if arg=='wtime':
@@ -442,9 +442,9 @@ def main():
      I7=I3/(K4*1000)
     I7-=5
     if I7<10:
-     I4=4
-    if I7<2:
-     I4=2
+     I4=5
+    if I7<4:
+     I4=3
     G7er=G4()
     I8=time.perf_counter()
     (score,K7)=G7er.G71(H8,I4,I7)
