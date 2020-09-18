@@ -3,11 +3,11 @@
     -engine \
         name=pygone \
         cmd=pygone \
-        depth=4 \
+        depth=5 \
     -engine \
-        name=sunfish \
-        cmd=sunfish/sunfish \
-        depth=4 \
+        name=stockfish \
+        cmd=stockfish_20090418_x64 \
+        depth=1 \
     -each \
         proto=uci \
         tc=inf \

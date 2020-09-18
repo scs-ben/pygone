@@ -147,6 +147,9 @@ sed -i -e 's/tt_flag/M0/g' pygone-mini.py
 sed -i -e 's/s_board/N1/g' pygone-mini.py
 sed -i -e 's/print_to_terminal/N2/g' pygone-mini.py
 sed -i -e 's/get_perf_counter/N3/g' pygone-mini.py
+sed -i -e 's/valid_moves/N4/g' pygone-mini.py
+sed -i -e 's/attack_locations/N5/g' pygone-mini.py
+sed -i -e 's/attack_pieces/N6/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/piece/Z1/g' pygone-mini.py

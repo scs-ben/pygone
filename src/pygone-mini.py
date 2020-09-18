@@ -127,6 +127,9 @@ class H9:
   return N1
  def D8(Z):
   E7=Z.B4%2==0
+  N4=[]
+  N6=[]
+  N5=''
   if(E7):
    Z.B5=[]
    Z.D9=[]
@@ -147,15 +150,15 @@ class H9:
      if E7:
       Z.B9=K7
       if K7=='e1' and E1[7][5]=='-' and E1[7][6]=='-' and E1[7][7]=='R':
-       Z.B5.append(K7+'g1')
+       N4.append(K7+'g1')
       if K7=='e1' and E1[7][1]=='-' and E1[7][2]=='-' and E1[7][3]=='-' and E1[7][0]=='R':
-       Z.B5.append(K7+'c1')
+       N4.append(K7+'c1')
      else:
       Z.B0=K7
       if K7=='e8' and E1[0][1]=='-' and E1[0][2]=='-' and E1[0][3]=='-' and E1[0][0]=='r':
-       Z.B6.append(K7+'c8')
+       N4.append(K7+'c8')
       if K7=='e8' and E1[0][5]=='-' and E1[0][6]=='-' and E1[0][7]=='r':
-       Z.B6.append(K7+'g8')
+       N4.append(K7+'g8')
      for _,E81 in E8.items():
       if E81['E3']in range(8)and E81['E2']in range(8):
        E9=E1[E81['E2']][E81['E3']]
@@ -165,60 +168,53 @@ class H9:
         E0=(E9!='-' and E9.isupper())
        F1=B2(E81['E3']+1)+str(abs(E81['E2']-8))
        if E9=='-' or E0:
-        if E7:
-         Z.B5.append(K7+F1)
-        else:
-         Z.B6.append(K7+F1)
+        N4.append(K7+F1)
        if E0:
-        if E7:
-         Z.D9.append([E9,Z1,K7+F1])
-         Z.B7+=F1
-        else:
-         Z.D0.append([E9,Z1,K7+F1])
-         Z.B8+=F1
+        N6.append([E9,Z1,K7+F1])
+        N5+=F1
     if Z1.lower()=='p':
      if E7:
       if E2>1 and E1[E2-1][E3]=='-':
-       Z.B5.append(K7+B2(E3+1)+str(abs(E2-9)))
+       N4.append(K7+B2(E3+1)+str(abs(E2-9)))
       if E2==6 and E1[E2-1][E3]=='-' and E1[E2-2][E3]=='-':
-       Z.B5.append(K7+B2(E3+1)+str(abs(E2-10)))
+       N4.append(K7+B2(E3+1)+str(abs(E2-10)))
       if E2==1 and E1[E2-1][E3]=='-':
-       Z.B5.append(K7+B2(E3+1)+str(abs(E2-9))+'q')
+       N4.append(K7+B2(E3+1)+str(abs(E2-9))+'q')
       if((E3-1)>=0 and(E2-1)>=0)or((E3+1)<8 and(E2-1)>=0):
        prom=''
        if E2==1:
         prom='q'
        if(E3-1)>=0 and E1[E2-1][E3-1]!='-' and E1[E2-1][E3-1].islower():
         F1=B2(E3)+str(abs(E2-9))
-        Z.B5.append(K7+F1+prom)
-        Z.B7+=F1
-        Z.D9.append([E1[E2-1][E3-1],Z1,K7+F1+prom])
+        N4.append(K7+F1+prom)
+        N5+=F1
+        N6.append([E1[E2-1][E3-1],Z1,K7+F1+prom])
        if(E3+1)<8 and E1[E2-1][E3+1]!='-' and E1[E2-1][E3+1].islower():
         F1=B2(E3+2)+str(abs(E2-9))
-        Z.B5.append(K7+F1+prom)
-        Z.B7+=F1
-        Z.D9.append([E1[E2-1][E3+1],Z1,K7+F1+prom])
+        N4.append(K7+F1+prom)
+        N5+=F1
+        N6.append([E1[E2-1][E3+1],Z1,K7+F1+prom])
      else:
       if E2<6 and E1[E2+1][E3]=='-':
-       Z.B6.append(K7+B2(E3+1)+str(abs(E2-7)))
+       N4.append(K7+B2(E3+1)+str(abs(E2-7)))
       if E2==1 and E1[E2+1][E3]=='-' and E1[E2+2][E3]=='-':
-       Z.B6.append(K7+B2(E3+1)+str(abs(E2-6)))
+       N4.append(K7+B2(E3+1)+str(abs(E2-6)))
       if E2==6 and E1[E2+1][E3]=='-':
-       Z.B6.append(K7+B2(E3+1)+str(abs(E2-7))+'q')
+       N4.append(K7+B2(E3+1)+str(abs(E2-7))+'q')
       if((E3-1)>=0 and(E2+1)<8)or((E3+1)<8 and(E2+1)<8):
        prom=''
        if E2==6:
         prom='q'
        if(E3+1)<8 and E1[E2+1][E3+1]!='-' and E1[E2+1][E3+1].isupper():
         F1=B2(E3+2)+str(abs(E2-7))
-        Z.B6.append(K7+F1+prom)
-        Z.B8+=F1
-        Z.D0.append([E1[E2+1][E3+1],Z1,K7+F1+prom])
+        N4.append(K7+F1+prom)
+        N5+=F1
+        N6.append([E1[E2+1][E3+1],Z1,K7+F1+prom])
        if(E3-1)>=0 and E1[E2+1][E3-1]!='-' and E1[E2+1][E3-1].isupper():
         F1=B2(E3)+str(abs(E2-7))
-        Z.B6.append(K7+F1+prom)
-        Z.B8+=F1
-        Z.D0.append([E1[E2+1][E3-1],Z1,K7+F1+prom])
+        N4.append(K7+F1+prom)
+        N5+=F1
+        N6.append([E1[E2+1][E3-1],Z1,K7+F1+prom])
     if Z1.lower()=='n':
      F3={1:{'E3':(E3+1),'E2':(E2-2)},2:{'E3':(E3-1),'E2':(E2-2)},3:{'E3':(E3+2),'E2':(E2-1)},4:{'E3':(E3-2),'E2':(E2-1)},5:{'E3':(E3+1),'E2':(E2+2)},6:{'E3':(E3-1),'E2':(E2+2)},7:{'E3':(E3+2),'E2':(E2+1)},8:{'E3':(E3-2),'E2':(E2+1)}}
      for _,F4 in F3.items():
@@ -230,16 +226,10 @@ class H9:
         E0=(E9!='-' and E9.isupper())
        if E9=='-' or E0:
         F1=B2(F4['E3']+1)+str(abs(F4['E2']-8))
-        if E7:
-         Z.B5.append(K7+F1)
-         if E0:
-          Z.B7+=F1
-          Z.D9.append([E9,Z1,K7+F1])
-        else:
-         Z.B6.append(K7+F1)
-         if E0:
-          Z.B8+=F1
-          Z.D0.append([E9,Z1,K7+F1])
+        N4.append(K7+F1)
+        if E0:
+         N5+=F1
+         N6.append([E9,Z1,K7+F1])
     if Z1.lower()in('b','r','q'):
      F7={1:{'E3':E3,'E2':(E2-1),'E24':0,'E23':-1},2:{'E3':E3,'E2':(E2+1),'E24':0,'E23':1},3:{'E3':(E3-1),'E2':E2,'E24':-1,'E23':0},4:{'E3':(E3+1),'E2':E2,'E24':1,'E23':0},5:{'E3':(E3-1),'E2':(E2-1),'E24':-1,'E23':-1},6:{'E3':(E3+1),'E2':(E2+1),'E24':1,'E23':1},7:{'E3':(E3-1),'E2':(E2+1),'E24':-1,'E23':1},8:{'E3':(E3+1),'E2':(E2-1),'E24':1,'E23':-1},}
      for key,F8 in F7.items():
@@ -252,22 +242,23 @@ class H9:
        E0=(E7 and E9 in K6)or(not E7 and E9 in K5)
        if E9=='-' or E0:
         F1=B2(E22+1)+str(abs(E21-8))
-        if E7:
-         Z.B5.append(K7+F1)
-         if E0:
-          Z.B7+=F1
-          Z.D9.append([E9,Z1,K7+F1])
-        else:
-         Z.B6.append(K7+F1)
-         if E0:
-          Z.B8+=F1
-          Z.D0.append([E9,Z1,K7+F1])
-        if E0 or E9!='-':
+        N4.append(K7+F1)
+        if E0:
+         N5+=F1
+         N6.append([E9,Z1,K7+F1])
          break
        else:
         break
        E21+=F8['E23']
        E22+=F8['E24']
+  if(E7):
+   Z.B5=N4
+   Z.B7=N5
+   Z.D9=N6
+  else:
+   Z.B6=N4
+   Z.B8=N5
+   Z.D0=N6
   F0=''.join(Z.C1)
   if E7:
    F9=Z.B5.copy()
@@ -391,27 +382,31 @@ class G4:
    K0=G9.G3()
    return K0 if E7 else-K0
   H2=-1e8
+  b=H4
   for K7 in H1:
    G9.D4(K7)
    if not G9.I9(E7):
     Z.L5+=1
-    H2=max(H2,-Z.J5(G9,-H4,-H3,L6-1))
-    H3=max(H3,H2)
+    H2=-Z.J5(G9,-b,-H3,L6-1)
+    if H2>H3 and H2<H4 and L6>1:
+     H2=-Z.J5(G9,-H4,-H3,L6-1)
+    H3=max(H2,H3)
     if Z.L5%1e5==0:
      N2("info nodes "+str(Z.L5)+" tthits "+str(Z.M2))
    G9.D6()
    if H3>=H4:
     break
-  J7['M9']=H2
-  if H2<=alpa_orig:
+   b=H3+1
+  J7['M9']=H3
+  if H3<=alpa_orig:
    J7['M0']=3
-  elif H2>=H4:
+  elif H3>=H4:
    J7['M0']=2
   else:
    J7['M0']=1
   J7['M8']=L6
   Z.store_tt(G9,J7)
-  return H2
+  return H3
 H8=H9()
 H8.K3()
 def main():
@@ -422,7 +417,7 @@ def main():
    if Z2=="quit":
     sys.exit()
    elif Z2=="uci":
-    N2("pygone 1.0 by rcostheta\nuciok")
+    N2("pygone 1.0\nuciok")
    elif Z2=="ucinewgame":
     H8.K3()
     G7er.K3()
