@@ -3,14 +3,16 @@
     -engine \
         name=pygone \
         cmd=pygone \
+        depth=4 \
     -engine \
         name=sunfish \
         cmd=sunfish/sunfish \
+        depth=4 \
     -each \
         proto=uci \
-        tc=0/298+2 \
+        tc=inf \
         restart=off \
         -openings file=book.pgn \
         -repeat \
         -pgnout games.pgn min \
-        -games 2 -rounds 1350 > debug.log
+        -games 2 -rounds 50 > debug.log

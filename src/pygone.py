@@ -2,7 +2,7 @@
 import math, sys
 from time import perf_counter
 
-PIECEPOINTS = {'p': 100, 'r': 500, 'n': 300, 'b': 300, 'q': 1e3, 'k': 6e4}
+PIECEPOINTS = {'p': 100, 'r': 480, 'n': 280, 'b': 320, 'q': 960, 'k': 6e4}
 
 PPSQT = [[0]*8,
          [78, 83, 86, 73, 102, 82, 85, 90],
@@ -45,7 +45,7 @@ QPSQT = [[6, 1, -8, -104, 69, 24, 88, 26],
          [-36, -18, 0, -19, -15, -15, -21, -38],
          [-39, -30, -31, -13, -31, -36, -34, -42]]
 KPSQT = [[4, 54, 47, -99, -99, 60, 83, -62],
-         [-32, 10, 55, 56, 56, 55, 10, 3],
+         [-32, 10, 45, 56, 56, 55, 10, 3],
          [-62, 12, -57, 44, -67, 28, 37, -31],
          [-55, 50, 11, -4, -19, 13, 0, -49],
          [-55, -43, -52, -28, -51, -47, -8, -50],
@@ -58,7 +58,6 @@ ALLPSQT = {'p': PPSQT, 'n': NPSQT, 'b':BPSQT, 'r':RPSQT, 'q':QPSQT, 'k':KPSQT}
 WHITE_PIECES = ['P', 'R', 'N', 'B', 'Q', 'K']
 BLACK_PIECES = ['p', 'r', 'n', 'b', 'q', 'k']
 
-pc = perf_counter()
 isupper = lambda c: 'A' <= c <= 'Z'
 islower = lambda c: 'a' <= c <= 'z'
 
@@ -134,8 +133,8 @@ class Board:
                 self.board_state[to_number][to_letter_number - 1] = '-'
             else:
                 self.board_state[to_number][to_letter_number + 2] = '-'
-            self.board_state[from_number][from_letter_number + rook_offset] = 'R' if is_white else 'r'
-            self.board_state[to_number][to_letter_number] = 'K' if is_white else 'k'
+            self.board_state[from_number][from_letter_number + rook_offset] = 'R' if from_piece == 'K' else 'r'
+            self.board_state[to_number][to_letter_number] = 'K' if from_piece == 'K' else 'k'
             self.board_state[to_number][to_letter_number + rook_offset] = '-'
             return [from_piece, to_piece]
         promote = ""
@@ -149,22 +148,11 @@ class Board:
             self.board_state[from_number][from_letter_number] = '-'
             if uci_coordinate[2] == 'g':
                 self.board_state[to_number][to_letter_number + 1] = '-'
-
-                if is_white:
-                    self.board_state[from_number][from_letter_number + 1] = 'R'
-                else:
-                    self.board_state[from_number][from_letter_number + 1] = 'r'
+                self.board_state[from_number][from_letter_number + 1] = 'R' if from_piece == 'K' else 'r'
             else:
                 self.board_state[to_number][to_letter_number - 2] = '-'
-                if is_white:
-                    self.board_state[from_number][from_letter_number - 1] = 'R'
-                else:
-                    self.board_state[from_number][from_letter_number - 1] = 'r'
-
-            if is_white:
-                self.board_state[to_number][to_letter_number] = 'K'
-            else:
-                self.board_state[to_number][to_letter_number] = 'k'
+                self.board_state[from_number][from_letter_number - 1] = 'R' if from_piece == 'K' else 'r'
+            self.board_state[to_number][to_letter_number] = from_piece
         else:
             if len(override_to_piece) == 0:
                 self.board_state[from_number][from_letter_number] = '-'
@@ -196,11 +184,10 @@ class Board:
         from_piece = old_move[1]
         to_piece = old_move[2]
 
-        reverse_castle = (uci_coordinate in ('e1g1', 'e1c1') and from_piece == 'K' and to_piece == 'R') or (uci_coordinate in ('e8g8', 'e8c8') and from_piece == 'k' and to_piece == 'r')
+        reverse_castle = uci_coordinate in ('e1g1', 'e1c1', 'e8g8', 'e8c8') and from_piece in ('K', 'k')
 
-        self.apply_move(uci_coordinate[2:4] + uci_coordinate[0:2], len(uci_coordinate) > 4, reverse_castle, from_piece, to_piece)
         self.played_move_count -= 1
-
+        self.apply_move(uci_coordinate[2:4] + uci_coordinate[0:2], len(uci_coordinate) > 4, reverse_castle, from_piece, to_piece)
 
     def show_board(self):
         for i in range(8):
@@ -208,11 +195,12 @@ class Board:
                 print(self.board_state[i][j], end=" ")
             print()
 
-    def board_to_hash(self):
-        result = []
-        for _list in self.board_state:
-            result += _list
-        return hash(''.join(result))
+    def str_board(self):
+        s_board = ''
+        for i in range(8):
+            for j in range(8):
+                s_board += self.board_state[i][j]
+        return s_board
 
     def get_valid_moves(self):
         is_white = self.played_move_count % 2 == 0
@@ -252,12 +240,12 @@ class Board:
                             self.white_valid_moves.append(start_coordinate + 'c1')
                     else:
                         self.black_king_location = start_coordinate
-                        if start_coordinate == 'e8' and eval_state[0][1] == '-' and eval_state[0][1] == '-' and eval_state[0][2] == '-' and eval_state[0][0] == 'r':
+                        if start_coordinate == 'e8' and eval_state[0][1] == '-' and eval_state[0][2] == '-' and eval_state[0][3] == '-' and eval_state[0][0] == 'r':
                             self.black_valid_moves.append(start_coordinate + 'c8')
                         if start_coordinate == 'e8' and eval_state[0][5] == '-' and eval_state[0][6] == '-' and eval_state[0][7] == 'r':
                             self.black_valid_moves.append(start_coordinate + 'g8')
                     for _, k_move in king_moves.items():
-                        if (k_move['column'] >= 0 and k_move['column'] <= 7 and k_move['row'] >= 0 and k_move['row'] <= 7):
+                        if k_move['column'] in range(8) and k_move['row'] in range(8):
                             eval_piece = eval_state[k_move['row']][k_move['column']]
                             if is_white:
                                 can_capture = (eval_piece != '-' and eval_piece.islower())
@@ -273,10 +261,10 @@ class Board:
                                     self.black_valid_moves.append(start_coordinate + dest)
                             if can_capture:
                                 if is_white:
-                                    self.white_attack_pieces.append([eval_piece, piece])
+                                    self.white_attack_pieces.append([eval_piece, piece, start_coordinate + dest])
                                     self.white_attack_locations += dest
                                 else:
-                                    self.black_attack_pieces.append([eval_piece, piece])
+                                    self.black_attack_pieces.append([eval_piece, piece, start_coordinate + dest])
                                     self.black_attack_locations += dest
                 if piece.lower() == 'p':
                     if is_white:
@@ -291,13 +279,15 @@ class Board:
                             if row == 1:
                                 prom = 'q'
                             if (column - 1) >= 0 and eval_state[row - 1][column - 1] != '-' and eval_state[row - 1][column - 1].islower():
-                                self.white_valid_moves.append(start_coordinate + number_to_letter(column) + str(abs(row - 9)) + prom)
-                                self.white_attack_locations += number_to_letter(column) + str(abs(row - 9))
-                                self.white_attack_pieces.append([eval_state[row - 1][column - 1], piece])
+                                dest = number_to_letter(column) + str(abs(row - 9))
+                                self.white_valid_moves.append(start_coordinate + dest + prom)
+                                self.white_attack_locations += dest
+                                self.white_attack_pieces.append([eval_state[row - 1][column - 1], piece, start_coordinate + dest + prom])
                             if (column + 1) < 8 and eval_state[row - 1][column + 1] != '-' and eval_state[row - 1][column + 1].islower():
-                                self.white_valid_moves.append(start_coordinate + number_to_letter(column + 2) + str(abs(row - 9)) + prom)
-                                self.white_attack_locations += number_to_letter(column + 2) + str(abs(row - 9))
-                                self.white_attack_pieces.append([eval_state[row - 1][column + 1], piece])
+                                dest = number_to_letter(column + 2) + str(abs(row - 9))
+                                self.white_valid_moves.append(start_coordinate + dest + prom)
+                                self.white_attack_locations += dest
+                                self.white_attack_pieces.append([eval_state[row - 1][column + 1], piece, start_coordinate + dest + prom])
                     else:
                         if row < 6 and eval_state[row + 1][column] == '-':
                             self.black_valid_moves.append(start_coordinate + number_to_letter(column + 1) + str(abs(row - 7)))
@@ -311,13 +301,15 @@ class Board:
                                 prom = 'q'
 
                             if (column + 1) < 8 and eval_state[row + 1][column + 1] != '-' and eval_state[row + 1][column + 1].isupper():
-                                self.black_valid_moves.append(start_coordinate + number_to_letter(column + 2) + str(abs(row - 7)) + prom)
-                                self.black_attack_locations += number_to_letter(column + 2) + str(abs(row - 7))
-                                self.black_attack_pieces.append([eval_state[row + 1][column + 1], piece])
+                                dest = number_to_letter(column + 2) + str(abs(row - 7))
+                                self.black_valid_moves.append(start_coordinate + dest + prom)
+                                self.black_attack_locations += dest
+                                self.black_attack_pieces.append([eval_state[row + 1][column + 1], piece, start_coordinate + dest + prom])
                             if (column - 1) >= 0 and eval_state[row + 1][column - 1] != '-' and eval_state[row + 1][column - 1].isupper():
-                                self.black_valid_moves.append(start_coordinate + number_to_letter(column) + str(abs(row - 7)) + prom)
-                                self.black_attack_locations += number_to_letter(column) + str(abs(row - 7))
-                                self.black_attack_pieces.append([eval_state[row + 1][column - 1], piece])
+                                dest = number_to_letter(column) + str(abs(row - 7))
+                                self.black_valid_moves.append(start_coordinate + dest + prom)
+                                self.black_attack_locations += dest
+                                self.black_attack_pieces.append([eval_state[row + 1][column - 1], piece, start_coordinate + dest + prom])
                 if piece.lower() == 'n':
                     night_moves = {
                         1: {'column': (column + 1), 'row': (row - 2)},
@@ -330,7 +322,7 @@ class Board:
                         8: {'column': (column - 2), 'row': (row + 1)}
                     }
                     for _, n_move in night_moves.items():
-                        if n_move['column'] >= 0 and n_move['column'] <= 7 and n_move['row'] >= 0 and n_move['row'] <= 7:
+                        if n_move['column'] in range(8) and n_move['row'] in range(8):
                             eval_piece = eval_state[n_move['row']][n_move['column']]
                             if is_white:
                                 can_capture = (eval_piece != '-' and eval_piece.islower())
@@ -342,12 +334,12 @@ class Board:
                                     self.white_valid_moves.append(start_coordinate + dest)
                                     if can_capture:
                                         self.white_attack_locations += dest
-                                        self.white_attack_pieces.append([eval_piece, piece])
+                                        self.white_attack_pieces.append([eval_piece, piece, start_coordinate + dest])
                                 else:
                                     self.black_valid_moves.append(start_coordinate + dest)
                                     if can_capture:
                                         self.black_attack_locations += dest
-                                        self.black_attack_pieces.append([eval_piece, piece])
+                                        self.black_attack_pieces.append([eval_piece, piece, start_coordinate + dest])
                 if piece.lower() in ('b', 'r', 'q'):
                     all_moves = {
                         # rook/queen
@@ -378,13 +370,13 @@ class Board:
                                     self.white_valid_moves.append(start_coordinate + dest)
                                     if can_capture:
                                         self.white_attack_locations += dest
-                                        self.white_attack_pieces.append([eval_piece, piece])
+                                        self.white_attack_pieces.append([eval_piece, piece, start_coordinate + dest])
                                 else:
                                     self.black_valid_moves.append(start_coordinate + dest)
                                     if can_capture:
                                         self.black_attack_locations += dest
-                                        self.black_attack_pieces.append([eval_piece, piece])
-                                if can_capture:
+                                        self.black_attack_pieces.append([eval_piece, piece, start_coordinate + dest])
+                                if can_capture or eval_piece != '-':
                                     break
                             else:
                                 break
@@ -394,10 +386,11 @@ class Board:
         move_string = ''.join(self.move_list)
         if is_white:
             move_copy = self.white_valid_moves.copy()
-            move_string += ''.join(self.black_valid_moves.copy())
+            check_string = ''.join(self.black_valid_moves.copy())
 
             for s_move in move_copy:
-                override_remove = ((s_move == 'e1g1' and ('e1' in move_string or 'f1' in move_string or 'g1' in move_string)) or (s_move == 'e1c1' and ('e1' in move_string or 'd1' in move_string or 'c1' in move_string)))
+                override_remove = ((s_move == 'e1g1' and ('e1' in move_string or 'h1' in move_string or 'e1' in check_string or 'f1' in check_string or 'g1' in check_string)) or \
+                    (s_move == 'e1c1' and ('e1' in move_string or 'a1' in move_string or 'c1' in check_string or 'd1' in check_string or 'e1' in check_string)))
 
                 if override_remove:
                     try:
@@ -406,10 +399,11 @@ class Board:
                         continue
         else:
             move_copy = self.black_valid_moves.copy()
-            move_string += ''.join(self.white_valid_moves.copy())
+            check_string = ''.join(self.white_valid_moves.copy())
 
             for s_move in move_copy:
-                override_remove = ((s_move == 'e8g8' and ('e8' in move_string or 'f8' in move_string or 'g8' in move_string)) or (s_move == 'e8c8' and ('e8' in move_string or 'd8' in move_string or 'c8' in move_string)))
+                override_remove = ((s_move == 'e8g8' and ('e8' in move_string or 'h8' in move_string or 'e8' in check_string or 'f8' in check_string or 'g8' in check_string)) or \
+                    (s_move == 'e8c8' and ('e8' in move_string or 'a8' in move_string or 'c8' in check_string or 'd8' in check_string or 'e8' in check_string)))
 
                 if override_remove:
                     try:
@@ -419,12 +413,12 @@ class Board:
 
     def in_check(self, is_white):
         if is_white:
-            for (attacked, attacker) in self.black_attack_pieces:
+            for (attacked, attacker, _) in self.black_attack_pieces:
                 if attacked == 'K':
                     return True
             return False
         else:
-            for (attacked, attacker) in self.white_attack_pieces:
+            for (attacked, attacker, _) in self.white_attack_pieces:
                 if attacked == 'k':
                     return True
             return False
@@ -445,109 +439,114 @@ class Board:
             if piece != '-':
                 if is_white:
                     b_eval += PIECEPOINTS[piece.lower()]
-                    b_eval += (ALLPSQT[piece.lower()][row][column] / 8)
+                    b_eval += (ALLPSQT[piece.lower()][row][column] / 50)
                 else:
                     b_eval -= PIECEPOINTS[piece]
-                    b_eval -= (ALLPSQT[piece][abs(row-7)][abs(column-7)] / 8)
+                    b_eval -= (ALLPSQT[piece][abs(row-7)][abs(column-7)] / 50)
 
         return b_eval
 
 class Search:
-    nodes = 0
-    depth = 0
+    v_nodes = 0
+    v_depth = 0
     end_time = 0
 
-    def iterative_search(self, local_board, depth, move_time):
+    def iterative_search(self, local_board, v_depth, move_time):
         start_time = perf_counter()
         self.end_time = perf_counter() + move_time
 
-        self.depth = 0
-        while depth > 0:
-            self.depth += 1
-            depth -= 1
+        self.v_depth = 0
+        while v_depth > 0:
+            self.v_depth += 1
+            v_depth -= 1
 
-            (iterative_score, iterative_move) = self.search(local_board, self.depth)
+            (iterative_score, iterative_move) = self.search(local_board, self.v_depth)
 
             elapsed_time = math.ceil(perf_counter() - start_time)
-            nps = math.ceil(self.nodes / elapsed_time)
+            nps = math.ceil(self.v_nodes / elapsed_time)
 
-            print("info depth " + str(self.depth) + " score cp " + str(math.ceil(iterative_score)) + " time " + str(elapsed_time) + " nodes " + str(self.nodes) + " nps " + str(nps) + " pv " + str(iterative_move), flush=True)
+            print("info depth " + str(self.v_depth) + " score cp " + str(math.ceil(iterative_score)) + " time " + str(elapsed_time) + " nodes " + str(self.v_nodes) + " nps " + str(nps) + " pv " + str(iterative_move), flush=True)
 
-            if perf_counter() >= self.end_time or depth < 1:
+            if perf_counter() >= self.end_time or v_depth < 1:
                 break
 
         return [iterative_score, iterative_move]
 
-    def search(self, local_board, depth):
-        is_white = local_board.played_move_count % 2 == 0
-
+    def search(self, local_board, v_depth):
         global_score = -1e8
         chosen_move = None
+
+        local_score = -1e8
 
         alpha = -1e8
         beta = 1e8
 
+        is_white = local_board.played_move_count % 2 == 0
         local_board.get_valid_moves()
         poss_mvs = local_board.get_side_moves(is_white)
-        depth = max(depth, 1)
+        v_depth = max(v_depth, 1)
 
         for s_move in poss_mvs:
-            self.nodes += 1
+            self.v_nodes += 1
 
+            s_board = local_board.str_board()
             local_board.make_move(s_move)
             local_board.get_valid_moves()
 
             if not local_board.in_check(is_white):
-                local_score = -self.negamax_pvs(local_board, -beta, -alpha, depth - 1, not is_white)
+                local_score = -self.negamax(local_board, -beta, -alpha, v_depth - 1)
+
                 if local_score >= global_score:
                     global_score = local_score
                     chosen_move = s_move
 
             local_board.undo_move()
+            e_board = local_board.str_board()
+
+            if s_board != e_board:
+                print(s_move, s_board, e_board)
+                sys.exit()
 
         return [global_score, chosen_move]
 
 
-    def negamax_pvs(self, local_board, alpha, beta, depth, is_white):
+    def negamax(self, local_board, alpha, beta, v_depth):
+        is_white = local_board.played_move_count % 2 == 0
         local_board.get_valid_moves()
         poss_mvs = local_board.get_side_moves(is_white)
 
-        if len(poss_mvs) == 0 or (depth <= 0):
-            if is_white:
-                return local_board.board_evaluation()
-            else:
-                return -1 * local_board.board_evaluation()
-
-        b_search_pv = True
+        if len(poss_mvs) == 0 or (v_depth <= 0):
+            b_eval = local_board.board_evaluation()
+            return b_eval if is_white else -b_eval
 
         local_score = -1e8
 
         for s_move in poss_mvs:
+            s_board = local_board.str_board()
             local_board.make_move(s_move)
             local_board.get_valid_moves()
 
             if not local_board.in_check(is_white):
-                self.nodes += 1
+                self.v_nodes += 1
 
-                if b_search_pv:
-                    local_score = -self.negamax_pvs(local_board, -beta, -alpha, depth - 1, not is_white)
-                else:
-                    local_score = -self.negamax_pvs(local_board, -alpha-1, -alpha, depth - 1, not is_white)
-                    if local_score > alpha and local_score < beta:
-                        local_score = -self.negamax_pvs(local_board, -beta, -alpha, depth - 1, not is_white)
+                local_score = max(local_score, -self.negamax(local_board, -beta, -alpha, v_depth - 1))
+                alpha = max(alpha, local_score)
+
+                if self.v_nodes % 5e4 == 0:
+                    print("info nodes " + str(self.v_nodes), flush=True)
+
             local_board.undo_move()
+            e_board = local_board.str_board()
 
-            if self.nodes % 1e5 == 0:
-                print("info nodes " + str(self.nodes), flush=True)
+            if s_board != e_board:
+                print('2',s_move, s_board, e_board)
+                sys.exit()
 
-            if local_score >= beta:
-                return beta
+            if alpha >= beta:
+                break
 
-            if local_score > alpha:
-                alpha = local_score
-                b_search_pv = False
+        return local_score
 
-        return alpha
 
 game_board = Board()
 
@@ -563,22 +562,23 @@ def main():
             elif line == "ucinewgame":
                 game_board.reset()
             elif line == "eval":
-                game_board.get_valid_moves()
-                print(game_board.board_evaluation())
+                game_board.show_board()
+                game_board.make_move('e8c8')
+                game_board.show_board()
+                game_board.undo_move()
                 game_board.show_board()
             elif line == "isready":
                 print("readyok", flush=True)
             elif line.startswith("position"):
                 moves = line.split()
-                offset_moves = game_board.played_move_count + 3
-                for position_move in moves[offset_moves:]:
+                game_board.reset()
+                for position_move in moves[3:]:
                     game_board.make_move(position_move)
-                    offset_moves += 1
-                game_board.played_move_count = (offset_moves - 3)
+                game_board.get_valid_moves()
             elif line.startswith("go"):
                 white_time = 1e8
                 black_time = 1e8
-                go_depth = 8
+                go_depth = 5
 
                 args = line.split()
                 for key, arg in enumerate(args):
@@ -600,15 +600,16 @@ def main():
                 else:
                     move_time = black_time / (time_move_calc * 1e3)
 
-                if move_time < 10:
-                    go_depth = 5
+                if move_time < 15:
+                    go_depth = 4
                 if move_time < 4:
                     move_time = 2
-                    go_depth = 3
+                    go_depth = 2
 
                 searcher = Search()
                 start_time = perf_counter()
                 (score, s_move) = searcher.iterative_search(game_board, go_depth, move_time)
+                game_board.show_board()
                 print("bestmove " + s_move, flush=True)
         except (KeyboardInterrupt, SystemExit):
             print('quit')
