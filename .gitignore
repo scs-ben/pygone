@@ -3,6 +3,8 @@ bin/stockfish*
 bin/ethereal/*
 bin/ethy*
 bin/weiss/*
+bin/sunfish/*
+bin/sunfish.log
 src/__pycache__*
 bin/debug.log
 bin/games.pgn
