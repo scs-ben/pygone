@@ -102,9 +102,9 @@ sed -i -e 's/elapsed_time/I6/g' pygone-mini.py
 sed -i -e 's/move_time/I7/g' pygone-mini.py
 sed -i -e 's/start_time/I8/g' pygone-mini.py
 sed -i -e 's/in_check/I9/g' pygone-mini.py
-sed -i -e 's/TTEXACT/I0/g' pygone-mini.py
-sed -i -e 's/TTLOWER/J1/g' pygone-mini.py
-sed -i -e 's/TTUPPER/J2/g' pygone-mini.py
+sed -i -e 's/EXACT/I0/g' pygone-mini.py
+sed -i -e 's/LOWERBOUND/J1/g' pygone-mini.py
+sed -i -e 's/UPPERBOUND/J2/g' pygone-mini.py
 sed -i -e 's/iterative_score/J3/g' pygone-mini.py
 sed -i -e 's/iterative_move/J4/g' pygone-mini.py
 sed -i -e 's/negamax/J5/g' pygone-mini.py
@@ -135,8 +135,23 @@ sed -i -e 's/v_score/L8/g' pygone-mini.py
 sed -i -e 's/delta/L9/g' pygone-mini.py
 sed -i -e 's/score_white/L0/g' pygone-mini.py
 sed -i -e 's/check_string/M1/g' pygone-mini.py
+sed -i -e 's/v_tthits/M2/g' pygone-mini.py
+sed -i -e 's/tt_bucket/M3/g' pygone-mini.py
+sed -i -e 's/tt_lookup/M4/g' pygone-mini.py
+sed -i -e 's/board_string/M5/g' pygone-mini.py
+sed -i -e 's/str_board/M6/g' pygone-mini.py
+sed -i -e 's/tt_lookup/M7/g' pygone-mini.py
+sed -i -e 's/tt_depth/M8/g' pygone-mini.py
+sed -i -e 's/tt_value/M9/g' pygone-mini.py
+sed -i -e 's/tt_flag/M0/g' pygone-mini.py
+sed -i -e 's/s_board/N1/g' pygone-mini.py
+sed -i -e 's/print_to_terminal/N2/g' pygone-mini.py
+sed -i -e 's/get_perf_counter/N3/g' pygone-mini.py
 
+sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/piece/Z1/g' pygone-mini.py
+sed -i -e 's/line/Z2/g' pygone-mini.py
+sed -i -e 's/moves/Z3/g' pygone-mini.py
 
 
 sed -i -e 's/# Created by pyminifier (https:\/\/github.com\/liftoff\/pyminifier)//g' pygone-mini.py

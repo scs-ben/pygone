@@ -1,6 +1,5 @@
 #!/usr/bin/env pypy3
-import math,sys
-from time import perf_counter
+import math,sys,time
 A1={'p':100,'r':480,'n':280,'b':320,'q':960,'k':6e4}
 A3=[[0]*8,[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0]*8]
 A4=[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,27,62,-2],[24,24,45,37,33,41,25,17],[-1,5,31,21,22,35,2,0],[-18,10,13,22,18,15,11,-14],[-23,-15,2,0,2,0,-23,-20],[-74,-23,-26,-24,-19,-35,-22,-69]]
@@ -11,12 +10,14 @@ A8=[[4,54,47,-99,-99,60,83,-62],[-32,10,45,56,56,55,10,3],[-62,12,-57,44,-67,28,
 A9={'p':A3,'n':A4,'b':A5,'r':A6,'q':A7,'k':A8}
 K5=['P','R','N','B','Q','K']
 K6=['p','r','n','b','q','k']
-isupper=lambda c:'A'<=c<='Z'
-islower=lambda c:'a'<=c<='z'
 def B1(letter):
  return abs((ord(letter)-96)-1)
 def B2(number):
  return chr(number+96)
+def N2(letter):
+ print(letter,flush=1)
+def N3():
+ return time.perf_counter()
 class H9:
  B3=[]
  B4=0
@@ -28,33 +29,31 @@ class H9:
  B0='e8'
  C11=[]
  C1=[]
- def __init__(self):
-  self.K3()
- def K3(self):
-  self.B31()
-  self.B4=0
-  self.B5=[]
-  self.B6=[]
-  self.D9=[]
-  self.D0=[]
-  self.B7=''
-  self.B8=''
-  self.B9='e1'
-  self.B0='e8'
-  self.C11=[]
-  self.C1=[]
- def B31(self):
-  self.B3=[['r','n','b','q','k','b','n','r'],['p']*8,['-']*8,['-']*8,['-']*8,['-']*8,['P']*8,['R','N','B','Q','K','B','N','R']]
- def B32(self,state):
-  self.B3=state
- def D1(self,C2,C3=False,C4=False,C91='',C01=''):
+ def K3(Z):
+  Z.B31()
+  Z.B4=0
+  Z.B5=[]
+  Z.B6=[]
+  Z.D9=[]
+  Z.D0=[]
+  Z.B7=''
+  Z.B8=''
+  Z.B9='e1'
+  Z.B0='e8'
+  Z.C11=[]
+  Z.C1=[]
+ def B31(Z):
+  Z.B3=[['r','n','b','q','k','b','n','r'],['p']*8,['-']*8,['-']*8,['-']*8,['-']*8,['P']*8,['R','N','B','Q','K','B','N','R']]
+ def B32(Z,state):
+  Z.B3=state
+ def D1(Z,C2,C3=0,C4=0,C91='',C01=''):
   C5=B1(C2[0:1])
   C6=abs(int(C2[1:2])-8)
   C7=B1(C2[2:3])
   C8=abs(int(C2[3:4])-8)
-  C9=self.B3[C6][C5]
-  C0=self.B3[C8][C7]
-  E7=self.B4%2==0
+  C9=Z.B3[C6][C5]
+  C0=Z.B3[C8][C7]
+  E7=Z.B4%2==0
   if len(C91)>0:
    C9=C91
   if len(C01)>0:
@@ -66,81 +65,77 @@ class H9:
    D2=1
    if C2[0:1]=='c':
     D2=-2
-    self.B3[C8][C7-1]='-'
+    Z.B3[C8][C7-1]='-'
    else:
-    self.B3[C8][C7+2]='-'
-   self.B3[C6][C5+D2]='R' if C9=='K' else 'r'
-   self.B3[C8][C7]='K' if C9=='K' else 'k'
-   self.B3[C8][C7+D2]='-'
+    Z.B3[C8][C7+2]='-'
+   Z.B3[C6][C5+D2]='R' if C9=='K' else 'r'
+   Z.B3[C8][C7]='K' if C9=='K' else 'k'
+   Z.B3[C8][C7+D2]='-'
    return[C9,C0]
   D3=""
   if len(C2)>4:
    D3=C2[4:5]
   if(C9 in('P','p')and C0=='-' and C2[0:1]!=C2[2:3]and len(C91)==0 and len(C01)==0):
-   self.B3[C6][C5]='-'
-   self.B3[C8][C7]=C9
-   self.B3[C6][C7]='-'
+   Z.B3[C6][C5]='-'
+   Z.B3[C8][C7]=C9
+   Z.B3[C6][C7]='-'
   elif(C9 in('K','k')and C2 in('e1g1','e1c1','e8g8','e8c8')):
-   self.B3[C6][C5]='-'
+   Z.B3[C6][C5]='-'
    if C2[2]=='g':
-    self.B3[C8][C7+1]='-'
-    self.B3[C6][C5+1]='R' if C9=='K' else 'r'
+    Z.B3[C8][C7+1]='-'
+    Z.B3[C6][C5+1]='R' if C9=='K' else 'r'
    else:
-    self.B3[C8][C7-2]='-'
-    self.B3[C6][C5-1]='R' if C9=='K' else 'r'
-   self.B3[C8][C7]=C9
+    Z.B3[C8][C7-2]='-'
+    Z.B3[C6][C5-1]='R' if C9=='K' else 'r'
+   Z.B3[C8][C7]=C9
   else:
    if len(C01)==0:
-    self.B3[C6][C5]='-'
+    Z.B3[C6][C5]='-'
    else:
-    self.B3[C6][C5]=C01
+    Z.B3[C6][C5]=C01
    if D3!="":
     if E7:
-     self.B3[C8][C7]=D3.upper()
+     Z.B3[C8][C7]=D3.upper()
     else:
-     self.B3[C8][C7]=D3
+     Z.B3[C8][C7]=D3
    else:
     if len(C91)==0:
-     self.B3[C8][C7]=C9
+     Z.B3[C8][C7]=C9
     else:
-     self.B3[C8][C7]=C91
+     Z.B3[C8][C7]=C91
   return[C9,C0]
- def D4(self,C2):
-  (C9,C0)=self.D1(C2)
-  self.C1.append(C2)
-  self.C11.append([C2,C9,C0])
-  self.B4+=1
- def D6(self):
-  self.C1.pop()
-  F81=self.C11.pop()
+ def D4(Z,C2):
+  (C9,C0)=Z.D1(C2)
+  Z.C1.append(C2)
+  Z.C11.append([C2,C9,C0])
+  Z.B4+=1
+  Z.D8()
+ def D6(Z):
+  Z.C1.pop()
+  F81=Z.C11.pop()
   C2=F81[0]
   C9=F81[1]
   C0=F81[2]
   C4=C2 in('e1g1','e1c1','e8g8','e8c8')and C9 in('K','k')
-  self.B4-=1
-  self.D1(C2[2:4]+C2[0:2],len(C2)>4,C4,C9,C0)
- def D7(self):
+  Z.B4-=1
+  Z.D1(C2[2:4]+C2[0:2],len(C2)>4,C4,C9,C0)
+ def M6(Z):
+  N1=''
   for i in range(8):
    for j in range(8):
-    print(self.B3[i][j],end=" ")
-   print()
- def str_board(self):
-  s_board=''
-  for i in range(8):
-   for j in range(8):
-    s_board+=self.B3[i][j]
-  return s_board
- def D8(self):
-  E7=self.B4%2==0
+    N1+=Z.B3[i][j]
+  return N1
+ def D8(Z):
+  E7=Z.B4%2==0
   if(E7):
-   self.B5=[]
-   self.D9=[]
-   self.B7=''
+   Z.B5=[]
+   Z.D9=[]
+   Z.B7=''
   else:
-   self.B6=[]
-   self.D0=[]
-   self.B8=''
-  E1=self.B3.copy()
+   Z.B6=[]
+   Z.D0=[]
+   Z.B8=''
+  E1=Z.B3.copy()
   for E2 in range(8):
    for E3 in range(8):
     Z1=E1[E2][E3]
@@ -150,17 +145,17 @@ class H9:
     if Z1.lower()=='k':
      E8={1:{'E3':(E3+0),'E2':(E2+1)},2:{'E3':(E3+0),'E2':(E2-1)},3:{'E3':(E3+1),'E2':(E2+0)},4:{'E3':(E3-1),'E2':(E2+0)},5:{'E3':(E3+1),'E2':(E2+1)},6:{'E3':(E3+1),'E2':(E2-1)},7:{'E3':(E3-1),'E2':(E2+1)},8:{'E3':(E3-1),'E2':(E2-1)},}
      if E7:
-      self.B9=K7
+      Z.B9=K7
       if K7=='e1' and E1[7][5]=='-' and E1[7][6]=='-' and E1[7][7]=='R':
-       self.B5.append(K7+'g1')
+       Z.B5.append(K7+'g1')
       if K7=='e1' and E1[7][1]=='-' and E1[7][2]=='-' and E1[7][3]=='-' and E1[7][0]=='R':
-       self.B5.append(K7+'c1')
+       Z.B5.append(K7+'c1')
      else:
-      self.B0=K7
+      Z.B0=K7
       if K7=='e8' and E1[0][1]=='-' and E1[0][2]=='-' and E1[0][3]=='-' and E1[0][0]=='r':
-       self.B6.append(K7+'c8')
+       Z.B6.append(K7+'c8')
       if K7=='e8' and E1[0][5]=='-' and E1[0][6]=='-' and E1[0][7]=='r':
-       self.B6.append(K7+'g8')
+       Z.B6.append(K7+'g8')
      for _,E81 in E8.items():
       if E81['E3']in range(8)and E81['E2']in range(8):
        E9=E1[E81['E2']][E81['E3']]
@@ -171,59 +166,59 @@ class H9:
        F1=B2(E81['E3']+1)+str(abs(E81['E2']-8))
        if E9=='-' or E0:
         if E7:
-         self.B5.append(K7+F1)
+         Z.B5.append(K7+F1)
         else:
-         self.B6.append(K7+F1)
+         Z.B6.append(K7+F1)
        if E0:
         if E7:
-         self.D9.append([E9,Z1,K7+F1])
-         self.B7+=F1
+         Z.D9.append([E9,Z1,K7+F1])
+         Z.B7+=F1
         else:
-         self.D0.append([E9,Z1,K7+F1])
-         self.B8+=F1
+         Z.D0.append([E9,Z1,K7+F1])
+         Z.B8+=F1
     if Z1.lower()=='p':
      if E7:
       if E2>1 and E1[E2-1][E3]=='-':
-       self.B5.append(K7+B2(E3+1)+str(abs(E2-9)))
+       Z.B5.append(K7+B2(E3+1)+str(abs(E2-9)))
       if E2==6 and E1[E2-1][E3]=='-' and E1[E2-2][E3]=='-':
-       self.B5.append(K7+B2(E3+1)+str(abs(E2-10)))
+       Z.B5.append(K7+B2(E3+1)+str(abs(E2-10)))
       if E2==1 and E1[E2-1][E3]=='-':
-       self.B5.append(K7+B2(E3+1)+str(abs(E2-9))+'q')
+       Z.B5.append(K7+B2(E3+1)+str(abs(E2-9))+'q')
       if((E3-1)>=0 and(E2-1)>=0)or((E3+1)<8 and(E2-1)>=0):
        prom=''
        if E2==1:
         prom='q'
        if(E3-1)>=0 and E1[E2-1][E3-1]!='-' and E1[E2-1][E3-1].islower():
         F1=B2(E3)+str(abs(E2-9))
-        self.B5.append(K7+F1+prom)
-        self.B7+=F1
-        self.D9.append([E1[E2-1][E3-1],Z1,K7+F1+prom])
+        Z.B5.append(K7+F1+prom)
+        Z.B7+=F1
+        Z.D9.append([E1[E2-1][E3-1],Z1,K7+F1+prom])
        if(E3+1)<8 and E1[E2-1][E3+1]!='-' and E1[E2-1][E3+1].islower():
         F1=B2(E3+2)+str(abs(E2-9))
-        self.B5.append(K7+F1+prom)
-        self.B7+=F1
-        self.D9.append([E1[E2-1][E3+1],Z1,K7+F1+prom])
+        Z.B5.append(K7+F1+prom)
+        Z.B7+=F1
+        Z.D9.append([E1[E2-1][E3+1],Z1,K7+F1+prom])
      else:
       if E2<6 and E1[E2+1][E3]=='-':
-       self.B6.append(K7+B2(E3+1)+str(abs(E2-7)))
+       Z.B6.append(K7+B2(E3+1)+str(abs(E2-7)))
       if E2==1 and E1[E2+1][E3]=='-' and E1[E2+2][E3]=='-':
-       self.B6.append(K7+B2(E3+1)+str(abs(E2-6)))
+       Z.B6.append(K7+B2(E3+1)+str(abs(E2-6)))
       if E2==6 and E1[E2+1][E3]=='-':
-       self.B6.append(K7+B2(E3+1)+str(abs(E2-7))+'q')
+       Z.B6.append(K7+B2(E3+1)+str(abs(E2-7))+'q')
       if((E3-1)>=0 and(E2+1)<8)or((E3+1)<8 and(E2+1)<8):
        prom=''
        if E2==6:
         prom='q'
        if(E3+1)<8 and E1[E2+1][E3+1]!='-' and E1[E2+1][E3+1].isupper():
         F1=B2(E3+2)+str(abs(E2-7))
-        self.B6.append(K7+F1+prom)
-        self.B8+=F1
-        self.D0.append([E1[E2+1][E3+1],Z1,K7+F1+prom])
+        Z.B6.append(K7+F1+prom)
+        Z.B8+=F1
+        Z.D0.append([E1[E2+1][E3+1],Z1,K7+F1+prom])
        if(E3-1)>=0 and E1[E2+1][E3-1]!='-' and E1[E2+1][E3-1].isupper():
         F1=B2(E3)+str(abs(E2-7))
-        self.B6.append(K7+F1+prom)
-        self.B8+=F1
-        self.D0.append([E1[E2+1][E3-1],Z1,K7+F1+prom])
+        Z.B6.append(K7+F1+prom)
+        Z.B8+=F1
+        Z.D0.append([E1[E2+1][E3-1],Z1,K7+F1+prom])
     if Z1.lower()=='n':
      F3={1:{'E3':(E3+1),'E2':(E2-2)},2:{'E3':(E3-1),'E2':(E2-2)},3:{'E3':(E3+2),'E2':(E2-1)},4:{'E3':(E3-2),'E2':(E2-1)},5:{'E3':(E3+1),'E2':(E2+2)},6:{'E3':(E3-1),'E2':(E2+2)},7:{'E3':(E3+2),'E2':(E2+1)},8:{'E3':(E3-2),'E2':(E2+1)}}
      for _,F4 in F3.items():
@@ -236,15 +231,15 @@ class H9:
        if E9=='-' or E0:
         F1=B2(F4['E3']+1)+str(abs(F4['E2']-8))
         if E7:
-         self.B5.append(K7+F1)
+         Z.B5.append(K7+F1)
          if E0:
-          self.B7+=F1
-          self.D9.append([E9,Z1,K7+F1])
+          Z.B7+=F1
+          Z.D9.append([E9,Z1,K7+F1])
         else:
-         self.B6.append(K7+F1)
+         Z.B6.append(K7+F1)
          if E0:
-          self.B8+=F1
-          self.D0.append([E9,Z1,K7+F1])
+          Z.B8+=F1
+          Z.D0.append([E9,Z1,K7+F1])
     if Z1.lower()in('b','r','q'):
      F7={1:{'E3':E3,'E2':(E2-1),'E24':0,'E23':-1},2:{'E3':E3,'E2':(E2+1),'E24':0,'E23':1},3:{'E3':(E3-1),'E2':E2,'E24':-1,'E23':0},4:{'E3':(E3+1),'E2':E2,'E24':1,'E23':0},5:{'E3':(E3-1),'E2':(E2-1),'E24':-1,'E23':-1},6:{'E3':(E3+1),'E2':(E2+1),'E24':1,'E23':1},7:{'E3':(E3-1),'E2':(E2+1),'E24':-1,'E23':1},8:{'E3':(E3+1),'E2':(E2-1),'E24':1,'E23':-1},}
      for key,F8 in F7.items():
@@ -258,63 +253,63 @@ class H9:
        if E9=='-' or E0:
         F1=B2(E22+1)+str(abs(E21-8))
         if E7:
-         self.B5.append(K7+F1)
+         Z.B5.append(K7+F1)
          if E0:
-          self.B7+=F1
-          self.D9.append([E9,Z1,K7+F1])
+          Z.B7+=F1
+          Z.D9.append([E9,Z1,K7+F1])
         else:
-         self.B6.append(K7+F1)
+         Z.B6.append(K7+F1)
          if E0:
-          self.B8+=F1
-          self.D0.append([E9,Z1,K7+F1])
+          Z.B8+=F1
+          Z.D0.append([E9,Z1,K7+F1])
         if E0 or E9!='-':
          break
        else:
         break
        E21+=F8['E23']
        E22+=F8['E24']
-  F0=''.join(self.C1)
+  F0=''.join(Z.C1)
   if E7:
-   F9=self.B5.copy()
-   M1=''.join(self.B6.copy())
+   F9=Z.B5.copy()
+   M1=''.join(Z.B6.copy())
    for K7 in F9:
     G1=((K7=='e1g1' and('e1' in F0 or 'h1' in F0 or 'e1' in M1 or 'f1' in M1 or 'g1' in M1))or(K7=='e1c1' and('e1' in F0 or 'a1' in F0 or 'c1' in M1 or 'd1' in M1 or 'e1' in M1)))
     if G1:
      try:
-      self.B5.remove(K7)
+      Z.B5.remove(K7)
      except Exception:
       continue
   else:
-   F9=self.B6.copy()
-   M1=''.join(self.B5.copy())
+   F9=Z.B6.copy()
+   M1=''.join(Z.B5.copy())
    for K7 in F9:
     G1=((K7=='e8g8' and('e8' in F0 or 'h8' in F0 or 'e8' in M1 or 'f8' in M1 or 'g8' in M1))or(K7=='e8c8' and('e8' in F0 or 'a8' in F0 or 'c8' in M1 or 'd8' in M1 or 'e8' in M1)))
     if G1:
      try:
-      self.B6.remove(K7)
+      Z.B6.remove(K7)
      except Exception:
       continue
- def I9(self,E7):
+ def I9(Z,E7):
   if E7:
-   for(K8,K9,_)in self.D0:
+   for(K8,K9,_)in Z.D0:
     if K8=='K':
-     return True
-   return False
+     return 1
+   return 0
   else:
-   for(K8,K9,_)in self.D9:
+   for(K8,K9,_)in Z.D9:
     if K8=='k':
-     return True
-   return False
- def G2(self,E7):
+     return 1
+   return 0
+ def G2(Z,E7):
   if E7:
-   return self.B5
-  return self.B6
- def G3(self):
+   return Z.B5
+  return Z.B6
+ def G3(Z):
   K0=0
   for table in range(64):
    E2=math.floor(table/8)
    E3=table%8
-   Z1=self.B3[E2][E3]
+   Z1=Z.B3[E2][E3]
    E7=Z1.isupper()
    if Z1!='-':
     if E7:
@@ -326,23 +321,29 @@ class H9:
   return K0
 class G4:
  L5=0
+ M2=0
  L6=0
  G6=0
- def G71(self,G9,L6,I7):
-  I8=perf_counter()
-  self.G6=perf_counter()+I7
-  self.L6=0
+ M3={}
+ def K3(Z):
+  Z.L5=0
+  Z.M2=0
+  Z.M3={}
+ def G71(Z,G9,L6,I7):
+  I8=N3()
+  Z.G6=N3()+I7
+  Z.L6=0
   while L6>0:
-   self.L6+=1
+   Z.L6+=1
    L6-=1
-   (J3,J4)=self.G7(G9,self.L6)
-   I6=math.ceil(perf_counter()-I8)
-   nps=math.ceil(self.L5/I6)
-   print("info depth "+str(self.L6)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(self.L5)+" nps "+str(nps)+" pv "+str(J4),flush=True)
-   if perf_counter()>=self.G6 or L6<1:
+   (J3,J4)=Z.G7(G9,Z.L6)
+   I6=math.ceil(N3()-I8)
+   nps=math.ceil(Z.L5/I6)
+   N2("info depth "+str(Z.L6)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(Z.L5)+" nps "+str(nps)+" pv "+str(J4))
+   if N3()>=Z.G6 or L6<1:
     break
   return[J3,J4]
- def G7(self,G9,L6):
+ def G7(Z,G9,L6):
   G0=-1e8
   F41=None
   H2=-1e8
@@ -353,23 +354,37 @@ class G4:
   H1=G9.G2(E7)
   L6=max(L6,1)
   for K7 in H1:
-   self.L5+=1
-   s_board=G9.str_board()
+   Z.L5+=1
    G9.D4(K7)
-   G9.D8()
    if not G9.I9(E7):
-    H2=-self.J5(G9,-H4,-H3,L6-1)
+    H2=-Z.J5(G9,-H4,-H3,L6-1)
     if H2>=G0:
      G0=H2
      F41=K7
    G9.D6()
-   e_board=G9.str_board()
-   if s_board!=e_board:
-    print(K7,s_board,e_board)
-    sys.exit()
   return[G0,F41]
- def J5(self,G9,H3,H4,L6):
+ def M4(Z,G9):
+  M5=G9.M6()
+  if M5 not in Z.M3:
+   Z.M3[M5]={'M8':0,'M9':-1e5,'M0':2}
+  return Z.M3[M5]
+ def store_tt(Z,G9,J7):
+  M5=G9.M6()
+  Z.M3[M5]=J7
+ def J5(Z,G9,H3,H4,L6):
   E7=G9.B4%2==0
+  alpa_orig=H3
+  J7=Z.M4(G9)
+  if J7['M8']>=L6:
+   Z.M2+=1
+   if J7['M0']==1:
+    return J7['M9']
+   elif J7['M0']==2:
+    H3=max(H3,J7['M9'])
+   elif J7['M0']==3:
+    H4=min(H4,J7['M9'])
+   if H3>=H4:
+    return J7['M9']
   G9.D8()
   H1=G9.G2(E7)
   if len(H1)==0 or(L6<=0):
@@ -377,54 +392,52 @@ class G4:
    return K0 if E7 else-K0
   H2=-1e8
   for K7 in H1:
-   s_board=G9.str_board()
    G9.D4(K7)
-   G9.D8()
    if not G9.I9(E7):
-    self.L5+=1
-    H2=max(H2,-self.J5(G9,-H4,-H3,L6-1))
+    Z.L5+=1
+    H2=max(H2,-Z.J5(G9,-H4,-H3,L6-1))
     H3=max(H3,H2)
-    if self.L5%5e4==0:
-     print("info nodes "+str(self.L5),flush=True)
+    if Z.L5%1e5==0:
+     N2("info nodes "+str(Z.L5)+" tthits "+str(Z.M2))
    G9.D6()
-   e_board=G9.str_board()
-   if s_board!=e_board:
-    print('2',K7,s_board,e_board)
-    sys.exit()
    if H3>=H4:
     break
+  J7['M9']=H2
+  if H2<=alpa_orig:
+   J7['M0']=3
+  elif H2>=H4:
+   J7['M0']=2
+  else:
+   J7['M0']=1
+  J7['M8']=L6
+  Z.store_tt(G9,J7)
   return H2
 H8=H9()
+H8.K3()
 def main():
- while True:
+ G7er=G4()
+ while 1:
   try:
-   line=input()
-   if line=="quit":
+   Z2=input()
+   if Z2=="quit":
     sys.exit()
-   elif line=="uci":
-    print("pygone 1.0 by rcostheta",flush=True)
-    print("uciok",flush=True)
-   elif line=="ucinewgame":
+   elif Z2=="uci":
+    N2("pygone 1.0 by rcostheta\nuciok")
+   elif Z2=="ucinewgame":
     H8.K3()
-   elif line=="eval":
-    H8.D7()
-    H8.D4('e8c8')
-    H8.D7()
-    H8.D6()
-    H8.D7()
-   elif line=="isready":
-    print("readyok",flush=True)
-   elif line.startswith("position"):
-    moves=line.split()
+    G7er.K3()
+   elif Z2=="isready":
+    N2("readyok")
+   elif Z2.startswith("position"):
+    Z3=Z2.split()
     H8.K3()
-    for F42 in moves[3:]:
+    for F42 in Z3[3:]:
      H8.D4(F42)
-    H8.D8()
-   elif line.startswith("go"):
+   elif Z2.startswith("go"):
     I2=1e8
     I3=1e8
-    I4=5
-    I5=line.split()
+    I4=8
+    I5=Z2.split()
     for key,arg in enumerate(I5):
      if arg=='wtime':
       I2=int(I5[key+1])
@@ -440,20 +453,20 @@ def main():
     else:
      I7=I3/(K4*1e3)
     if I7<15:
-     I4=4
+     I4=5
     if I7<4:
      I7=2
-     I4=2
-    G7er=G4()
-    I8=perf_counter()
+     I4=4
+    G7er.L5=0
+    G7er.M2=0
+    I8=N3()
     (score,K7)=G7er.G71(H8,I4,I7)
-    H8.D7()
-    print("bestmove "+K7,flush=True)
+    N2("bestmove "+K7)
   except(KeyboardInterrupt,SystemExit):
-   print('quit')
+   N2('quit')
    sys.exit()
   except Exception as exc:
-   print(exc)
+   N2(exc)
    raise
 main()
 

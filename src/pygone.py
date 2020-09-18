@@ -1,6 +1,5 @@
 #!/usr/bin/env pypy3
-import math, sys
-from time import perf_counter
+import math, sys, time
 
 PIECEPOINTS = {'p': 100, 'r': 480, 'n': 280, 'b': 320, 'q': 960, 'k': 6e4}
 
@@ -58,14 +57,17 @@ ALLPSQT = {'p': PPSQT, 'n': NPSQT, 'b':BPSQT, 'r':RPSQT, 'q':QPSQT, 'k':KPSQT}
 WHITE_PIECES = ['P', 'R', 'N', 'B', 'Q', 'K']
 BLACK_PIECES = ['p', 'r', 'n', 'b', 'q', 'k']
 
-isupper = lambda c: 'A' <= c <= 'Z'
-islower = lambda c: 'a' <= c <= 'z'
-
 def letter_to_number(letter):
     return abs((ord(letter) - 96) - 1)
 
 def number_to_letter(number):
     return chr(number + 96)
+
+def print_to_terminal(letter):
+    print(letter, flush=1)
+
+def get_perf_counter():
+    return time.perf_counter()
 
 class Board:
     board_state = []
@@ -78,9 +80,6 @@ class Board:
     black_king_location = 'e8'
     move_list_pieces = []
     move_list = []
-
-    def __init__(self):
-        self.reset()
 
     def reset(self):
         self.set_default_board_state()
@@ -109,7 +108,7 @@ class Board:
     def set_board_state(self, state):
         self.board_state = state
 
-    def apply_move(self, uci_coordinate, reverse_promotion=False, reverse_castle=False, override_from_piece='', override_to_piece=''):
+    def apply_move(self, uci_coordinate, reverse_promotion=0, reverse_castle=0, override_from_piece='', override_to_piece=''):
         from_letter_number = letter_to_number(uci_coordinate[0:1])
         from_number = abs(int(uci_coordinate[1:2]) - 8)
         to_letter_number = letter_to_number(uci_coordinate[2:3])
@@ -176,6 +175,7 @@ class Board:
         self.move_list.append(uci_coordinate)
         self.move_list_pieces.append([uci_coordinate, from_piece, to_piece])
         self.played_move_count += 1
+        self.get_valid_moves()
 
     def undo_move(self):
         self.move_list.pop()
@@ -189,11 +189,11 @@ class Board:
         self.played_move_count -= 1
         self.apply_move(uci_coordinate[2:4] + uci_coordinate[0:2], len(uci_coordinate) > 4, reverse_castle, from_piece, to_piece)
 
-    def show_board(self):
-        for i in range(8):
-            for j in range(8):
-                print(self.board_state[i][j], end=" ")
-            print()
+    #def show_board(self):
+    #    for i in range(8):
+    #        for j in range(8):
+    #            print(self.board_state[i][j], end=" ")
+    #        print()
 
     def str_board(self):
         s_board = ''
@@ -415,13 +415,13 @@ class Board:
         if is_white:
             for (attacked, attacker, _) in self.black_attack_pieces:
                 if attacked == 'K':
-                    return True
-            return False
+                    return 1
+            return 0
         else:
             for (attacked, attacker, _) in self.white_attack_pieces:
                 if attacked == 'k':
-                    return True
-            return False
+                    return 1
+            return 0
 
     def get_side_moves(self, is_white):
         if is_white:
@@ -448,12 +448,19 @@ class Board:
 
 class Search:
     v_nodes = 0
+    v_tthits = 0
     v_depth = 0
     end_time = 0
+    tt_bucket = {}
+
+    def reset(self):
+        self.v_nodes = 0
+        self.v_tthits = 0
+        self.tt_bucket = {}
 
     def iterative_search(self, local_board, v_depth, move_time):
-        start_time = perf_counter()
-        self.end_time = perf_counter() + move_time
+        start_time = get_perf_counter()
+        self.end_time = get_perf_counter() + move_time
 
         self.v_depth = 0
         while v_depth > 0:
@@ -462,12 +469,12 @@ class Search:
 
             (iterative_score, iterative_move) = self.search(local_board, self.v_depth)
 
-            elapsed_time = math.ceil(perf_counter() - start_time)
+            elapsed_time = math.ceil(get_perf_counter() - start_time)
             nps = math.ceil(self.v_nodes / elapsed_time)
 
-            print("info depth " + str(self.v_depth) + " score cp " + str(math.ceil(iterative_score)) + " time " + str(elapsed_time) + " nodes " + str(self.v_nodes) + " nps " + str(nps) + " pv " + str(iterative_move), flush=True)
+            print_to_terminal("info depth " + str(self.v_depth) + " score cp " + str(math.ceil(iterative_score)) + " time " + str(elapsed_time) + " nodes " + str(self.v_nodes) + " nps " + str(nps) + " pv " + str(iterative_move))
 
-            if perf_counter() >= self.end_time or v_depth < 1:
+            if get_perf_counter() >= self.end_time or v_depth < 1:
                 break
 
         return [iterative_score, iterative_move]
@@ -489,10 +496,7 @@ class Search:
         for s_move in poss_mvs:
             self.v_nodes += 1
 
-            s_board = local_board.str_board()
             local_board.make_move(s_move)
-            local_board.get_valid_moves()
-
             if not local_board.in_check(is_white):
                 local_score = -self.negamax(local_board, -beta, -alpha, v_depth - 1)
 
@@ -501,17 +505,42 @@ class Search:
                     chosen_move = s_move
 
             local_board.undo_move()
-            e_board = local_board.str_board()
-
-            if s_board != e_board:
-                print(s_move, s_board, e_board)
-                sys.exit()
 
         return [global_score, chosen_move]
 
+    def tt_lookup(self, local_board):
+        board_string = local_board.str_board()
+        if board_string not in self.tt_bucket:
+            self.tt_bucket[board_string] = {
+                'tt_depth': 0,
+                'tt_value': -1e5,
+                'tt_flag': 2
+            }
+
+        return self.tt_bucket[board_string]
+
+    def store_tt(self, local_board, tt_entry):
+        board_string = local_board.str_board()
+        self.tt_bucket[board_string] = tt_entry
 
     def negamax(self, local_board, alpha, beta, v_depth):
         is_white = local_board.played_move_count % 2 == 0
+
+        alpa_orig = alpha
+
+        tt_entry = self.tt_lookup(local_board)
+        if tt_entry['tt_depth'] >= v_depth:
+            self.v_tthits += 1
+            if tt_entry['tt_flag'] == 1:
+                return tt_entry['tt_value']
+            elif tt_entry['tt_flag'] == 2:
+                alpha = max(alpha, tt_entry['tt_value'])
+            elif tt_entry['tt_flag'] == 3:
+                beta = min(beta, tt_entry['tt_value'])
+
+            if alpha >= beta:
+                return tt_entry['tt_value']
+
         local_board.get_valid_moves()
         poss_mvs = local_board.get_side_moves(is_white)
 
@@ -522,9 +551,7 @@ class Search:
         local_score = -1e8
 
         for s_move in poss_mvs:
-            s_board = local_board.str_board()
             local_board.make_move(s_move)
-            local_board.get_valid_moves()
 
             if not local_board.in_check(is_white):
                 self.v_nodes += 1
@@ -532,53 +559,53 @@ class Search:
                 local_score = max(local_score, -self.negamax(local_board, -beta, -alpha, v_depth - 1))
                 alpha = max(alpha, local_score)
 
-                if self.v_nodes % 5e4 == 0:
-                    print("info nodes " + str(self.v_nodes), flush=True)
+                if self.v_nodes % 1e5 == 0:
+                    print_to_terminal("info nodes " + str(self.v_nodes) + " tthits " + str(self.v_tthits))
 
             local_board.undo_move()
-            e_board = local_board.str_board()
-
-            if s_board != e_board:
-                print('2',s_move, s_board, e_board)
-                sys.exit()
 
             if alpha >= beta:
                 break
 
+        tt_entry['tt_value'] = local_score
+        if local_score <= alpa_orig:
+            tt_entry['tt_flag'] = 3
+        elif local_score >= beta:
+            tt_entry['tt_flag'] = 2
+        else:
+            tt_entry['tt_flag'] = 1
+        tt_entry['tt_depth'] = v_depth
+        self.store_tt(local_board, tt_entry)
+
         return local_score
 
-
 game_board = Board()
+game_board.reset()
 
 def main():
-    while True:
+    searcher = Search()
+
+    while 1:
         try:
             line = input()
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print("pygone 1.0 by rcostheta", flush=True)
-                print("uciok", flush=True)
+                print_to_terminal("pygone 1.0 by rcostheta\nuciok")
             elif line == "ucinewgame":
                 game_board.reset()
-            elif line == "eval":
-                game_board.show_board()
-                game_board.make_move('e8c8')
-                game_board.show_board()
-                game_board.undo_move()
-                game_board.show_board()
+                searcher.reset()
             elif line == "isready":
-                print("readyok", flush=True)
+                print_to_terminal("readyok")
             elif line.startswith("position"):
                 moves = line.split()
                 game_board.reset()
                 for position_move in moves[3:]:
                     game_board.make_move(position_move)
-                game_board.get_valid_moves()
             elif line.startswith("go"):
                 white_time = 1e8
                 black_time = 1e8
-                go_depth = 5
+                go_depth = 8
 
                 args = line.split()
                 for key, arg in enumerate(args):
@@ -601,21 +628,21 @@ def main():
                     move_time = black_time / (time_move_calc * 1e3)
 
                 if move_time < 15:
-                    go_depth = 4
+                    go_depth = 5
                 if move_time < 4:
                     move_time = 2
-                    go_depth = 2
+                    go_depth = 4
 
-                searcher = Search()
-                start_time = perf_counter()
+                searcher.v_nodes = 0
+                searcher.v_tthits = 0
+                start_time = get_perf_counter()
                 (score, s_move) = searcher.iterative_search(game_board, go_depth, move_time)
-                game_board.show_board()
-                print("bestmove " + s_move, flush=True)
+                print_to_terminal("bestmove " + s_move)
         except (KeyboardInterrupt, SystemExit):
-            print('quit')
+            print_to_terminal('quit')
             sys.exit()
         except Exception as exc:
-            print(exc)
+            print_to_terminal(exc)
             raise
 
 main()
