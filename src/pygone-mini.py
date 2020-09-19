@@ -1,14 +1,21 @@
 #!/usr/bin/env pypy3
-import math,sys,time
-A1={'p':100,'r':500,'n':300,'b':300,'q':1000,'k':60000}
-A3=[[0]*8,[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0]*8]
-A4=[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,27,62,-2],[24,24,45,37,33,41,25,17],[-1,5,31,21,22,35,2,0],[-18,10,13,22,18,15,11,-14],[-23,-15,2,0,2,0,-23,-20],[-74,-23,-26,-24,-19,-35,-22,-69]]
-A5=[[-59,-78,-82,-76,-23,-107,-37,-50],[-11,20,35,-42,-39,31,2,-22],[-9,39,-32,41,52,-10,28,-14],[25,17,20,34,26,25,15,10],[13,10,17,23,17,16,0,7],[14,25,24,15,8,25,20,15],[19,20,11,6,7,6,20,16],[-7,2,-15,-12,-14,-15,-10,-10]]
-A6=[[35,29,33,4,37,33,56,50],[55,29,56,67,55,62,34,60],[19,35,28,33,45,27,25,15],[0,5,16,13,18,-4,-9,-6],[-28,-35,-16,-21,-13,-29,-46,-30],[-42,-28,-42,-25,-25,-35,-26,-46],[-53,-38,-31,-26,-29,-43,-44,-53],[-30,-24,-18,5,-2,-18,-31,-32]]
-A7=[[6,1,-8,-104,69,24,88,26],[14,32,60,-10,20,76,57,24],[-2,43,32,60,72,63,43,2],[1,-16,22,17,25,20,-13,-6],[-14,-15,-2,-5,-1,-10,-20,-22],[-30,-6,-13,-11,-16,-11,-16,-27],[-36,-18,0,-19,-15,-15,-21,-38],[-39,-30,-31,-13,-31,-36,-34,-42]]
-A8=[[4,54,47,-99,-99,60,83,-62],[-32,10,55,56,56,55,10,3],[-62,12,-57,44,-67,28,37,-31],[-55,50,11,-4,-19,13,0,-49],[-55,-43,-52,-28,-51,-47,-8,-50],[-47,-42,-43,-79,-64,-32,-29,-32],[-4,3,-14,-50,-57,-18,13,4],[22,30,-3,-14,6,-1,40,26]]
-A9={'p':A3,'n':A4,'b':A5,'r':A6,'q':A7,'k':A8}
-A0=50000
+import gc,math,sys,time
+from itertools import count
+from collections import namedtuple
+Z1={'P':100,'N':280,'B':320,'R':479,'Q':929,'K':60000}
+pst={'P':(0,0,0,0,0,0,0,0,78,83,86,73,102,82,85,90,7,29,21,44,40,31,44,7,-17,16,-2,15,14,0,15,-13,-26,3,10,9,6,1,0,-23,-22,9,5,-11,-10,-2,3,-19,-31,8,-7,-37,-36,-14,3,-31,0,0,0,0,0,0,0,0),'N':(-66,-53,-75,-75,-10,-55,-58,-70,-3,-6,100,-36,4,62,-4,-14,10,67,1,74,73,27,62,-2,24,24,45,37,33,41,25,17,-1,5,31,21,22,35,2,0,-18,10,13,22,18,15,11,-14,-23,-15,2,0,2,0,-23,-20,-74,-23,-26,-24,-19,-35,-22,-69),'B':(-59,-78,-82,-76,-23,-107,-37,-50,-11,20,35,-42,-39,31,2,-22,-9,39,-32,41,52,-10,28,-14,25,17,20,34,26,25,15,10,13,10,17,23,17,16,0,7,14,25,24,15,8,25,20,15,19,20,11,6,7,6,20,16,-7,2,-15,-12,-14,-15,-10,-10),'R':(35,29,33,4,37,33,56,50,55,29,56,67,55,62,34,60,19,35,28,33,45,27,25,15,0,5,16,13,18,-4,-9,-6,-28,-35,-16,-21,-13,-29,-46,-30,-42,-28,-42,-25,-25,-35,-26,-46,-53,-38,-31,-26,-29,-43,-44,-53,-30,-24,-18,5,-2,-18,-31,-32),'Q':(6,1,-8,-104,69,24,88,26,14,32,60,-10,20,76,57,24,-2,43,32,60,72,63,43,2,1,-16,22,17,25,20,-13,-6,-14,-15,-2,-5,-1,-10,-20,-22,-30,-6,-13,-11,-16,-11,-16,-27,-36,-18,0,-19,-15,-15,-21,-38,-39,-30,-31,-13,-31,-36,-34,-42),'K':(4,54,47,-99,-99,60,83,-62,-32,10,55,56,56,55,10,3,-62,12,-57,44,-67,28,37,-31,-55,50,11,-4,-19,13,0,-49,-55,-43,-52,-28,-51,-47,-8,-50,-47,-42,-43,-79,-64,-32,-29,-32,-4,3,-14,-50,-57,-18,13,4,17,30,-3,-14,6,-1,40,18),}
+for k,Z2 in pst.items():
+ padE2=lambda E2:(0,)+tuple(x+Z1[k]for x in E2)+(0,)
+ pst[k]=sum((padE2(Z2[i*8:i*8+8])for i in range(8)),())
+ pst[k]=(0,)*20+pst[k]+(0,)*20
+N,E,S,W=-10,1,10,-1
+directions={'P':(N,N+N,N+W,N+E),'N':(N+N+E,E+N+E,E+S+E,S+S+E,S+S+W,W+S+W,W+N+W,N+N+W),'B':(N+E,S+E,S+W,N+W),'R':(N,E,S,W),'Q':(N,E,S,W,N+E,S+E,S+W,N+W),'K':(N,E,S,W,N+E,S+E,S+W,N+W)}
+MATE_LOWER=Z1['K']-10*Z1['Q']
+MATE_UPPER=Z1['K']+10*Z1['Q']
+A1,H1,A8,H8=91,98,21,28
+initial=('         \n' '         \n' ' rnbqkbnr\n' ' pppppppp\n' ' ........\n' ' ........\n' ' ........\n' ' ........\n' ' PPPPPPPP\n' ' RNBQKBNR\n' '         \n' '         \n')
+WHITE_PIECES=['P','R','N','B','Q','K']
+BLACK_PIECES=['p','r','n','b','q','k']
 I0=1
 J1=2
 J2=3
@@ -18,322 +25,73 @@ def B1(letter):
  return abs((ord(letter)-96)-1)
 def B2(number):
  return chr(number+96)
-class H9:
- B3=[]
- B4=0
- B5=[]
- B6=[]
- B7=''
- B8=''
- B9='e1'
- B0='e8'
- C1_Z1s=[]
- C1=[]
- def __init__(self):
-  self.K3()
- def K3(self):
-  self.B31()
-  self.B4=0
-  self.B5=[]
-  self.B6=[]
-  self.D9=[]
-  self.D0=[]
-  self.B7=''
-  self.B8=''
-  self.B9='e1'
-  self.B0='e8'
-  self.C1_Z1s=[]
-  self.C1=[]
- def B31(self):
-  self.B3=[['r','n','b','q','k','b','n','r'],['p']*8,['-']*8,['-']*8,['-']*8,['-']*8,['P']*8,['R','N','B','Q','K','B','N','R']]
- def B32(self,state):
-  self.B3=state
- def D1(self,C2,C3=False,C4=False,C91='',C01=''):
-  C5=B1(C2[0:1])
-  C6=abs(int(C2[1:2])-8)
-  C7=B1(C2[2:3])
-  C8=abs(int(C2[3:4])-8)
-  C9=self.B3[C6][C5]
-  C0=self.B3[C8][C7]
-  if len(C91)>0:
-   C9=C91
-  if len(C01)>0:
-   C0=C01
-  if C3:
-   C9='-'
-   C0='P' if(self.B4%2==0)else 'p'
-  if C4:
-   D2=1
-   if C2[0:1]=='c':
-    D2=-2
-    self.B3[C8][C7-1]='-'
-   else:
-    self.B3[C8][C7+2]='-'
-   self.B3[C6][C5+D2]='R' if(self.B4%2==0)else 'r'
-   self.B3[C8][C7]='K' if(self.B4%2==0)else 'k'
-   self.B3[C8][C7+D2]='-'
-   return[C9,C0]
-  D3=""
-  if len(C2)>4:
-   D3=C2[4:5]
-  if(C9 in('P','p')and C0=='-' and C2[0:1]!=C2[2:3]and len(C91)==0 and len(C01)==0):
-   self.B3[C6][C5]='-'
-   self.B3[C8][C7]=C9
-   self.B3[C6][C7]='-'
-  elif(C9 in('K','k')and C2 in('e1g1','e1c1','e8g8','e8c8')):
-   self.B3[C6][C5]='-'
-   if C2[2]=='g':
-    self.B3[C8][C7+1]='-'
-    if self.B4%2==0:
-     self.B3[C6][C5+1]='R'
-    else:
-     self.B3[C6][C5+1]='r'
-   else:
-    self.B3[C8][C7-2]='-'
-    if self.B4%2==0:
-     self.B3[C6][C5-1]='R'
-    else:
-     self.B3[C6][C5-1]='r'
-   if self.B4%2==0:
-    self.B3[C8][C7]='K'
-   else:
-    self.B3[C8][C7]='k'
-  else:
-   if len(C01)==0:
-    self.B3[C6][C5]='-'
-   else:
-    self.B3[C6][C5]=C01
-   if D3!="":
-    if self.B4%2==0:
-     self.B3[C8][C7]=D3.upper()
-    else:
-     self.B3[C8][C7]=D3
-   else:
-    if len(C91)==0:
-     self.B3[C8][C7]=C9
-    else:
-     self.B3[C8][C7]=C91
-  return[C9,C0]
- def D4(self,C2):
-  (C9,C0)=self.D1(C2)
-  self.C1.append(C2)
-  self.C1_Z1s.append([C2,C9,C0])
-  self.B4+=1
- def D6(self):
-  self.C1.pop()
-  F81=self.C1_Z1s.pop()
-  C2=F81[0]
-  C9=F81[1]
-  C0=F81[2]
-  C4=(C2 in('e1g1','e1c1')and C9=='K' and C0=='R')or(C2 in('e8g8','e8c8')and C9=='k' and C0=='r')
-  self.D1(C2[2:4]+C2[0:2],len(C2)>4,C4,C9,C0)
-  self.B4-=1
- def D7(self):
-  for i in range(8):
-   for j in range(8):
-    print(self.B3[i][j],end=" ")
-   print()
- def J9(self):
-  result=[]
-  for _list in self.B3:
-   result+=_list
-  return hash(''.join(result))
- def D8(self):
-  self.B5=[]
-  self.B6=[]
-  self.D9=[]
-  self.D0=[]
-  self.B7=''
-  self.B8=''
-  E1=self.B3.copy()
-  for E2 in range(8):
-   for E3 in range(8):
-    Z1=E1[E2][E3]
-    if Z1=="-":
-     continue
-    E5=B2(E3+1)+str(abs(E2-8))
-    E6=B2(E3+1)+str(abs(E2-8))
-    if Z1 in('k','K'):
-     if Z1=='K':
-      E7=True
-      self.B9=E5
-     else:
-      E7=False
-      self.B0=E6
-     E8={1:{'E3':(E3+0),'E2':(E2+1)},2:{'E3':(E3+0),'E2':(E2-1)},3:{'E3':(E3+1),'E2':(E2+0)},4:{'E3':(E3-1),'E2':(E2+0)},5:{'E3':(E3+1),'E2':(E2+1)},6:{'E3':(E3+1),'E2':(E2-1)},7:{'E3':(E3-1),'E2':(E2+1)},8:{'E3':(E3-1),'E2':(E2-1)},}
-     if E7:
-      if E5=='e1' and E1[7][5]=='-' and E1[7][6]=='-' and E1[7][7]=='R':
-       self.B5.append(E5+'g1')
-      if E5=='e1' and E1[7][1]=='-' and E1[7][2]=='-' and E1[7][3]=='-' and E1[7][0]=='R':
-       self.B5.append(E5+'c1')
-     else:
-      if E6=='e8' and E1[0][1]=='-' and E1[0][1]=='-' and E1[0][2]=='-' and E1[0][0]=='r':
-       self.B6.append(E6+'c8')
-      if E6=='e8' and E1[0][5]=='-' and E1[0][6]=='-' and E1[0][7]=='r':
-       self.B6.append(E6+'g8')
-     for _,k_move in E8.items():
-      if(k_move['E3']>=0 and k_move['E3']<=7 and k_move['E2']>=0 and k_move['E2']<=7):
-       E9=E1[k_move['E2']][k_move['E3']]
-       if E7:
-        E0=(E9!='-' and E9.islower())
-       else:
-        E0=(E9!='-' and E9.isupper())
-       F1=B2(k_move['E3']+1)+str(abs(k_move['E2']-8))
-       if E9=='-' or E0:
-        if E7:
-         self.B5.append(E5+F1)
-        else:
-         self.B6.append(E6+F1)
-       if E0:
-        if E7:
-         self.D9.append([E9,Z1])
-         self.B7+=F1
-        else:
-         self.D0.append([E9,Z1])
-         self.B8+=F1
-    if Z1 in('p','P'):
-     if Z1=='P':
-      if E2>1 and E1[E2-1][E3]=='-':
-       self.B5.append(E5+B2(E3+1)+str(abs(E2-9)))
-      if E2==6 and E1[E2-1][E3]=='-' and E1[E2-2][E3]=='-':
-       self.B5.append(E5+B2(E3+1)+str(abs(E2-10)))
-      if E2==1 and E1[E2-1][E3]=='-':
-       self.B5.append(E5+B2(E3+1)+str(abs(E2-9))+'q')
-      if((E3-1)>=0 and(E2-1)>=0)or((E3+1)<8 and(E2-1)>=0):
-       prom=''
-       if E2==1:
-        prom='q'
-       if(E3-1)>=0 and E1[E2-1][E3-1]!='-' and E1[E2-1][E3-1].islower():
-        self.B5.append(E5+B2(E3)+str(abs(E2-9))+prom)
-        self.B7+=B2(E3)+str(abs(E2-9))
-        self.D9.append([E1[E2-1][E3-1],Z1])
-       if(E3+1)<8 and E1[E2-1][E3+1]!='-' and E1[E2-1][E3+1].islower():
-        self.B5.append(E5+B2(E3+2)+str(abs(E2-9))+prom)
-        self.B7+=B2(E3+2)+str(abs(E2-9))
-        self.D9.append([E1[E2-1][E3+1],Z1])
-     else:
-      if E2<6 and E1[E2+1][E3]=='-':
-       self.B6.append(E6+B2(E3+1)+str(abs(E2-7)))
-      if E2==1 and E1[E2+1][E3]=='-' and E1[E2+2][E3]=='-':
-       self.B6.append(E6+B2(E3+1)+str(abs(E2-6)))
-      if E2==6 and E1[E2+1][E3]=='-':
-       self.B6.append(E6+B2(E3+1)+str(abs(E2-7))+'q')
-      if((E3-1)>=0 and(E2+1)<8)or((E3+1)<8 and(E2+1)<8):
-       prom=''
-       if E2==6:
-        prom='q'
-       if(E3+1)<8 and E1[E2+1][E3+1]!='-' and E1[E2+1][E3+1].isupper():
-        self.B6.append(E6+B2(E3+2)+str(abs(E2-7))+prom)
-        self.B8+=B2(E3+2)+str(abs(E2-7))
-        self.D0.append([E1[E2+1][E3+1],Z1])
-       if(E3-1)>=0 and E1[E2+1][E3-1]!='-' and E1[E2+1][E3-1].isupper():
-        self.B6.append(E6+B2(E3)+str(abs(E2-7))+prom)
-        self.B8+=B2(E3)+str(abs(E2-7))
-        self.D0.append([E1[E2+1][E3-1],Z1])
-    if Z1 in('n','N'):
-     E7=(Z1=='N')
-     F3={1:{'E3':(E3+1),'E2':(E2-2)},2:{'E3':(E3-1),'E2':(E2-2)},3:{'E3':(E3+2),'E2':(E2-1)},4:{'E3':(E3-2),'E2':(E2-1)},5:{'E3':(E3+1),'E2':(E2+2)},6:{'E3':(E3-1),'E2':(E2+2)},7:{'E3':(E3+2),'E2':(E2+1)},8:{'E3':(E3-2),'E2':(E2+1)}}
-     for _,F4 in F3.items():
-      if F4['E3']>=0 and F4['E3']<=7 and F4['E2']>=0 and F4['E2']<=7:
-       E9=E1[F4['E2']][F4['E3']]
-       if E7:
-        E0=(E9!='-' and E9.islower())
-       else:
-        E0=(E9!='-' and E9.isupper())
-       if E9=='-' or E0:
-        F1=B2(F4['E3']+1)+str(abs(F4['E2']-8))
-        if E7:
-         self.B5.append(E5+F1)
-         if E0:
-          self.B7+=F1
-          self.D9.append([E9,Z1])
-        else:
-         self.B6.append(E6+F1)
-         if E0:
-          self.B8+=F1
-          self.D0.append([E9,Z1])
-    if Z1 in('b','B','r','R','q','Q'):
-     E7=Z1 in('B','R','Q')
-     all_moves={1:{'E3':E3,'E2':(E2-1),'E24':0,'E23':-1},2:{'E3':E3,'E2':(E2+1),'E24':0,'E23':1},3:{'E3':(E3-1),'E2':E2,'E24':-1,'E23':0},4:{'E3':(E3+1),'E2':E2,'E24':1,'E23':0},5:{'E3':(E3-1),'E2':(E2-1),'E24':-1,'E23':-1},6:{'E3':(E3+1),'E2':(E2+1),'E24':1,'E23':1},7:{'E3':(E3-1),'E2':(E2+1),'E24':-1,'E23':1},8:{'E3':(E3+1),'E2':(E2-1),'E24':1,'E23':-1},}
-     for key,a_move in all_moves.items():
-      if key<=4 and Z1 in('b','B'):
-       continue
-      if key>=5 and Z1 in('r','R'):
-       continue
-      E21=a_move['E2']
-      E22=a_move['E3']
-      while E21 in range(8)and E22 in range(8):
-       E9=E1[E21][E22]
-       E0=(E7 and E9 in('p','r','n','b','q','k'))or(not E7 and E9 in('P','R','N','B','Q','K'))
-       if E9=='-' or E0:
-        F1=B2(E22+1)+str(abs(E21-8))
-        if E7:
-         self.B5.append(E5+F1)
-         if E0:
-          self.B7+=F1
-          self.D9.append([E9,Z1])
-        else:
-         self.B6.append(E6+F1)
-         if E0:
-          self.B8+=F1
-          self.D0.append([E9,Z1])
-        if E0:
-         break
-       else:
-        break
-       E21+=a_move['E23']
-       E22+=a_move['E24']
-  F0=''.join(self.C1)
-  if self.B4%2==0:
-   F9=self.B5.copy()
-   F0+=''.join(self.B6.copy())
-   for move in F9:
-    G1=((move=='e1g1' and('e1' in F0 or 'f1' in F0 or 'g1' in F0))or(move=='e1c1' and('e1' in F0 or 'd1' in F0 or 'c1' in F0)))
-    if G1:
-     try:
-      self.B5.remove(move)
-     except Exception:
-      continue
-  else:
-   F9=self.B6.copy()
-   F0+=''.join(self.B5.copy())
-   for move in F9:
-    G1=((move=='e8g8' and('e8' in F0 or 'f8' in F0 or 'g8' in F0))or(move=='e8c8' and('e8' in F0 or 'd8' in F0 or 'c8' in F0)))
-    if G1:
-     try:
-      self.B6.remove(move)
-     except Exception:
-      continue
- def I9(self,E7,debug=False):
-  if E7:
-   for(attacked,attacker)in self.D0:
-    if attacked=='K':
-     return True
-   return False
-  else:
-   for(attacked,attacker)in self.D9:
-    if attacked=='k':
-     return True
-   return False
- def G2(self,E7):
-  if E7:
-   return self.B5
-  return self.B6
- def G3(self):
-  b_eval=0
-  for table in range(64):
-   E2=math.floor(table/8)
-   E3=table%8
-   Z1=self.B3[E2][E3]
-   E7=Z1.isupper()
-   if Z1!='-':
-    if E7:
-     b_eval+=A1[Z1.lower()]
-     b_eval+=(A9[Z1.lower()][E2][E3]/8)
-    else:
-     b_eval-=A1[Z1]
-     b_eval-=(A9[Z1][abs(E2-7)][abs(E3-7)]/8)
-  return b_eval
+def print_to_terminal(letter):
+ print(letter,flush=1)
+def get_perf_counter():
+ return time.perf_counter()
+class Position(namedtuple('Position','board score wc bc ep kp')):
+ def geF4s(self):
+  for i,p in enumerate(self.board):
+   if not p.isupper():continue
+   for d in directions[p]:
+    for j in count(i+d,d):
+     q=self.board[j]
+     if q.isspace()or q.isupper():break
+     if p=='P' and d in(N,N+N)and q!='.':break
+     if p=='P' and d==N+N and(i<A1+N or self.board[i+N]!='.'):break
+     if p=='P' and d in(N+W,N+E)and q=='.' and j not in(self.ep,self.kp,self.kp-1,self.kp+1):break
+     yield(i,j)
+     if p in 'PNK' or q.islower():break
+     if i==A1 and self.board[j+E]=='K' and self.wc[0]:yield(j+E,j+W)
+     if i==H1 and self.board[j+W]=='K' and self.wc[1]:yield(j+W,j+E)
+ def rotate(self):
+  return Position(self.board[::-1].swapcase(),-self.score,self.bc,self.wc,119-self.ep if self.ep else 0,119-self.kp if self.kp else 0)
+ def nullmove(self):
+  return Position(self.board[::-1].swapcase(),-self.score,self.bc,self.wc,0,0)
+ def move(self,move):
+  i,j=move
+  p,q=self.board[i],self.board[j]
+  put=lambda board,i,p:board[:i]+p+board[i+1:]
+  board=self.board
+  wc,bc,ep,kp=self.wc,self.bc,0,0
+  score=self.score+self.value(move)
+  board=put(board,j,board[i])
+  board=put(board,i,'.')
+  if i==A1:wc=(False,wc[1])
+  if i==H1:wc=(wc[0],False)
+  if j==A8:bc=(bc[0],False)
+  if j==H8:bc=(False,bc[1])
+  if p=='K':
+   wc=(False,False)
+   if abs(j-i)==2:
+    kp=(i+j)//2
+    board=put(board,A1 if j<i else H1,'.')
+    board=put(board,kp,'R')
+  if p=='P':
+   if A8<=j<=H8:
+    board=put(board,j,'Q')
+   if j-i==2*N:
+    ep=i+N
+   if j==self.ep:
+    board=put(board,j+S,'.')
+  return Position(board,score,wc,bc,ep,kp).rotate()
+ def value(self,move):
+  i,j=move
+  p,q=self.board[i],self.board[j]
+  score=pst[p][j]-pst[p][i]
+  if q.islower():
+   score+=pst[q.upper()][119-j]
+  if abs(j-self.kp)<2:
+   score+=pst['K'][119-j]
+  if p=='K' and abs(i-j)==2:
+   score+=pst['R'][(i+j)//2]
+   score-=pst['R'][A1 if j<i else H1]
+  if p=='P':
+   if A8<=j<=H8:
+    score+=pst['Q'][j]-pst['P'][j]
+   if j==self.ep:
+    score+=pst['P'][119-(j+S)]
+  return score
 class G4:
  nodes=0
  depth=0
@@ -349,53 +107,99 @@ class G4:
    I6=math.ceil(time.perf_counter()-I8)
    nps=math.ceil(self.nodes/I6)
    print("info depth "+str(self.depth)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(self.nodes)+" nps "+str(nps)+" pv "+str(J4))
-   if time.perf_counter()>=self.G6 or depth<1:
+   str_move=mrender(G9[-1],J4)
+   I6=math.ceil(get_perf_counter()-I8)
+   nps=math.ceil(self.v_nodes/I6)
+   print_to_terminal("info depth "+str(self.v_depth)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(self.v_nodes)+" nps "+str(nps)+" pv "+str_move)
+   if get_perf_counter()>=self.G6 or v_depth<1:
     break
-  return[J3,J4]
+  return[J3,str_move]
  def G7(self,G9,depth):
   E7=G9.B4%2==0
   G0=-1e8
   F41=None
   H3=-1e8
   H4=1e8
-  G9.D8()
-  H1=G9.G2(E7)
-  depth=max(depth,1)
-  for move in H1:
-   self.nodes+=1
-   G9.D4(move)
-   G9.D8()
-   if not G9.I9(E7):
-    H2=-self.J5(G9,-H4,-H3,depth-1)
-    if H2>=G0:
-     G0=H2
-     F41=move
-   G9.D6()
+  position=G9[-1]
+  v_depth=max(v_depth,1)
+  for s_move in position.geF4s():
+   self.v_nodes+=1
+   H2=-self.J5(position.move(s_move),-H4,-H3,v_depth-1)
+   if H2>=G0:
+    G0=H2
+    F41=s_move
+   H3=max(H3,G0)
   return[G0,F41]
+ def tt_lookup(self,G9):
+  board_string=G9.board+str(get_color(G9))
+  if board_string not in self.tt_bucket:
+   self.tt_bucket[board_string]={'tt_depth':0,'tt_value':-1e5,'tt_flag':2}
  def J5(self,G9,H3,H4,depth):
   H31=H3
-  E7=G9.B4%2==0
-  G9.D8()
-  H1=G9.G2(E7)
-  if len(H1)==0 or(depth<=0):
-   if E7:
-    return G9.G3()
-   else:
-    return-1*G9.G3()
+ def store_tt(self,G9,J7):
+  board_string=G9.board+str(get_color(G9))
+  if len(self.tt_bucket)>1e7:
+   self.tt_bucket={}
+  self.tt_bucket[board_string]=J7
+ def J5(self,G9,H3,H4,v_depth):
+  alpa_orig=H3
+  J7=self.tt_lookup(G9)
+  if J7['tt_depth']>=v_depth:
+   self.v_tthits+=1
+   if J7['tt_flag']==1:
+    return J7['tt_value']
+   elif J7['tt_flag']==2:
+    H3=max(H3,J7['tt_value'])
+   elif J7['tt_flag']==3:
+    H4=min(H4,J7['tt_value'])
+   if H3>=H4:
+    return J7['tt_value']
+  if v_depth<=0:
+   return G9.score
   value=-1e8
   for move in H1:
    G9.D4(move)
    G9.D8()
-   if not G9.I9(E7):
-    self.nodes+=1
-    value=max(value,-self.J5(G9,-H4,-H3,depth-1))
-    H3=max(H3,value)
-   G9.D6()
+  for s_move in G9.geF4s():
+   self.v_nodes+=1
+   H2=-self.J5(G9.move(s_move),-H4,-H3,v_depth-1)
+   H3=max(H2,H3)
+   if self.v_nodes%1e5==0:
+    print_to_terminal("info nodes "+str(self.v_nodes)+" tthits "+str(self.v_tthits))
    if H3>=H4:
     break
   return value
-H8=H9()
+  J7['tt_value']=H3
+  if H3<=alpa_orig:
+   J7['tt_flag']=3
+  elif H3>=H4:
+   J7['tt_flag']=2
+  else:
+   J7['tt_flag']=1
+  J7['tt_depth']=v_depth
+  self.store_tt(G9,J7)
+  return H3
+WHITE=0
+BLACK=1
+gc.enable()
+def parse(c):
+ fil,rank=ord(c[0])-ord('a'),int(c[1])-1
+ return A1+fil-10*rank
+def mparse(color,move):
+ m=(parse(move[0:2]),parse(move[2:4]))
+ return m if color==WHITE else(119-m[0],119-m[1])
+def render(i):
+ rank,fil=divmod(i-A1,10)
+ return chr(fil+ord('a'))+str(-rank+1)
+def mrender(pos,m):
+ p='q' if A8<=m[1]<=H8 and pos.board[m[0]]=='P' else ''
+ m=m if get_color(pos)==WHITE else(119-m[0],119-m[1])
+ return render(m[0])+render(m[1])+p
+def get_color(pos):
+ return BLACK if pos.board.startswith('\n')else WHITE
 def main():
+ hist=[Position(initial,0,(True,True),(True,True),0,0)]
+ G7er=G4()
  while True:
   try:
    line=input()
@@ -405,22 +209,18 @@ def main():
     print("pygone 1.0 by rcostheta")
     print("uciok")
    elif line=="ucinewgame":
-    H8.K3()
-   elif line=="eval":
-    H8.D8()
-    print('wval: ',H8.G2(1))
-    print('bval: ',H8.G2(0))
-    print(H8.G3())
-    H8.D7()
+    hist=[Position(initial,0,(True,True),(True,True),0,0)]
+    G7er.K3()
+    gc.collect()
    elif line=="isready":
     print("readyok")
    elif line.startswith("position"):
+    color=0
     moves=line.split()
-    H0=H8.B4+3
-    for F42 in moves[H0:]:
-     H8.D4(F42)
-     H0+=1
-    H8.B4=(H0-3)
+    hist=[Position(initial,0,(True,True),(True,True),0,0)]
+    for F42 in moves[3:]:
+     hist.append(hist[-1].move(mparse(color,F42)))
+     color=not color
    elif line.startswith("go"):
     I2=1000000
     I3=1000000
@@ -433,13 +233,15 @@ def main():
       I3=int(I5[key+1])
      if arg=='depth':
       I4=int(I5[key+1])
+    K4=max(40-len(hist),2)
     K4=40
     if H8.B4>38:
      K4=2
     else:
      K4=40-H8.B4
-    if H8.B4%2==0:
-     I7=I2/(K4*1000)
+    E7=len(hist)%2==0
+    if E7:
+     I7=I2/(K4*1e3)
     else:
      I7=I3/(K4*1000)
     I7-=3
@@ -447,10 +249,11 @@ def main():
      I7=8
     if I7<10 and I4>4:
      I4=4
-    G7er=G4()
-    I8=time.perf_counter()
-    (score,move)=G7er.G71(H8,I4,I7)
-    print("bestmove "+move)
+    G7er.v_nodes=0
+    G7er.v_tthits=0
+    I8=get_perf_counter()
+    (score,s_move)=G7er.G71(hist,I4,I7)
+    print_to_terminal("bestmove "+s_move)
   except(KeyboardInterrupt,SystemExit):
    print('quit')
    sys.exit()
