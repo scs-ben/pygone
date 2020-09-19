@@ -149,7 +149,15 @@ sed -i -e 's/print_to_terminal/N2/g' pygone-mini.py
 sed -i -e 's/get_perf_counter/N3/g' pygone-mini.py
 sed -i -e 's/valid_moves/N4/g' pygone-mini.py
 sed -i -e 's/attack_locations/N5/g' pygone-mini.py
-sed -i -e 's/attack_pieces/N6/g' pygone-mini.py
+sed -i -e 's/side_attack_pieces/N6/g' pygone-mini.py
+sed -i -e 's/attack_pieces/N7/g' pygone-mini.py
+sed -i -e 's/direction/N8/g' pygone-mini.py
+sed -i -e 's/start_E2/N9/g' pygone-mini.py
+sed -i -e 's/end_E2/N0/g' pygone-mini.py
+sed -i -e 's/case_eval/O1/g' pygone-mini.py
+sed -i -e 's/attack_piece/O2/g' pygone-mini.py
+sed -i -e 's/prom/O3/g' pygone-mini.py
+sed -i -e 's/check_pieces/O4/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/piece/Z1/g' pygone-mini.py
