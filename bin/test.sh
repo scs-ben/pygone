@@ -3,10 +3,11 @@
     -engine \
         name=pygone \
         cmd=pygone \
-        depth=5 \
+        depth=2 \
     -engine \
         name=stockfish \
         cmd=stockfish_20090418_x64 \
+        option."Use NNUE"=false \
         depth=1 \
     -each \
         proto=uci \
