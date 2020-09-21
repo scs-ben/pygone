@@ -15,7 +15,7 @@ def B1(letter):
 def B2(number):
  return chr(number+96)
 def N2(letter):
- print(letter,flush=1)
+ print(letter,flush=True)
 def N3():
  return time.perf_counter()
 class H9:
@@ -329,11 +329,13 @@ class G4:
    L6-=1
    (J3,J4)=Z.G7(G9,Z.L6)
    I6=math.ceil(N3()-I8)
-   nps=math.ceil(Z.L5/I6)
-   N2("info depth "+str(Z.L6)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(Z.L5)+" nps "+str(nps)+" pv "+str(J4))
+   v_nps=math.ceil(Z.L5/I6)
+   Z.print_stats(str(Z.L6),str(math.ceil(J3)),str(I6),str(Z.L5),str(v_nps),J4)
    if N3()>=Z.G6 or L6<1:
     break
   return[J3,J4]
+ def print_stats(Z,L6,L8,v_time,L5,v_nps,v_pv):
+  N2("info depth "+L6+" score cp "+L8+" time "+v_time+" nodes "+L5+" nps "+v_nps+" pv "+v_pv)
  def G7(Z,G9,L6):
   G0=-1e8
   F41=None
@@ -348,7 +350,7 @@ class G4:
    Z.L5+=1
    G9.D4(K7)
    if not G9.I9(E7):
-    H2=-Z.J5(G9,-H4,-H3,L6-1)
+    H2=-Z.pvs(G9,-H4,-H3,L6-1)
     if H2>=G0:
      G0=H2
      F41=K7
@@ -361,52 +363,55 @@ class G4:
   return Z.M3[M5]
  def store_tt(Z,G9,J7):
   M5=G9.M6()
+  if len(Z.M3)>1e7:
+   print('bucket dump')
+   Z.M3={}
   Z.M3[M5]=J7
- def J5(Z,G9,H3,H4,L6):
+ def pvs(Z,G9,H3,H4,L6):
   E7=G9.B4%2==0
-  alpa_orig=H3
-  J7=Z.M4(G9)
-  if J7['M8']>=L6:
-   Z.M2+=1
-   if J7['M0']==1:
-    return J7['M9']
-   elif J7['M0']==2:
-    H3=max(H3,J7['M9'])
-   elif J7['M0']==3:
-    H4=min(H4,J7['M9'])
-   if H3>=H4:
-    return J7['M9']
   G9.D8()
   H1=G9.G2(E7)
-  if len(H1)==0 or(L6<=0):
+  if len(H1)==0 or L6<=0:
    K0=G9.G3()
    return K0 if E7 else-K0
+  H3_orig=H3
+  J7=Z.M4(G9)
+  if J7['M8']>=L6:
+   if J7['M0']==I0:
+    Z.L5+=1
+    return J7['M9']
+   elif J7['M0']==LOWER:
+    H3=max(H3,J7['M9'])
+   elif J7['M0']==UPPER:
+    H4=min(H4,J7['M9'])
+   if H3>=H4:
+    Z.L5+=1
+    return J7['M9']
   H2=-1e8
-  b=H4
   for K7 in H1:
+   Z.L5+=1
    G9.D4(K7)
    if not G9.I9(E7):
-    Z.L5+=1
-    H2=-Z.J5(G9,-b,-H3,L6-1)
-    if H2>H3 and H2<H4 and L6>1:
-     H2=-Z.J5(G9,-H4,-H3,L6-1)
-    H3=max(H2,H3)
-    if Z.L5%1e5==0:
-     N2("info nodes "+str(Z.L5)+" tthits "+str(Z.M2))
+    H2=-Z.pvs(G9,-H3-1,-H3,L6-1)
+    if H2>H3 and H2<H4:
+     H2=-Z.pvs(G9,-H4,-H2,L6-1)
    G9.D6()
+   H3=max(H3,H2)
    if H3>=H4:
     break
-   b=H3+1
   J7['M9']=H3
-  if H3<=alpa_orig:
-   J7['M0']=3
+  if H3<=H3_orig:
+   J7['M0']=UPPER
   elif H3>=H4:
-   J7['M0']=2
+   J7['M0']=LOWER
   else:
-   J7['M0']=1
+   J7['M0']=I0
   J7['M8']=L6
   Z.store_tt(G9,J7)
   return H3
+I0=1
+UPPER=2
+LOWER=3
 H8=H9()
 H8.K3()
 def main():
@@ -454,7 +459,6 @@ def main():
      I4=4
     G7er.L5=0
     G7er.M2=0
-    I8=N3()
     (score,K7)=G7er.G71(H8,I4,I7)
     N2("bestmove "+K7)
   except(KeyboardInterrupt,SystemExit):

@@ -64,7 +64,7 @@ def number_to_letter(number):
     return chr(number + 96)
 
 def print_to_terminal(letter):
-    print(letter, flush=1)
+    print(letter, flush=True)
 
 def get_perf_counter():
     return time.perf_counter()
@@ -463,14 +463,19 @@ class Search:
             (iterative_score, iterative_move) = self.search(local_board, self.v_depth)
 
             elapsed_time = math.ceil(get_perf_counter() - start_time)
-            nps = math.ceil(self.v_nodes / elapsed_time)
+            v_nps = math.ceil(self.v_nodes / elapsed_time)
 
-            print_to_terminal("info depth " + str(self.v_depth) + " score cp " + str(math.ceil(iterative_score)) + " time " + str(elapsed_time) + " nodes " + str(self.v_nodes) + " nps " + str(nps) + " pv " + str(iterative_move))
+            self.print_stats(str(self.v_depth), str(math.ceil(iterative_score)), str(elapsed_time), str(self.v_nodes), str(v_nps), iterative_move)
 
             if get_perf_counter() >= self.end_time or v_depth < 1:
                 break
 
+        # (iterative_score, iterative_move) = self.search(local_board, self.v_depth)
+
         return [iterative_score, iterative_move]
+
+    def print_stats(self, v_depth, v_score, v_time, v_nodes, v_nps, v_pv):
+        print_to_terminal("info depth " + v_depth + " score cp " + v_score + " time " + v_time + " nodes " + v_nodes + " nps " + v_nps + " pv " + v_pv)
 
     def search(self, local_board, v_depth):
         global_score = -1e8
@@ -491,7 +496,7 @@ class Search:
 
             local_board.make_move(s_move)
             if not local_board.in_check(is_white):
-                local_score = -self.negamax(local_board, -beta, -alpha, v_depth - 1)
+                local_score = -self.pvs(local_board, -beta, -alpha, v_depth - 1)
 
                 if local_score >= global_score:
                     global_score = local_score
@@ -514,70 +519,71 @@ class Search:
 
     def store_tt(self, local_board, tt_entry):
         board_string = local_board.str_board()
+        if len(self.tt_bucket) > 1e7:
+            print('bucket dump')
+            self.tt_bucket = {}
         self.tt_bucket[board_string] = tt_entry
 
-    def negamax(self, local_board, alpha, beta, v_depth):
+    def pvs(self, local_board, alpha, beta, v_depth):
         is_white = local_board.played_move_count % 2 == 0
-
-        alpa_orig = alpha
-
-        tt_entry = self.tt_lookup(local_board)
-        if tt_entry['tt_depth'] >= v_depth:
-            self.v_tthits += 1
-            if tt_entry['tt_flag'] == 1:
-                return tt_entry['tt_value']
-            elif tt_entry['tt_flag'] == 2:
-                alpha = max(alpha, tt_entry['tt_value'])
-            elif tt_entry['tt_flag'] == 3:
-                beta = min(beta, tt_entry['tt_value'])
-
-            if alpha >= beta:
-                return tt_entry['tt_value']
 
         local_board.get_valid_moves()
         poss_mvs = local_board.get_side_moves(is_white)
 
-        if len(poss_mvs) == 0 or (v_depth <= 0):
+        if len(poss_mvs) == 0 or v_depth <= 0:
             b_eval = local_board.board_evaluation()
             return b_eval if is_white else -b_eval
 
+        alpha_orig = alpha
+
+        tt_entry = self.tt_lookup(local_board)
+        if tt_entry['tt_depth'] >= v_depth:
+            if tt_entry['tt_flag'] == EXACT:
+                self.v_nodes += 1
+                return tt_entry['tt_value']
+            elif tt_entry['tt_flag'] == LOWER:
+                alpha = max(alpha, tt_entry['tt_value'])
+            elif tt_entry['tt_flag'] == UPPER:
+                beta = min(beta, tt_entry['tt_value'])
+
+            if alpha >= beta:
+                self.v_nodes += 1
+                return tt_entry['tt_value']
+
         local_score = -1e8
 
-        b = beta
-
         for s_move in poss_mvs:
+            self.v_nodes += 1
+
             local_board.make_move(s_move)
 
             if not local_board.in_check(is_white):
-                self.v_nodes += 1
-
-                local_score = -self.negamax(local_board, -b, -alpha, v_depth - 1)
-                if local_score > alpha and local_score < beta and v_depth > 1:
-                    local_score = -self.negamax(local_board, -beta, -alpha, v_depth - 1)
-
-                alpha = max(local_score, alpha)
-
-                if self.v_nodes % 1e5 == 0:
-                    print_to_terminal("info nodes " + str(self.v_nodes) + " tthits " + str(self.v_tthits))
+                local_score = -self.pvs(local_board, -alpha - 1, -alpha, v_depth - 1)
+                if local_score > alpha and local_score < beta:
+                    local_score = -self.pvs(local_board, -beta, -local_score, v_depth - 1)
 
             local_board.undo_move()
+
+            alpha = max(alpha, local_score)
 
             if alpha >= beta:
                 break
 
-            b = alpha + 1
-
         tt_entry['tt_value'] = alpha
-        if alpha <= alpa_orig:
-            tt_entry['tt_flag'] = 3
+        if alpha <= alpha_orig:
+            tt_entry['tt_flag'] = UPPER
         elif alpha >= beta:
-            tt_entry['tt_flag'] = 2
+            tt_entry['tt_flag'] = LOWER
         else:
-            tt_entry['tt_flag'] = 1
+            tt_entry['tt_flag'] = EXACT
         tt_entry['tt_depth'] = v_depth
         self.store_tt(local_board, tt_entry)
 
         return alpha
+
+EXACT=1
+UPPER=2
+LOWER=3
 
 game_board = Board()
 game_board.reset()
@@ -635,7 +641,6 @@ def main():
 
                 searcher.v_nodes = 0
                 searcher.v_tthits = 0
-                start_time = get_perf_counter()
                 (score, s_move) = searcher.iterative_search(game_board, go_depth, move_time)
                 print_to_terminal("bestmove " + s_move)
         except (KeyboardInterrupt, SystemExit):
