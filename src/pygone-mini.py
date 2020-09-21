@@ -1,36 +1,38 @@
 #!/usr/bin/env pypy3
 import gc,math,sys,time
+import itertools
+import re
 from itertools import count
 from collections import namedtuple
-Z1={'P':100,'N':280,'B':320,'R':479,'Q':929,'K':60000}
+piece={'P':100,'N':280,'B':320,'R':479,'Q':929,'K':60000}
 pst={'P':(0,0,0,0,0,0,0,0,78,83,86,73,102,82,85,90,7,29,21,44,40,31,44,7,-17,16,-2,15,14,0,15,-13,-26,3,10,9,6,1,0,-23,-22,9,5,-11,-10,-2,3,-19,-31,8,-7,-37,-36,-14,3,-31,0,0,0,0,0,0,0,0),'N':(-66,-53,-75,-75,-10,-55,-58,-70,-3,-6,100,-36,4,62,-4,-14,10,67,1,74,73,27,62,-2,24,24,45,37,33,41,25,17,-1,5,31,21,22,35,2,0,-18,10,13,22,18,15,11,-14,-23,-15,2,0,2,0,-23,-20,-74,-23,-26,-24,-19,-35,-22,-69),'B':(-59,-78,-82,-76,-23,-107,-37,-50,-11,20,35,-42,-39,31,2,-22,-9,39,-32,41,52,-10,28,-14,25,17,20,34,26,25,15,10,13,10,17,23,17,16,0,7,14,25,24,15,8,25,20,15,19,20,11,6,7,6,20,16,-7,2,-15,-12,-14,-15,-10,-10),'R':(35,29,33,4,37,33,56,50,55,29,56,67,55,62,34,60,19,35,28,33,45,27,25,15,0,5,16,13,18,-4,-9,-6,-28,-35,-16,-21,-13,-29,-46,-30,-42,-28,-42,-25,-25,-35,-26,-46,-53,-38,-31,-26,-29,-43,-44,-53,-30,-24,-18,5,-2,-18,-31,-32),'Q':(6,1,-8,-104,69,24,88,26,14,32,60,-10,20,76,57,24,-2,43,32,60,72,63,43,2,1,-16,22,17,25,20,-13,-6,-14,-15,-2,-5,-1,-10,-20,-22,-30,-6,-13,-11,-16,-11,-16,-27,-36,-18,0,-19,-15,-15,-21,-38,-39,-30,-31,-13,-31,-36,-34,-42),'K':(4,54,47,-99,-99,60,83,-62,-32,10,55,56,56,55,10,3,-62,12,-57,44,-67,28,37,-31,-55,50,11,-4,-19,13,0,-49,-55,-43,-52,-28,-51,-47,-8,-50,-47,-42,-43,-79,-64,-32,-29,-32,-4,3,-14,-50,-57,-18,13,4,17,30,-3,-14,6,-1,40,18),}
-for k,Z2 in pst.items():
- padE2=lambda E2:(0,)+tuple(x+Z1[k]for x in E2)+(0,)
- pst[k]=sum((padE2(Z2[i*8:i*8+8])for i in range(8)),())
+for k,table in pst.items():
+ padrow=lambda row:(0,)+tuple(x+piece[k]for x in row)+(0,)
+ pst[k]=sum((padrow(table[i*8:i*8+8])for i in range(8)),())
  pst[k]=(0,)*20+pst[k]+(0,)*20
 N,E,S,W=-10,1,10,-1
 directions={'P':(N,N+N,N+W,N+E),'N':(N+N+E,E+N+E,E+S+E,S+S+E,S+S+W,W+S+W,W+N+W,N+N+W),'B':(N+E,S+E,S+W,N+W),'R':(N,E,S,W),'Q':(N,E,S,W,N+E,S+E,S+W,N+W),'K':(N,E,S,W,N+E,S+E,S+W,N+W)}
-MATE_LOWER=Z1['K']-10*Z1['Q']
-MATE_UPPER=Z1['K']+10*Z1['Q']
+MATE_LOWER=piece['K']-10*piece['Q']
+MATE_UPPER=piece['K']+10*piece['Q']
 A1,H1,A8,H8=91,98,21,28
 initial=('         \n' '         \n' ' rnbqkbnr\n' ' pppppppp\n' ' ........\n' ' ........\n' ' ........\n' ' ........\n' ' PPPPPPPP\n' ' RNBQKBNR\n' '         \n' '         \n')
 WHITE_PIECES=['P','R','N','B','Q','K']
 BLACK_PIECES=['p','r','n','b','q','k']
-I0=1
-J1=2
-J2=3
+TTEXACT=1
+TTLOWER=2
+TTUPPER=3
 isupper=lambda c:'A'<=c<='Z'
 islower=lambda c:'a'<=c<='z'
-def B1(letter):
+def letter_to_number(letter):
  return abs((ord(letter)-96)-1)
-def B2(number):
+def number_to_letter(number):
  return chr(number+96)
 def print_to_terminal(letter):
  print(letter,flush=1)
 def get_perf_counter():
  return time.perf_counter()
 class Position(namedtuple('Position','board score wc bc ep kp')):
- def geF4s(self):
+ def gen_moves(self):
   for i,p in enumerate(self.board):
    if not p.isupper():continue
    for d in directions[p]:
@@ -92,93 +94,70 @@ class Position(namedtuple('Position','board score wc bc ep kp')):
    if j==self.ep:
     score+=pst['P'][119-(j+S)]
   return score
-class G4:
+class Search:
  nodes=0
- depth=0
- G6=0
- def G71(self,G9,depth,I7):
-  I8=time.perf_counter()
-  self.G6=time.perf_counter()+I7
-  self.depth=0
+ end_time=0
+ v_depth=0
+ tt_bucket={}
+ def iterative_search(self,position,v_depth,move_time):
+  start_time=time.perf_counter()
+  self.end_time=time.perf_counter()+move_time
+  self.v_depth=0
+  local_score=-1e9
+  local_move=None
+  alpha=-1e8
+  beta=1e8
   while True:
-   self.depth+=1
-   depth-=1
-   (J3,J4)=self.G7(G9,self.depth)
-   I6=math.ceil(time.perf_counter()-I8)
-   nps=math.ceil(self.nodes/I6)
-   print("info depth "+str(self.depth)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(self.nodes)+" nps "+str(nps)+" pv "+str(J4))
-   str_move=mrender(G9[-1],J4)
-   I6=math.ceil(get_perf_counter()-I8)
-   nps=math.ceil(self.v_nodes/I6)
-   print_to_terminal("info depth "+str(self.v_depth)+" score cp "+str(math.ceil(J3))+" time "+str(I6)+" nodes "+str(self.v_nodes)+" nps "+str(nps)+" pv "+str_move)
-   if get_perf_counter()>=self.G6 or v_depth<1:
+   self.v_depth+=1
+   v_depth-=1
+   (iterative_score,iterative_move)=-self.negascout(position,-beta,-alpha,self.v_depth)
+   if iterative_score>local_score:
+    local_score=iterative_score
+    local_move=mrender(position,iterative_move)
+   elapsed_time=math.ceil(get_perf_counter()-start_time)
+   nps=math.ceil(self.v_nodes/elapsed_time)
+   print_to_terminal("info depth "+str(self.v_depth)+" score cp "+str(math.ceil(local_score))+" time "+str(elapsed_time)+" nodes "+str(self.v_nodes)+" nps "+str(nps)+" pv "+str(local_move))
+   if get_perf_counter()>=self.end_time or v_depth<1:
     break
-  return[J3,str_move]
- def G7(self,G9,depth):
-  E7=G9.B4%2==0
-  G0=-1e8
-  F41=None
-  H3=-1e8
-  H4=1e8
-  position=G9[-1]
-  v_depth=max(v_depth,1)
-  for s_move in position.geF4s():
-   self.v_nodes+=1
-   H2=-self.J5(position.move(s_move),-H4,-H3,v_depth-1)
-   if H2>=G0:
-    G0=H2
-    F41=s_move
-   H3=max(H3,G0)
-  return[G0,F41]
- def tt_lookup(self,G9):
-  board_string=G9.board+str(get_color(G9))
+  return[local_score,local_move]
+ def negascout(self,position,alpha,beta,depth):
+  if depth<0:
+   return position.score
+  b=beta
+  second_search=False
+  for s_move in position.gen_moves():
+   t=-self.negascout(position.move(s_move),-b,-alpha,depth-1)
+   if t>alpha and t<beta and second_search:
+    t=-self.negascout(position.move(s_move),-beta,-alpha,depth-1)
+   second_search=True
+   alpha=max(alpha,t)
+   if alpha>=beta:
+    return alpha
+   b=alpha+1
+  return alpha
+ def tt_lookup(self,position):
+  board_string=position.board+str(get_color(position))
   if board_string not in self.tt_bucket:
    self.tt_bucket[board_string]={'tt_depth':0,'tt_value':-1e5,'tt_flag':2}
- def J5(self,G9,H3,H4,depth):
-  H31=H3
- def store_tt(self,G9,J7):
-  board_string=G9.board+str(get_color(G9))
+ def store_tt(self,position,tt_entry):
+  board_string=position.board+str(get_color(position))
   if len(self.tt_bucket)>1e7:
    self.tt_bucket={}
-  self.tt_bucket[board_string]=J7
- def J5(self,G9,H3,H4,v_depth):
-  alpa_orig=H3
-  J7=self.tt_lookup(G9)
-  if J7['tt_depth']>=v_depth:
-   self.v_tthits+=1
-   if J7['tt_flag']==1:
-    return J7['tt_value']
-   elif J7['tt_flag']==2:
-    H3=max(H3,J7['tt_value'])
-   elif J7['tt_flag']==3:
-    H4=min(H4,J7['tt_value'])
-   if H3>=H4:
-    return J7['tt_value']
+  self.tt_bucket[board_string]=tt_entry
+ def negamax(self,position,alpha,beta,v_depth):
+  alpa_orig=alpha
   if v_depth<=0:
-   return G9.score
+   return position.score
   value=-1e8
-  for move in H1:
-   G9.D4(move)
-   G9.D8()
-  for s_move in G9.geF4s():
+  for s_move in position.gen_moves():
    self.v_nodes+=1
-   H2=-self.J5(G9.move(s_move),-H4,-H3,v_depth-1)
-   H3=max(H2,H3)
+   local_score=-self.negamax(position.move(s_move),-beta,-alpha,v_depth-1)
+   alpha=max(local_score,alpha)
    if self.v_nodes%1e5==0:
     print_to_terminal("info nodes "+str(self.v_nodes)+" tthits "+str(self.v_tthits))
-   if H3>=H4:
+   if alpha>=beta:
     break
-  return value
-  J7['tt_value']=H3
-  if H3<=alpa_orig:
-   J7['tt_flag']=3
-  elif H3>=H4:
-   J7['tt_flag']=2
-  else:
-   J7['tt_flag']=1
-  J7['tt_depth']=v_depth
-  self.store_tt(G9,J7)
-  return H3
+  return alpha
 WHITE=0
 BLACK=1
 gc.enable()
@@ -197,9 +176,19 @@ def mrender(pos,m):
  return render(m[0])+render(m[1])+p
 def get_color(pos):
  return BLACK if pos.board.startswith('\n')else WHITE
+def renderFEN(pos,half_move_clock=0,full_move_clock=1):
+ color='wb'[get_color(pos)]
+ if get_color(pos)==BLACK:
+  pos=pos.rotate()
+ board='/'.join(pos.board.split())
+ board=re.sub(r'\.+',(lambda m:str(len(m.group(0)))),board)
+ castling=''.join(itertools.compress('KQkq',pos.wc[::-1]+pos.bc))or '-'
+ ep=sunfish.render(pos.ep)if not pos.board[pos.ep].isspace()else '-'
+ clock='{} {}'.format(half_move_clock,full_move_clock)
+ return ' '.join((board,color,castling,ep,clock))
 def main():
  hist=[Position(initial,0,(True,True),(True,True),0,0)]
- G7er=G4()
+ searcher=Search()
  while True:
   try:
    line=input()
@@ -208,51 +197,52 @@ def main():
    elif line=="uci":
     print("pygone 1.0 by rcostheta")
     print("uciok")
+   elif line=="print":
+    print(renderFEN(hist[-1],len(hist),math.ceil(len(hist)/2)))
    elif line=="ucinewgame":
     hist=[Position(initial,0,(True,True),(True,True),0,0)]
-    G7er.K3()
     gc.collect()
    elif line=="isready":
     print("readyok")
    elif line.startswith("position"):
-    color=0
+    color=WHITE
     moves=line.split()
     hist=[Position(initial,0,(True,True),(True,True),0,0)]
-    for F42 in moves[3:]:
-     hist.append(hist[-1].move(mparse(color,F42)))
-     color=not color
+    for position_move in moves[3:]:
+     hist.append(hist[-1].move(mparse(color,position_move)))
+     color=1-color
    elif line.startswith("go"):
-    I2=1000000
-    I3=1000000
-    I4=8
-    I5=line.split()
-    for key,arg in enumerate(I5):
+    white_time=1000000
+    black_time=1000000
+    go_depth=8
+    args=line.split()
+    for key,arg in enumerate(args):
      if arg=='wtime':
-      I2=int(I5[key+1])
+      white_time=int(args[key+1])
      if arg=='btime':
-      I3=int(I5[key+1])
+      black_time=int(args[key+1])
      if arg=='depth':
-      I4=int(I5[key+1])
-    K4=max(40-len(hist),2)
-    K4=40
-    if H8.B4>38:
-     K4=2
+      go_depth=int(args[key+1])
+    time_move_calc=max(40-len(hist),2)
+    time_move_calc=40
+    if len(hist)>38:
+     time_move_calc=2
     else:
-     K4=40-H8.B4
-    E7=len(hist)%2==0
-    if E7:
-     I7=I2/(K4*1e3)
+     time_move_calc=40-len(hist)
+    is_white=len(hist)%2==0
+    if is_white:
+     move_time=white_time/(time_move_calc*1e3)
     else:
-     I7=I3/(K4*1000)
-    I7-=3
-    if I7<8:
-     I7=8
-    if I7<10 and I4>4:
-     I4=4
-    G7er.v_nodes=0
-    G7er.v_tthits=0
-    I8=get_perf_counter()
-    (score,s_move)=G7er.G71(hist,I4,I7)
+     move_time=black_time/(time_move_calc*1000)
+    move_time-=3
+    if move_time<8:
+     move_time=8
+    if move_time<10 and go_depth>4:
+     go_depth=4
+    searcher.v_nodes=0
+    searcher.v_tthits=0
+    start_time=get_perf_counter()
+    (score,s_move)=searcher.iterative_search(hist[-1],go_depth,move_time)
     print_to_terminal("bestmove "+s_move)
   except(KeyboardInterrupt,SystemExit):
    print('quit')
