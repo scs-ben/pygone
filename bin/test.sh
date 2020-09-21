@@ -5,10 +5,9 @@
         cmd=pygone \
         depth=2 \
     -engine \
-        name=stockfish \
-        cmd=stockfish_20090418_x64 \
-        option."Use NNUE"=false \
-        depth=1 \
+        name=sunfish \
+        cmd=./sunfish/sunfish \
+        depth=2 \
     -each \
         proto=uci \
         tc=inf \
