@@ -105,20 +105,21 @@ class H9:
   board.C1=Z.C1.copy()
   board.white_castling=Z.white_castling
   board.black_castling=Z.black_castling
-  if 'e1' in C2:
-   board.white_castling=[False,False]
-  if 'a1' in C2:
-   board.white_castling[0]=False
-  if 'h1' in C2:
-   board.white_castling[1]=False
-  if 'e8' in C2:
-   board.black_castling=[False,False]
-  if 'a8' in C2:
-   board.black_castling[0]=False
-  if 'h8' in C2:
-   board.black_castling[1]=False
-  (C9,C0)=board.D1(C2)
-  board.C1.append(C2)
+  if C2 is not None:
+   if 'e1' in C2:
+    board.white_castling=[False,False]
+   if 'a1' in C2:
+    board.white_castling[0]=False
+   if 'h1' in C2:
+    board.white_castling[1]=False
+   if 'e8' in C2:
+    board.black_castling=[False,False]
+   if 'a8' in C2:
+    board.black_castling[0]=False
+   if 'h8' in C2:
+    board.black_castling[1]=False
+   board.D1(C2)
+   board.C1.append(C2)
   board.B4+=1
   return board
  def M6(Z):
@@ -129,6 +130,7 @@ class H9:
   return N1+str(Z.B4%2==0)
  def D8(Z):
   E7=Z.B4%2==0
+  yield None
   N4=[]
   N7=[]
   if(E7):
@@ -273,8 +275,9 @@ class G4:
   H3=-1e8
   J3=0
   J4=None
-  Z.L6=0
-  while L6>0:
+  initial_score=G9.G3()
+  Z.L6=1
+  while L6>1:
    Z.L6+=1
    L6-=1
    (J3,J4)=Z.aspiration_window(G9,Z.L6,J3)
@@ -284,23 +287,23 @@ class G4:
   return[J3,J4]
  def print_stats(Z,L6,L8,v_time,L5,v_nps,v_pv):
   N2("info depth "+L6+" score cp "+L8+" time "+v_time+" nodes "+L5+" nps "+v_nps+" pv "+v_pv)
- def aspiration_window(Z,G9,L6,last_score):
+ def aspiration_window(Z,G9,L6,initial_score):
   H3=-1e8
   H4=1e8
   L9=10
   depth=L6
-  if depth>5:
-   H3=max(-1e8,last_score-L9)
-   H4=min(1e8,last_score-L9)
+  if depth>3:
+   H3=max(-1e8,initial_score-L9)
+   H4=min(1e8,initial_score+L9)
   H2=-1e8
   local_move=None
   while True:
-   (H2,local_move)=Z.G7(G9,depth)
+   (H2,local_move)=Z.G7(G9,depth,H3,H4)
    if H2>H3 and H2<H4:
     N2("info nodes "+str(Z.L5))
    if H2>H3 and H2<H4:
     return[H2,local_move]
-   if H2<H3:
+   if H2<=H3:
     H4=(H3+H4)/2
     H3=max(-1e8,H3-L9)
     depth=L6
@@ -308,15 +311,15 @@ class G4:
     H4=min(1e8,H4+L9)
     depth=min(1,depth-min(1e8,H2)/2)
    L9=L9+L9/2
- def G7(Z,G9,L6):
+ def G7(Z,G9,L6,H3,H4):
   G0=-1e8
   F41=None
   H2=-1e8
-  H3=-1e8
-  H4=1e8
   E7=G9.B4%2==0
   L6=max(L6,1)
   for K7 in G9.D8():
+   if K7 is None:
+    continue
    Z.L5+=1
    H2=-Z.pvs(G9.D4(K7),-H4,-H3,L6-1)
    if H2>=G0:
@@ -331,15 +334,14 @@ class G4:
  def store_tt(Z,G9,J7):
   M5=G9.M6()
   if len(Z.M3)>1e7:
-   print('bucket dump')
-   Z.M3={}
+   Z.M3.clear()
   Z.M3[M5]=J7
  def pvs(Z,G9,H3,H4,L6):
   E7=G9.B4%2==0
-  if G9.I9(not E7):
+  K0=G9.G3()
+  if K0>=5e4:
    return 1e8 if E7 else-1e8
-  if L6<=0:
-   K0=G9.G3()
+  if L6<1:
    return K0 if E7 else-K0
   H3_orig=H3
   J7=Z.M4(G9)
@@ -401,14 +403,17 @@ def main():
     I2=1e8
     I3=1e8
     I4=8
+    input_depth=0
     I5=Z2.split()
     for key,arg in enumerate(I5):
      if arg=='wtime':
       I2=int(I5[key+1])
-     if arg=='btime':
+     elif arg=='btime':
       I3=int(I5[key+1])
-     if arg=='depth':
+     elif arg=='depth':
       I4=int(I5[key+1])
+     elif arg=='infinite':
+      input_depth=30
     K4=max(40-H8.B4,2)
     I7=1e8
     E7=H8.B4%2==0
@@ -421,10 +426,11 @@ def main():
     if I7<4:
      I7=2
      I4=4
+    I4=max(input_depth,I4)
     G7er.L5=0
     G7er.M2=0
-    G7er.G71(H8,I4,I7)
-    (score,K7)=G7er.G7(H8,I4)
+    (score,K7)=G7er.G71(H8,I4,I7)
+    (score,K7)=G7er.G7(H8,I4,score-10,score+10)
     N2("bestmove "+K7)
   except(KeyboardInterrupt,SystemExit):
    N2('quit')

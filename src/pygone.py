@@ -172,26 +172,28 @@ class Board:
         board.white_castling = self.white_castling
         board.black_castling = self.black_castling
 
-        if 'e1' in uci_coordinate:
-            board.white_castling = [False, False]
+        if uci_coordinate is not None:
+            if 'e1' in uci_coordinate:
+                board.white_castling = [False, False]
 
-        if 'a1' in uci_coordinate:
-            board.white_castling[0] = False
+            if 'a1' in uci_coordinate:
+                board.white_castling[0] = False
 
-        if 'h1' in uci_coordinate:
-            board.white_castling[1] = False
+            if 'h1' in uci_coordinate:
+                board.white_castling[1] = False
 
-        if 'e8' in uci_coordinate:
-            board.black_castling = [False, False]
+            if 'e8' in uci_coordinate:
+                board.black_castling = [False, False]
 
-        if 'a8' in uci_coordinate:
-            board.black_castling[0] = False
+            if 'a8' in uci_coordinate:
+                board.black_castling[0] = False
 
-        if 'h8' in uci_coordinate:
-            board.black_castling[1] = False
+            if 'h8' in uci_coordinate:
+                board.black_castling[1] = False
 
-        (from_piece, to_piece) = board.apply_move(uci_coordinate)
-        board.move_list.append(uci_coordinate)
+            board.apply_move(uci_coordinate)
+            board.move_list.append(uci_coordinate)
+
         board.played_move_count += 1
 
         return board
@@ -205,6 +207,9 @@ class Board:
 
     def get_valid_moves(self):
         is_white = self.played_move_count % 2 == 0
+
+        # Null Move
+        yield None
 
         valid_moves = []
         attack_pieces = []
@@ -396,8 +401,10 @@ class Search:
         iterative_score = 0
         iterative_move = None
 
-        self.v_depth = 0
-        while v_depth > 0:
+        initial_score = local_board.board_evaluation()
+
+        self.v_depth = 1
+        while v_depth > 1:
             self.v_depth += 1
             v_depth -= 1
 
@@ -416,7 +423,7 @@ class Search:
     def print_stats(self, v_depth, v_score, v_time, v_nodes, v_nps, v_pv):
         print_to_terminal("info depth " + v_depth + " score cp " + v_score + " time " + v_time + " nodes " + v_nodes + " nps " + v_nps + " pv " + v_pv)
 
-    def aspiration_window(self, local_board, v_depth, last_score):
+    def aspiration_window(self, local_board, v_depth, initial_score):
         alpha = -1e8
         beta = 1e8
 
@@ -424,15 +431,15 @@ class Search:
 
         depth = v_depth
 
-        if depth > 5:
-            alpha = max(-1e8, last_score - delta)
-            beta = min(1e8, last_score - delta)
+        if depth > 3:
+            alpha = max(-1e8, initial_score - delta)
+            beta = min(1e8, initial_score + delta)
 
         local_score = -1e8
         local_move = None
 
         while True:
-            (local_score, local_move) = self.search(local_board, depth)
+            (local_score, local_move) = self.search(local_board, depth, alpha, beta)
 
             if local_score > alpha and local_score < beta:
                 print_to_terminal("info nodes " + str(self.v_nodes))
@@ -440,7 +447,7 @@ class Search:
             if local_score > alpha and local_score < beta:
                 return [local_score, local_move]
 
-            if local_score < alpha:
+            if local_score <= alpha:
                 beta = (alpha + beta) / 2
                 alpha = max(-1e8, alpha - delta)
                 depth = v_depth
@@ -448,22 +455,27 @@ class Search:
                 beta = min(1e8, beta + delta)
                 depth = min(1, depth - min(1e8, local_score) / 2)
 
+            # print(alpha, beta, delta, depth)
+
             delta = delta + delta / 2
 
-    def search(self, local_board, v_depth):
+    def search(self, local_board, v_depth, alpha, beta):
         global_score = -1e8
         chosen_move = None
 
         local_score = -1e8
 
-        alpha = -1e8
-        beta = 1e8
+        # alpha = -1e8
+        # beta = 1e8
 
         is_white = local_board.played_move_count % 2 == 0
 
         v_depth = max(v_depth, 1)
 
         for s_move in local_board.get_valid_moves():
+            if s_move is None:
+                continue
+
             self.v_nodes += 1
 
             local_score = -self.pvs(local_board.make_move(s_move), -beta, -alpha, v_depth - 1)
@@ -488,17 +500,17 @@ class Search:
     def store_tt(self, local_board, tt_entry):
         board_string = local_board.str_board()
         if len(self.tt_bucket) > 1e7:
-            print('bucket dump')
-            self.tt_bucket = {}
+            self.tt_bucket.clear()
         self.tt_bucket[board_string] = tt_entry
 
     def pvs(self, local_board, alpha, beta, v_depth):
         is_white = local_board.played_move_count % 2 == 0
 
-        if local_board.in_check(not is_white):
+        b_eval = local_board.board_evaluation()
+
+        if b_eval >= 5e4:
             return 1e8 if is_white else -1e8
-        if v_depth <= 0:
-            b_eval = local_board.board_evaluation()
+        if v_depth < 1:
             return b_eval if is_white else -b_eval
 
         alpha_orig = alpha
@@ -574,15 +586,18 @@ def main():
                 white_time = 1e8
                 black_time = 1e8
                 go_depth = 8
+                input_depth = 0
 
                 args = line.split()
                 for key, arg in enumerate(args):
                     if arg == 'wtime':
                         white_time = int(args[key + 1])
-                    if arg == 'btime':
+                    elif arg == 'btime':
                         black_time = int(args[key + 1])
-                    if arg == 'depth':
-                      go_depth = int(args[key + 1])
+                    elif arg == 'depth':
+                        go_depth = int(args[key + 1])
+                    elif arg == 'infinite':
+                        input_depth = 30
 
                 time_move_calc = max(40 - game_board.played_move_count, 2)
 
@@ -601,11 +616,14 @@ def main():
                     move_time = 2
                     go_depth = 4
 
+                go_depth = max(input_depth, go_depth)
+
                 searcher.v_nodes = 0
                 searcher.v_tthits = 0
 
-                searcher.iterative_search(game_board, go_depth, move_time)
-                (score, s_move) = searcher.search(game_board, go_depth)
+                (score, s_move) = searcher.iterative_search(game_board, go_depth, move_time)
+
+                (score, s_move) = searcher.search(game_board, go_depth, score - 10, score + 10)
 
                 print_to_terminal("bestmove " + s_move)
         except (KeyboardInterrupt, SystemExit):
