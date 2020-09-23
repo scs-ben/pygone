@@ -4,10 +4,7 @@ bin/ethereal/*
 bin/ethy*
 bin/weiss/*
 bin/sunfish/*
-<<<<<<< HEAD
-=======
 bin/sunfish.log
->>>>>>> master
 src/__pycache__*
 bin/debug.log
 bin/games.pgn
