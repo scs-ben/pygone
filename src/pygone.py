@@ -654,12 +654,14 @@ def main():
                 else:
                     move_time = black_time / (time_move_calc * 1e3)
 
-                if move_time < 20:
+                if move_time < 25:
                     go_depth = 5
-                if move_time < 10:
+                if move_time < 15:
                     go_depth = 4
                 if move_time < 5:
                     go_depth = 3
+                if move_time <= 2:
+                    go_depth = 2
                     move_time = 2
 
                 go_depth = max(input_depth, go_depth)

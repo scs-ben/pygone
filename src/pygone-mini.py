@@ -441,12 +441,14 @@ def main():
      I7=I2/(K4*1e3)
     else:
      I7=I3/(K4*1e3)
-    if I7<20:
+    if I7<25:
      I4=5
-    if I7<10:
+    if I7<15:
      I4=4
     if I7<5:
      I4=3
+    if I7<=2:
+     I4=2
      I7=2
     I4=max(P8,I4)
     G7er.L5=0
