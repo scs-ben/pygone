@@ -77,7 +77,7 @@ sed -i -e 's/Search/G4/g' pygone-mini.py
 sed -i -e 's/last_move/G5/g' pygone-mini.py
 sed -i -e 's/end_time/G6/g' pygone-mini.py
 sed -i -e 's/iterative_search/G71/g' pygone-mini.py
-sed -i -e 's/b_search_pv/G72/g' pygone-mini.py
+sed -i -e 's/q_search/G72/g' pygone-mini.py
 sed -i -e 's/search/G7/g' pygone-mini.py
 sed -i -e 's/max_time/G8/g' pygone-mini.py
 sed -i -e 's/local_board/G9/g' pygone-mini.py
@@ -179,6 +179,15 @@ sed -i -e 's/v_pv/Q2/g' pygone-mini.py
 sed -i -e 's/l_depth/Q3/g' pygone-mini.py
 sed -i -e 's/print_stats/Q4/g' pygone-mini.py
 sed -i -e 's/offset/Q5/g' pygone-mini.py
+sed -i -e 's/UPPER/Q6/g' pygone-mini.py
+sed -i -e 's/LOWER/Q7/g' pygone-mini.py
+sed -i -e 's/capture_moves/Q8/g' pygone-mini.py
+sed -i -e 's/calculate_score/Q9/g' pygone-mini.py
+sed -i -e 's/calculate_next/Q0/g' pygone-mini.py
+sed -i -e 's/attack_squares/R1/g' pygone-mini.py
+sed -i -e 's/store_tt/R2/g' pygone-mini.py
+sed -i -e 's/temp_board/R3/g' pygone-mini.py
+sed -i -e 's/v_nodes/R4/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/piece/Z1/g' pygone-mini.py

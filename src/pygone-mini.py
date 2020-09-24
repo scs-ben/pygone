@@ -9,8 +9,8 @@ for tZ1,table in A9.items():
 K5=['P','R','N','B','Q','K']
 K6=['p','r','n','b','q','k']
 I0=1
-UPPER=2
-LOWER=3
+Q6=2
+Q7=3
 def B1(letter):
  return abs((ord(letter)-96)-1)
 def B2(number):
@@ -27,6 +27,7 @@ class H9:
  C1=[]
  B5=[]
  B6=[]
+ Q8=[]
  O5=[]
  O6=[]
  O7=[1,1]
@@ -40,6 +41,7 @@ class H9:
   Z.C1=[]
   Z.B5=[]
   Z.B6=[]
+  Z.Q8=[]
   Z.O5=[]
   Z.O6=[]
   Z.O7=[1,1]
@@ -85,7 +87,7 @@ class H9:
    if D3!="":
     Z.B3[C8][C7]=D3.upper()if E7 else D3
   return[C9,C0]
- def calculate_score(Z,C2):
+ def Q9(Z,C2):
   if C2 is None:
    return 0
   E7=Z.B4%2==0
@@ -107,20 +109,20 @@ class H9:
   if len(C2)>4:
    H2+=A9['q'][abs(C8-Q5)][abs(C7-Q5)]-A9['p'][abs(C8-Q5)][abs(C7-Q5)]
   return H2
- def D4(Z,C2,calculate_next=0):
+ def D4(Z,C2,Q0=0):
   Z4=H9()
   Z4.B4=Z.B4
   Z4.B3=[x[:]for x in Z.B3]
-  Z4.B5=Z.B5
-  Z4.B6=Z.B6
-  Z4.O5=Z.O5
-  Z4.O6=Z.O6
-  Z4.C1=Z.C1
-  Z4.O7=Z.O7
-  Z4.O8=Z.O8
+  Z4.B5=Z.B5.copy()
+  Z4.B6=Z.B6.copy()
+  Z4.O5=Z.O5.copy()
+  Z4.O6=Z.O6.copy()
+  Z4.C1=Z.C1.copy()
+  Z4.O7=Z.O7.copy()
+  Z4.O8=Z.O8.copy()
   Z4.O9=Z.O9
   Z4.O0=Z.O0
-  Z4.P9=Z.P9+Z.calculate_score(C2)
+  Z4.P9=Z.P9+Z.Q9(C2)
   if C2 is not None:
    if 'e1' in C2:
     Z4.O7=[0,0]
@@ -137,7 +139,7 @@ class H9:
    Z4.D1(C2)
    Z4.C1.append(C2)
    Z4.B4+=1
-   if calculate_next:
+   if Q0:
     Z4.D8()
   Z4.P9=-Z4.P9
   return Z4
@@ -152,6 +154,7 @@ class H9:
   if P6:
    E7=not E7
   N4=[]
+  Z.Q8=[]
   P2=[]
   if E7:
    Z.B5=[]
@@ -169,15 +172,15 @@ class H9:
     if Z1.lower()=='k':
      E8={1:{'E3':(E3+0),'E2':(E2+1)},2:{'E3':(E3+0),'E2':(E2-1)},3:{'E3':(E3+1),'E2':(E2+0)},4:{'E3':(E3-1),'E2':(E2+0)},5:{'E3':(E3+1),'E2':(E2+1)},6:{'E3':(E3+1),'E2':(E2-1)},7:{'E3':(E3-1),'E2':(E2+1)},8:{'E3':(E3-1),'E2':(E2-1)},}
      if E7:
-      if Z.O7[1]and K7=='e1' and E1[7][5]=='-' and E1[7][6]=='-' and E1[7][7]=='R' and not set(['e1','f1','g1']).issubset(set(Z.O6)):
+      if Z.O7[1]and K7=='e1' and ''.join(E1[7][5:8])=='--R' and not set(['e1','f1','g1']).issubset(set(Z.O6)):
        N4.append(K7+'g1')
-      if Z.O7[0]and K7=='e1' and E1[7][1]=='-' and E1[7][2]=='-' and E1[7][3]=='-' and E1[7][0]=='R' and not set(['e1','d1','c1']).issubset(set(Z.O6)):
+      if Z.O7[0]and K7=='e1' and ''.join(E1[7][0:4])=='R---' and not set(['e1','d1','c1']).issubset(set(Z.O6)):
        N4.append(K7+'c1')
      else:
-      if Z.O8[0]and K7=='e8' and E1[0][1]=='-' and E1[0][2]=='-' and E1[0][3]=='-' and E1[0][0]=='r' and not set(['e8','d8','c8']).issubset(set(Z.O5)):
-       N4.append(K7+'c8')
-      if Z.O8[1]and K7=='e8' and E1[0][5]=='-' and E1[0][6]=='-' and E1[0][7]=='r' and not set(['e8','f8','g8']).issubset(set(Z.O5)):
+      if Z.O8[1]and K7=='e8' and ''.join(E1[0][5:8])=='--r' and not set(['e8','f8','g8']).issubset(set(Z.O5)):
        N4.append(K7+'g8')
+      if Z.O8[0]and K7=='e8' and ''.join(E1[0][0:4])=='r---' and not set(['e8','d8','c8']).issubset(set(Z.O5)):
+       N4.append(K7+'c8')
      for _,E81 in E8.items():
       if E81['E3']in range(8)and E81['E2']in range(8):
        E9=E1[E81['E2']][E81['E3']]
@@ -188,6 +191,8 @@ class H9:
        F1=B2(E81['E3']+1)+str(abs(E81['E2']-8))
        if E9=='-' or E0:
         N4.append(K7+F1)
+       if E0:
+        Z.Q8.append(K7+F1)
        P2.append(F1)
     if Z1.lower()in('b','r','q'):
      F7={1:{'E3':E3,'E2':(E2-1),'E24':0,'E23':-1},2:{'E3':E3,'E2':(E2+1),'E24':0,'E23':1},3:{'E3':(E3-1),'E2':E2,'E24':-1,'E23':0},4:{'E3':(E3+1),'E2':E2,'E24':1,'E23':0},5:{'E3':(E3-1),'E2':(E2-1),'E24':-1,'E23':-1},6:{'E3':(E3+1),'E2':(E2+1),'E24':1,'E23':1},7:{'E3':(E3-1),'E2':(E2+1),'E24':-1,'E23':1},8:{'E3':(E3+1),'E2':(E2-1),'E24':1,'E23':-1},}
@@ -204,6 +209,7 @@ class H9:
         N4.append(K7+F1)
         P2.append(F1)
         if E0:
+         Z.Q8.append(K7+F1)
          break
        else:
         break
@@ -215,12 +221,14 @@ class H9:
       if F4['E3']in range(8)and F4['E2']in range(8):
        E9=E1[F4['E2']][F4['E3']]
        if E7:
-        P1=(E9=='-' or E9.islower())
+        E0=(E9!='-' and E9.islower())
        else:
-        P1=(E9=='-' or E9.isupper())
-       if P1:
+        E0=(E9!='-' and E9.isupper())
+       if E9=='-' or E0:
         F1=B2(F4['E3']+1)+str(abs(F4['E2']-8))
         N4.append(K7+F1)
+        if E0:
+         Z.Q8.append(K7+F1)
         P2.append(F1)
     if Z1.lower()=='p':
      if E7:
@@ -239,12 +247,14 @@ class H9:
         if E1[E2-1][E3-1]=='-' or E1[E2-1][E3-1].islower():
          if E1[E2-1][E3-1]!='-':
           N4.append(K7+F1+O3)
+          Z.Q8.append(K7+F1+O3)
          P2.append(F1)
        if(E3+1)<8:
         F1=B2(E3+2)+str(abs(E2-9))
         if E1[E2-1][E3+1]=='-' or E1[E2-1][E3+1].islower():
          if E1[E2-1][E3+1]!='-':
           N4.append(K7+F1+O3)
+          Z.Q8.append(K7+F1+O3)
          P2.append(F1)
      else:
       if E2<6 and E1[E2+1][E3]=='-':
@@ -262,12 +272,14 @@ class H9:
         if E1[E2+1][E3+1]=='-' or E1[E2+1][E3+1].isupper():
          if E1[E2+1][E3+1]!='-':
           N4.append(K7+F1+O3)
+          Z.Q8.append(K7+F1+O3)
          P2.append(F1)
        if(E3-1)>=0:
         F1=B2(E3)+str(abs(E2-7))
         if E1[E2+1][E3-1]=='-' or E1[E2+1][E3-1].isupper():
          if E1[E2+1][E3-1]!='-':
           N4.append(K7+F1+O3)
+          Z.Q8.append(K7+F1+O3)
          P2.append(F1)
   if E7:
    Z.B5=N4
@@ -312,61 +324,75 @@ class G4:
   H2=-1e8
   E7=G9.B4%2==0
   L6=max(L6,1)
-  for K7 in sorted(G9.D8(),key=G9.calculate_score,reverse=E7):
+  for K7 in sorted(G9.D8(),key=G9.Q9,reverse=E7):
    Z.L5+=1
-   temp_Z4=G9.D4(K7,1)
-   if temp_Z4.I9():
+   R3=G9.D4(K7,1)
+   if R3.I9():
     continue
-   H2=-Z.pvs(temp_Z4,-H4,-H3,L6-1,E7)
+   H2=-Z.pvs(R3,-H4,-H3,L6-1)
    if H2>=G0:
     G0=H2
     F41=K7
   return[G0,F41]
- def pvs(Z,G9,H3,H4,L6,L0):
+ def pvs(Z,G9,H3,H4,L6):
   if L6<1:
-   return G9.P9
+   return Z.G72(G9,H3,H4,6)
   if G9.P9<=-50000:
    return-70000
-  H3_orig=H3
+  H31=H3
   J7=Z.M4(G9)
   if J7['M8']>=L6:
    if J7['M0']==I0:
     Z.L5+=1
     return J7['M9']
-   if J7['M0']==LOWER:
+   if J7['M0']==Q7:
     H3=max(H3,J7['M9'])
-   elif J7['M0']==UPPER:
+   elif J7['M0']==Q6:
     H4=min(H4,J7['M9'])
    if H3>=H4:
     Z.L5+=1
     return J7['M9']
   H2=-1e8
-  E7=G9.B4%2==0
   for K7 in G9.D8():
    Z.L5+=1
-   temp_Z4=G9.D4(K7)
-   H2=-Z.pvs(temp_Z4,-H3-1,-H3,L6-1,L0)
+   R3=G9.D4(K7)
+   H2=-Z.pvs(R3,-H3-1,-H3,L6-1)
    if H3<H2<H4:
-    H2=-Z.pvs(temp_Z4,-H4,-H2,L6-1,L0)
+    H2=-Z.pvs(R3,-H4,-H2,L6-1)
    H3=max(H3,H2)
    if H3>=H4:
     break
   J7['M9']=H3
-  if H3<=H3_orig:
-   J7['M0']=UPPER
+  if H3<=H31:
+   J7['M0']=Q6
   elif H3>=H4:
-   J7['M0']=LOWER
+   J7['M0']=Q7
   else:
    J7['M0']=I0
   J7['M8']=L6
-  Z.store_tt(G9,J7)
+  Z.R2(G9,J7)
+  return H3
+ def G72(Z,G9,H3,H4,L6):
+  if L6<=0:
+   return G9.P9
+  if G9.P9>=H4:
+   return H4
+  H3=max(G9.P9,H3)
+  G9.D8()
+  H2=-1e8
+  for K7 in G9.Q8:
+   Z.L5+=1
+   H2=-Z.G72(G9.D4(K7),-H4,-H3,L6-1)
+   if H2>=H4:
+    return H4
+   H3=max(H2,H3)
   return H3
  def M4(Z,G9):
   M5=G9.M6()
   if M5 not in Z.M3:
    Z.M3[M5]={'M8':0,'M9':-1e5,'M0':2}
   return Z.M3[M5]
- def store_tt(Z,G9,J7):
+ def R2(Z,G9,J7):
   M5=G9.M6()
   if len(Z.M3)>1e7:
    Z.M3.clear()
@@ -381,7 +407,7 @@ def main():
    if Z2=="quit":
     sys.exit()
    elif Z2=="uci":
-    N2("pygone 1.0\nuciok")
+    N2("pygone 1.1\nuciok")
    elif Z2=="ucinewgame":
     H8.K3()
     G7er.K3()
@@ -396,7 +422,7 @@ def main():
    elif Z2.startswith("go"):
     I2=1e8
     I3=1e8
-    I4=7
+    I4=6
     P8=0
     I5=Z2.split()
     for key,arg in enumerate(I5):
@@ -415,11 +441,13 @@ def main():
      I7=I2/(K4*1e3)
     else:
      I7=I3/(K4*1e3)
-    if I7<15:
-     I4=6
-    if I7<4:
-     I7=2
+    if I7<20:
+     I4=5
+    if I7<10:
      I4=4
+    if I7<5:
+     I4=3
+     I7=2
     I4=max(P8,I4)
     G7er.L5=0
     G7er.M2=0

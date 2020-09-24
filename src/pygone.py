@@ -79,14 +79,16 @@ def get_perf_counter():
     return time.perf_counter()
 
 def print_stats(v_depth, v_score, v_time, v_nodes, v_nps, v_pv):
-        print_to_terminal("info depth " + v_depth + " score cp " + v_score + " time " + v_time + " nodes " + v_nodes + " nps " + v_nps + " pv " + v_pv)
+    print_to_terminal("info depth " + v_depth + " score cp " + v_score + " time " + v_time + " nodes " + v_nodes + " nps " + v_nps + " pv " + v_pv)
 
 class Board:
+    # represent the board state as it is
     board_state = []
     played_move_count = 0
     move_list = []
     white_valid_moves = []
     black_valid_moves = []
+    capture_moves = []
     white_attack_squares = []
     black_attack_squares = []
     white_castling = [True, True]
@@ -96,11 +98,13 @@ class Board:
     rolling_score = 0
 
     def reset(self):
+        # reset board to default state
         self.set_default_board_state()
         self.played_move_count = 0
         self.move_list = []
         self.white_valid_moves = []
         self.black_valid_moves = []
+        self.capture_moves = []
         self.white_attack_squares = []
         self.black_attack_squares = []
         self.white_castling = [True, True]
@@ -193,17 +197,17 @@ class Board:
 
         return local_score
 
-    def make_move(self, uci_coordinate,calculate_next=False):
+    def make_move(self, uci_coordinate, calculate_next=False):
         board = Board()
         board.played_move_count = self.played_move_count
         board.board_state = [x[:] for x in self.board_state]
-        board.white_valid_moves = self.white_valid_moves
-        board.black_valid_moves = self.black_valid_moves
-        board.white_attack_squares = self.white_attack_squares
-        board.black_attack_squares = self.black_attack_squares
-        board.move_list = self.move_list
-        board.white_castling = self.white_castling
-        board.black_castling = self.black_castling
+        board.white_valid_moves = self.white_valid_moves.copy()
+        board.black_valid_moves = self.black_valid_moves.copy()
+        board.white_attack_squares = self.white_attack_squares.copy()
+        board.black_attack_squares = self.black_attack_squares.copy()
+        board.move_list = self.move_list.copy()
+        board.white_castling = self.white_castling.copy()
+        board.black_castling = self.black_castling.copy()
         board.white_king_position = self.white_king_position
         board.black_king_position = self.black_king_position
         # should calc score before moving
@@ -252,6 +256,7 @@ class Board:
             is_white = not is_white
 
         valid_moves = []
+        self.capture_moves = []
 
         attack_squares = []
 
@@ -281,23 +286,19 @@ class Board:
                         8: {'column': (column - 1), 'row': (row - 1)},
                     }
                     if is_white:
-                        if self.white_castling[1] and start_coordinate == 'e1' and eval_state[7][5] == '-' and \
-                            eval_state[7][6] == '-' and eval_state[7][7] == 'R' and \
+                        if self.white_castling[1] and start_coordinate == 'e1' and ''.join(eval_state[7][5:8]) == '--R' and \
                             not set(['e1', 'f1', 'g1']).issubset(set(self.black_attack_squares)):
                             valid_moves.append(start_coordinate + 'g1')
-                        if self.white_castling[0] and start_coordinate == 'e1' and eval_state[7][1] == '-' and \
-                            eval_state[7][2] == '-' and eval_state[7][3] == '-' and eval_state[7][0] == 'R' and \
+                        if self.white_castling[0] and start_coordinate == 'e1' and ''.join(eval_state[7][0:4]) == 'R---' and \
                             not set(['e1', 'd1', 'c1']).issubset(set(self.black_attack_squares)):
                             valid_moves.append(start_coordinate + 'c1')
                     else:
-                        if self.black_castling[0] and start_coordinate == 'e8' and eval_state[0][1] == '-' and \
-                            eval_state[0][2] == '-' and eval_state[0][3] == '-' and eval_state[0][0] == 'r' and \
-                            not set(['e8', 'd8', 'c8']).issubset(set(self.white_attack_squares)):
-                            valid_moves.append(start_coordinate + 'c8')
-                        if self.black_castling[1] and start_coordinate == 'e8' and eval_state[0][5] == '-' and \
-                            eval_state[0][6] == '-' and eval_state[0][7] == 'r' and \
+                        if self.black_castling[1] and start_coordinate == 'e8' and ''.join(eval_state[0][5:8]) == '--r' and \
                             not set(['e8', 'f8', 'g8']).issubset(set(self.white_attack_squares)):
                             valid_moves.append(start_coordinate + 'g8')
+                        if self.black_castling[0] and start_coordinate == 'e8' and ''.join(eval_state[0][0:4]) == 'r---' and \
+                            not set(['e8', 'd8', 'c8']).issubset(set(self.white_attack_squares)):
+                            valid_moves.append(start_coordinate + 'c8')
                     for _, k_move in king_moves.items():
                         if k_move['column'] in range(8) and k_move['row'] in range(8):
                             eval_piece = eval_state[k_move['row']][k_move['column']]
@@ -310,6 +311,8 @@ class Board:
 
                             if eval_piece == '-' or can_capture:
                                 valid_moves.append(start_coordinate + dest)
+                            if can_capture:
+                                self.capture_moves.append(start_coordinate + dest)
                             attack_squares.append(dest)
                 if piece.lower() in ('b', 'r', 'q'):
                     all_moves = {
@@ -340,6 +343,7 @@ class Board:
                                 valid_moves.append(start_coordinate + dest)
                                 attack_squares.append(dest)
                                 if can_capture:
+                                    self.capture_moves.append(start_coordinate + dest)
                                     break
                             else:
                                 break
@@ -360,12 +364,15 @@ class Board:
                         if n_move['column'] in range(8) and n_move['row'] in range(8):
                             eval_piece = eval_state[n_move['row']][n_move['column']]
                             if is_white:
-                                valid_move = (eval_piece == '-' or eval_piece.islower())
+                                can_capture = (eval_piece != '-' and eval_piece.islower())
                             else:
-                                valid_move = (eval_piece == '-' or eval_piece.isupper())
-                            if valid_move:
+                                can_capture = (eval_piece != '-' and eval_piece.isupper())
+                            if eval_piece == '-' or can_capture:
                                 dest = number_to_letter(n_move['column'] + 1) + str(abs(n_move['row'] - 8))
                                 valid_moves.append(start_coordinate + dest)
+                                if can_capture:
+                                    self.capture_moves.append(start_coordinate + dest)
+
                                 attack_squares.append(dest)
                 if piece.lower() == 'p':
                     if is_white:
@@ -384,12 +391,14 @@ class Board:
                                 if eval_state[row - 1][column - 1] == '-' or eval_state[row - 1][column - 1].islower():
                                     if eval_state[row - 1][column - 1] != '-':
                                         valid_moves.append(start_coordinate + dest + prom)
+                                        self.capture_moves.append(start_coordinate + dest + prom)
                                     attack_squares.append(dest)
                             if (column + 1) < 8:
                                 dest = number_to_letter(column + 2) + str(abs(row - 9))
                                 if eval_state[row - 1][column + 1] == '-' or eval_state[row - 1][column + 1].islower():
                                     if eval_state[row - 1][column + 1] != '-':
                                         valid_moves.append(start_coordinate + dest + prom)
+                                        self.capture_moves.append(start_coordinate + dest + prom)
                                     attack_squares.append(dest)
                     else:
                         if row < 6 and eval_state[row + 1][column] == '-':
@@ -408,12 +417,14 @@ class Board:
                                 if eval_state[row + 1][column + 1] == '-' or eval_state[row + 1][column + 1].isupper():
                                     if eval_state[row + 1][column + 1] != '-':
                                         valid_moves.append(start_coordinate + dest + prom)
+                                        self.capture_moves.append(start_coordinate + dest + prom)
                                     attack_squares.append(dest)
                             if (column - 1) >= 0:
                                 dest = number_to_letter(column) + str(abs(row - 7))
                                 if eval_state[row + 1][column - 1] == '-' or eval_state[row + 1][column - 1].isupper():
                                     if eval_state[row + 1][column - 1] != '-':
                                         valid_moves.append(start_coordinate + dest + prom)
+                                        self.capture_moves.append(start_coordinate + dest + prom)
                                     attack_squares.append(dest)
 
 
@@ -440,6 +451,7 @@ class Search:
     tt_bucket = {}
 
     def reset(self):
+        # reset to base state
         self.v_nodes = 0
         self.v_tthits = 0
         self.tt_bucket = {}
@@ -489,7 +501,7 @@ class Search:
             if temp_board.in_check():
                 continue
 
-            local_score = -self.pvs(temp_board, -beta, -alpha, v_depth - 1, is_white)
+            local_score = -self.pvs(temp_board, -beta, -alpha, v_depth - 1)
 
             if local_score >= global_score:
                 global_score = local_score
@@ -497,14 +509,14 @@ class Search:
 
         return [global_score, chosen_move]
 
-    def pvs(self, local_board, alpha, beta, v_depth, score_white):
+    def pvs(self, local_board, alpha, beta, v_depth):
         if v_depth < 1:
-            return local_board.rolling_score
+            return self.q_search(local_board, alpha, beta, 6)
 
         if local_board.rolling_score <= -50000:
             return -70000
 
-        alpha_orig = alpha
+        original_alpha = alpha
 
         tt_entry = self.tt_lookup(local_board)
         if tt_entry['tt_depth'] >= v_depth:
@@ -522,16 +534,14 @@ class Search:
 
         local_score = -1e8
 
-        is_white = local_board.played_move_count % 2 == 0
-
         for s_move in local_board.get_valid_moves():
             self.v_nodes += 1
 
             temp_board = local_board.make_move(s_move)
 
-            local_score = -self.pvs(temp_board, -alpha - 1, -alpha, v_depth - 1, score_white)
+            local_score = -self.pvs(temp_board, -alpha - 1, -alpha, v_depth - 1)
             if alpha < local_score < beta:
-                local_score = -self.pvs(temp_board, -beta, -local_score, v_depth - 1, score_white)
+                local_score = -self.pvs(temp_board, -beta, -local_score, v_depth - 1)
 
             alpha = max(alpha, local_score)
 
@@ -539,7 +549,7 @@ class Search:
                 break
 
         tt_entry['tt_value'] = alpha
-        if alpha <= alpha_orig:
+        if alpha <= original_alpha:
             tt_entry['tt_flag'] = UPPER
         elif alpha >= beta:
             tt_entry['tt_flag'] = LOWER
@@ -547,6 +557,31 @@ class Search:
             tt_entry['tt_flag'] = EXACT
         tt_entry['tt_depth'] = v_depth
         self.store_tt(local_board, tt_entry)
+
+        return alpha
+
+    def q_search(self, local_board, alpha, beta, v_depth):
+        if v_depth <= 0:
+            return local_board.rolling_score
+
+        if local_board.rolling_score >= beta:
+            return beta
+
+        alpha = max(local_board.rolling_score, alpha)
+
+        local_board.get_valid_moves()
+
+        local_score = -1e8
+
+        for s_move in local_board.capture_moves:
+            self.v_nodes += 1
+
+            local_score = -self.q_search(local_board.make_move(s_move), -beta, -alpha, v_depth - 1)
+
+            if local_score >= beta:
+                return beta
+
+            alpha = max(local_score, alpha)
 
         return alpha
 
@@ -579,7 +614,7 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print_to_terminal("pygone 1.0\nuciok")
+                print_to_terminal("pygone 1.1\nuciok")
             elif line == "ucinewgame":
                 game_board.reset()
                 searcher.reset()
@@ -594,7 +629,7 @@ def main():
             elif line.startswith("go"):
                 white_time = 1e8
                 black_time = 1e8
-                go_depth = 7
+                go_depth = 6
                 input_depth = 0
 
                 args = line.split()
@@ -619,11 +654,13 @@ def main():
                 else:
                     move_time = black_time / (time_move_calc * 1e3)
 
-                if move_time < 15:
-                    go_depth = 6
-                if move_time < 4:
-                    move_time = 2
+                if move_time < 20:
+                    go_depth = 5
+                if move_time < 10:
                     go_depth = 4
+                if move_time < 5:
+                    go_depth = 3
+                    move_time = 2
 
                 go_depth = max(input_depth, go_depth)
 
