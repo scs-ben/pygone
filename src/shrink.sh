@@ -77,7 +77,7 @@ sed -i -e 's/Search/G4/g' pygone-mini.py
 sed -i -e 's/last_move/G5/g' pygone-mini.py
 sed -i -e 's/end_time/G6/g' pygone-mini.py
 sed -i -e 's/iterative_search/G71/g' pygone-mini.py
-sed -i -e 's/b_search_pv/G72/g' pygone-mini.py
+sed -i -e 's/q_search/G72/g' pygone-mini.py
 sed -i -e 's/search/G7/g' pygone-mini.py
 sed -i -e 's/max_time/G8/g' pygone-mini.py
 sed -i -e 's/local_board/G9/g' pygone-mini.py
@@ -158,11 +158,46 @@ sed -i -e 's/case_eval/O1/g' pygone-mini.py
 sed -i -e 's/attack_piece/O2/g' pygone-mini.py
 sed -i -e 's/prom/O3/g' pygone-mini.py
 sed -i -e 's/check_pieces/O4/g' pygone-mini.py
+sed -i -e 's/white_attack_squares/O5/g' pygone-mini.py
+sed -i -e 's/black_attack_squares/O6/g' pygone-mini.py
+sed -i -e 's/white_castling/O7/g' pygone-mini.py
+sed -i -e 's/black_castling/O8/g' pygone-mini.py
+sed -i -e 's/white_king_position/O9/g' pygone-mini.py
+sed -i -e 's/black_king_position/O0/g' pygone-mini.py
+sed -i -e 's/valid_move/P1/g' pygone-mini.py
+sed -i -e 's/attack_squares/P2/g' pygone-mini.py
+sed -i -e 's/aspiration_window/P3/g' pygone-mini.py
+sed -i -e 's/initial_score/P4/g' pygone-mini.py
+sed -i -e 's/local_move/P5/g' pygone-mini.py
+sed -i -e 's/previous_turn/P6/g' pygone-mini.py
+sed -i -e 's/CHECK_SCORE/P7/g' pygone-mini.py
+sed -i -e 's/input_depth/P8/g' pygone-mini.py
+sed -i -e 's/rolling_score/P9/g' pygone-mini.py
+sed -i -e 's/v_time/P0/g' pygone-mini.py
+sed -i -e 's/v_nps/Q1/g' pygone-mini.py
+sed -i -e 's/v_pv/Q2/g' pygone-mini.py
+sed -i -e 's/l_depth/Q3/g' pygone-mini.py
+sed -i -e 's/print_stats/Q4/g' pygone-mini.py
+sed -i -e 's/offset/Q5/g' pygone-mini.py
+sed -i -e 's/UPPER/Q6/g' pygone-mini.py
+sed -i -e 's/LOWER/Q7/g' pygone-mini.py
+sed -i -e 's/capture_moves/Q8/g' pygone-mini.py
+sed -i -e 's/calculate_score/Q9/g' pygone-mini.py
+sed -i -e 's/calculate_next/Q0/g' pygone-mini.py
+sed -i -e 's/attack_squares/R1/g' pygone-mini.py
+sed -i -e 's/store_tt/R2/g' pygone-mini.py
+sed -i -e 's/temp_board/R3/g' pygone-mini.py
+sed -i -e 's/v_nodes/R4/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/piece/Z1/g' pygone-mini.py
 sed -i -e 's/line/Z2/g' pygone-mini.py
 sed -i -e 's/moves/Z3/g' pygone-mini.py
+sed -i -e 's/board/Z4/g' pygone-mini.py
 
+sed -i -e 's/KeyZ4Interrupt/KeyboardInterrupt/g' pygone-mini.py
+
+sed -i -e 's/True/1/g' pygone-mini.py
+sed -i -e 's/False/0/g' pygone-mini.py
 
 sed -i -e 's/# Created by pyminifier (https:\/\/github.com\/liftoff\/pyminifier)//g' pygone-mini.py

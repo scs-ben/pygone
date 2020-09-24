@@ -1,5 +1,5 @@
 #!/bin/bash
-tail -n NUMBER_OF_LINES $0 | gunzip -c -q > /tmp/$$
+tail -n N $0 | gunzip -c -q > /tmp/$$
 chmod +x /tmp/$$
 /tmp/$$
 rm /tmp/$$
