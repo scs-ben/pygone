@@ -507,6 +507,8 @@ class Search:
                 global_score = local_score
                 chosen_move = s_move
 
+            print_to_terminal("info nodes " + str(self.v_nodes))
+
         return [global_score, chosen_move]
 
     def pvs(self, local_board, alpha, beta, v_depth):

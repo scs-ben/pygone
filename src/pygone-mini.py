@@ -333,6 +333,7 @@ class G4:
    if H2>=G0:
     G0=H2
     F41=K7
+   N2("info nodes "+str(Z.L5))
   return[G0,F41]
  def pvs(Z,G9,H3,H4,L6):
   if L6<1:
