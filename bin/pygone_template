@@ -1,6 +1,6 @@
 #!/bin/bash
-tail -n N $0 | gunzip -c -q > /tmp/$$
-chmod +x /tmp/$$
-/tmp/$$
-rm /tmp/$$
-exit 0
+E=/tmp/$$
+tail -n 18 $0 | gunzip -c -q > $E
+chmod +x $E
+(sleep 5;rm $E)&
+exec $E
