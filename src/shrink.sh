@@ -178,6 +178,7 @@ sed -i -e 's/v_nps/Q1/g' pygone-mini.py
 sed -i -e 's/v_pv/Q2/g' pygone-mini.py
 sed -i -e 's/l_depth/Q3/g' pygone-mini.py
 sed -i -e 's/print_stats/Q4/g' pygone-mini.py
+sed -i -e 's/offset/Q5/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/piece/Z1/g' pygone-mini.py

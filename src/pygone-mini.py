@@ -2,13 +2,15 @@
 import math,sys,time
 A1={'p':100,'r':480,'n':280,'b':320,'q':960,'k':6e4}
 A9={'p':[[0]*8,[78,83,86,73,102,82,85,90],[7,29,21,44,40,31,44,7],[-17,16,-2,15,14,0,15,-13],[-26,3,10,9,6,1,0,-23],[-22,9,5,-11,-10,-2,3,-19],[-31,8,-7,-37,-36,-14,3,-31],[0]*8],'n':[[-66,-53,-75,-75,-10,-55,-58,-70],[-3,-6,100,-36,4,62,-4,-14],[10,67,1,74,73,27,62,-2],[24,24,45,37,33,41,25,17],[-1,5,31,21,22,35,2,0],[-18,10,13,22,18,15,11,-14],[-23,-15,2,0,2,0,-23,-20],[-74,-23,-26,-24,-19,-35,-22,-69]],'b':[[-59,-78,-82,-76,-23,-107,-37,-50],[-11,20,35,-42,-39,31,2,-22],[-9,39,-32,41,52,-10,28,-14],[25,17,20,34,26,25,15,10],[13,10,17,23,17,16,0,7],[14,25,24,15,8,25,20,15],[19,20,11,6,7,6,20,16],[-7,2,-15,-12,-14,-15,-10,-10]],'r':[[35,29,33,4,37,33,56,50],[55,29,56,67,55,62,34,60],[19,35,28,33,45,27,25,15],[0,5,16,13,18,-4,-9,-6],[-28,-35,-16,-21,-13,-29,-46,-30],[-42,-28,-42,-25,-25,-35,-26,-46],[-53,-38,-31,-26,-29,-43,-44,-53],[-30,-24,-18,5,-2,-18,-31,-32]],'q':[[6,1,-8,-104,69,24,88,26],[14,32,60,-10,20,76,57,24],[-2,43,32,60,72,63,43,2],[1,-16,22,17,25,20,-13,-6],[-14,-15,-2,-5,-1,-10,-20,-22],[-30,-6,-13,-11,-16,-11,-16,-27],[-36,-18,0,-19,-15,-15,-21,-38],[-39,-30,-31,-13,-31,-36,-34,-42]],'k':[[4,54,47,-99,-99,60,83,-62],[-32,10,45,56,56,55,10,3],[-62,12,-57,44,-67,28,37,-31],[-55,50,11,-4,-19,13,0,-49],[-55,-43,-52,-28,-51,-47,-8,-50],[-47,-42,-43,-79,-64,-32,-29,-32],[-4,3,-14,-50,-57,-18,13,4],[22,30,-3,-14,6,-1,40,26]]}
-for Z1,table in A9.items():
- for E2 in range(8):
-  for E3 in range(8):
-   A9[Z1][E2][E3]+=A1[Z1]
+for tZ1,table in A9.items():
+ for tE2 in range(8):
+  for tE3 in range(8):
+   A9[tZ1][tE2][tE3]+=A1[tZ1]
 K5=['P','R','N','B','Q','K']
 K6=['p','r','n','b','q','k']
-P7=9999999987
+I0=1
+UPPER=2
+LOWER=3
 def B1(letter):
  return abs((ord(letter)-96)-1)
 def B2(number):
@@ -17,6 +19,8 @@ def N2(letter):
  print(letter,flush=1)
 def N3():
  return time.perf_counter()
+def Q4(L6,L8,P0,L5,Q1,Q2):
+ N2("info depth "+L6+" score cp "+L8+" time "+P0+" nodes "+L5+" nps "+Q1+" pv "+Q2)
 class H9:
  B3=[]
  B4=0
@@ -59,14 +63,12 @@ class H9:
   elif C9=='k':
    Z.O0=C2[2:4]
   E7=Z.B4%2==0
-  offset=0 if E7 else 7
   Z.B3[C8][C7]=C9
   Z.B3[C6][C5]='-'
-  Z.P9+=A9[C9.lower()][abs(C8-offset)][abs(C7-offset)]-A9[C9.lower()][abs(C6-offset)][abs(C5-offset)]
   D3=""
   if len(C2)>4:
    D3=C2[4:5]
-  if(C9 in('P','p')and C0=='-' and C2[0:1]!=C2[2:3]and len(C91)==0 and len(C01)==0):
+  if C9 in('P','p')and C0=='-' and C2[0:1]!=C2[2:3]:
    Z.B3[C6][C5]='-'
    Z.B3[C8][C7]=C9
    Z.B3[C6][C7]='-'
@@ -75,17 +77,36 @@ class H9:
    if C2[2]=='g':
     Z.B3[C8][C7+1]='-'
     Z.B3[C6][C5+1]='R' if C9=='K' else 'r'
-    Z.P9+=A9['r'][abs(C8-offset)][abs(C7-1-offset)]-A9['r'][abs(C8-offset)][abs(C7+1-offset)]
    else:
     Z.B3[C8][C7-2]='-'
     Z.B3[C6][C5-1]='R' if C9=='K' else 'r'
-    Z.P9+=A9['r'][abs(C8-offset)][abs(C7+1-offset)]-A9['r'][abs(C8-offset)][abs(C7-2-offset)]
    Z.B3[C8][C7]=C9
   else:
    if D3!="":
     Z.B3[C8][C7]=D3.upper()if E7 else D3
-    Z.P9+=A9['q'][abs(C8-offset)][abs(C7-offset)]-A9['p'][abs(C8-offset)][abs(C7-offset)]
   return[C9,C0]
+ def calculate_score(Z,C2):
+  if C2 is None:
+   return 0
+  E7=Z.B4%2==0
+  Q5=0 if E7 else 7
+  C5=B1(C2[0:1])
+  C6=abs(int(C2[1:2])-8)
+  C7=B1(C2[2:3])
+  C8=abs(int(C2[3:4])-8)
+  C9=Z.B3[C6][C5]
+  C0=Z.B3[C8][C7]
+  H2=A9[C9.lower()][abs(C8-Q5)][abs(C7-Q5)]-A9[C9.lower()][abs(C6-Q5)][abs(C5-Q5)]
+  if C0!='-':
+   H2+=A9[C0.lower()][abs(C8-Q5)][abs(C7-Q5)]
+  if(C9 in('K','k')and C2 in('e1g1','e1c1','e8g8','e8c8')):
+   if C2[2]=='g':
+    H2+=A9['r'][abs(C8-Q5)][abs(C7-1-Q5)]-A9['r'][abs(C8-Q5)][abs(C7+1-Q5)]
+   else:
+    H2+=A9['r'][abs(C8-Q5)][abs(C7+1-Q5)]-A9['r'][abs(C8-Q5)][abs(C7-2-Q5)]
+  if len(C2)>4:
+   H2+=A9['q'][abs(C8-Q5)][abs(C7-Q5)]-A9['p'][abs(C8-Q5)][abs(C7-Q5)]
+  return H2
  def D4(Z,C2):
   Z4=H9()
   Z4.B4=Z.B4
@@ -99,7 +120,7 @@ class H9:
   Z4.O8=Z.O8
   Z4.O9=Z.O9
   Z4.O0=Z.O0
-  Z4.P9=Z.P9
+  Z4.P9=Z.P9+Z.calculate_score(C2)
   if C2 is not None:
    if 'e1' in C2:
     Z4.O7=[0,0]
@@ -129,9 +150,9 @@ class H9:
   E7=Z.B4%2==0
   if P6:
    E7=not E7
-  N4=[None]
+  N4=[]
   P2=[]
-  if(E7):
+  if E7:
    Z.B5=[]
    Z.O5=[]
   else:
@@ -257,8 +278,7 @@ class H9:
  def I9(Z):
   if Z.B4%2!=0:
    return Z.O9 in Z.O6
-  else:
-   return Z.O0 in Z.O5
+  return Z.O0 in Z.O5
 class G4:
  L5=0
  M2=0
@@ -272,21 +292,18 @@ class G4:
  def G71(Z,G9,L6,I7):
   I8=N3()
   Z.G6=N3()+I7
-  H3=-1e8
-  J3=0
+  H4=1e8
+  J3=-1e8
   J4=None
-  P4=G9.P9
   Z.L6=0
   while L6>0:
    Z.L6+=1
    L6-=1
-   (J3,J4)=Z.P3(G9,Z.L6,J3)
+   (J3,J4)=Z.G7(G9,Z.L6,J3,H4)
    I6=math.ceil(N3()-I8)
    Q1=math.ceil(Z.L5/I6)
-   Z.Q4(str(Z.L6),str(math.ceil(J3)),str(I6),str(Z.L5),str(Q1),J4)
+   Q4(str(Z.L6),str(math.ceil(J3)),str(I6),str(Z.L5),str(Q1),J4)
   return[J3,J4]
- def Q4(Z,L6,L8,P0,L5,Q1,Q2):
-  N2("info depth "+L6+" score cp "+L8+" time "+P0+" nodes "+L5+" nps "+Q1+" pv "+Q2)
  def P3(Z,G9,L6,P4):
   H3=-1e8
   H4=1e8
@@ -299,9 +316,8 @@ class G4:
   P5=None
   while 1:
    (H2,P5)=Z.G7(G9,Q3,H3,H4)
-   if H2>H3 and H2<H4:
+   if H3<H2<H4:
     N2("info nodes "+str(Z.L5))
-   if H2>H3 and H2<H4:
     return[H2,P5]
    if H2<=H3:
     H4=(H3+H4)/2
@@ -317,30 +333,28 @@ class G4:
   H2=-1e8
   E7=G9.B4%2==0
   L6=max(L6,1)
-  for K7 in G9.D8():
-   if K7 is None:
-    continue
+  for K7 in sorted(G9.D8(),key=G9.calculate_score,reverse=E7):
    Z.L5+=1
-   H2=-Z.pvs(G9.D4(K7),-H4,-H3,L6-1)
-   if H2==P7:
+   temp_Z4=G9.D4(K7)
+   if temp_Z4.I9:
     continue
+   H2=-Z.pvs(temp_Z4,-H4,-H3,L6-1,E7)
    if H2>=G0:
     G0=H2
     F41=K7
   return[G0,F41]
- def pvs(Z,G9,H3,H4,L6):
-  E7=G9.B4%2==0
-  if G9.I9():
-   return P7
+ def pvs(Z,G9,H3,H4,L6,L0):
   if L6<1:
    return G9.P9
+  if G9.P9<=-50000:
+   return-70000
   H3_orig=H3
   J7=Z.M4(G9)
   if J7['M8']>=L6:
    if J7['M0']==I0:
     Z.L5+=1
     return J7['M9']
-   elif J7['M0']==LOWER:
+   if J7['M0']==LOWER:
     H3=max(H3,J7['M9'])
    elif J7['M0']==UPPER:
     H4=min(H4,J7['M9'])
@@ -348,13 +362,15 @@ class G4:
     Z.L5+=1
     return J7['M9']
   H2=-1e8
-  for K7 in G9.D8():
+  E7=G9.B4%2==0
+  for K7 in sorted(G9.D8(),key=G9.calculate_score,reverse=E7):
    Z.L5+=1
-   H2=-Z.pvs(G9.D4(K7),-H3-1,-H3,L6-1)
-   if H2>H3 and H2<H4:
-    H2=-Z.pvs(G9.D4(K7),-H4,-H2,L6-1)
-   if H2==P7:
+   temp_Z4=G9.D4(K7)
+   if temp_Z4.I9:
     continue
+   H2=-Z.pvs(temp_Z4,-H3-1,-H3,L6-1,L0)
+   if H3<H2<H4:
+    H2=-Z.pvs(temp_Z4,-H4,-H2,L6-1,L0)
    H3=max(H3,H2)
    if H3>=H4:
     break
@@ -378,9 +394,6 @@ class G4:
   if len(Z.M3)>1e7:
    Z.M3.clear()
   Z.M3[M5]=J7
-I0=1
-UPPER=2
-LOWER=3
 def main():
  G7er=G4()
  H8=H9()

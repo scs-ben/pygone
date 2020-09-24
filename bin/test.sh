@@ -3,12 +3,14 @@
     -engine \
         name=pygone \
         cmd=pygone \
+        depth=3 \
     -engine \
         name=sunfish \
         cmd=./sunfish/sunfish \
+        depth=3 \
     -each \
         proto=uci \
-        tc=0/300+2 \
+        tc=inf \
         restart=off \
         -openings file=book.pgn \
         -repeat \
