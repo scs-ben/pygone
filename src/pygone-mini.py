@@ -107,7 +107,7 @@ class H9:
   if len(C2)>4:
    H2+=A9['q'][abs(C8-Q5)][abs(C7-Q5)]-A9['p'][abs(C8-Q5)][abs(C7-Q5)]
   return H2
- def D4(Z,C2):
+ def D4(Z,C2,calculate_next=0):
   Z4=H9()
   Z4.B4=Z.B4
   Z4.B3=[x[:]for x in Z.B3]
@@ -137,7 +137,8 @@ class H9:
    Z4.D1(C2)
    Z4.C1.append(C2)
    Z4.B4+=1
-   Z4.D8()
+   if calculate_next:
+    Z4.D8()
   Z4.P9=-Z4.P9
   return Z4
  def M6(Z):
@@ -292,6 +293,7 @@ class G4:
  def G71(Z,G9,L6,I7):
   I8=N3()
   Z.G6=N3()+I7
+  H3=-1e8
   H4=1e8
   J3=-1e8
   J4=None
@@ -299,34 +301,11 @@ class G4:
   while L6>0:
    Z.L6+=1
    L6-=1
-   (J3,J4)=Z.G7(G9,Z.L6,J3,H4)
+   (J3,J4)=Z.G7(G9,Z.L6,H3,H4)
    I6=math.ceil(N3()-I8)
    Q1=math.ceil(Z.L5/I6)
    Q4(str(Z.L6),str(math.ceil(J3)),str(I6),str(Z.L5),str(Q1),J4)
   return[J3,J4]
- def P3(Z,G9,L6,P4):
-  H3=-1e8
-  H4=1e8
-  L9=10
-  Q3=L6
-  if Q3>3:
-   H3=max(-1e8,P4-L9)
-   H4=min(1e8,P4+L9)
-  H2=-1e8
-  P5=None
-  while 1:
-   (H2,P5)=Z.G7(G9,Q3,H3,H4)
-   if H3<H2<H4:
-    N2("info nodes "+str(Z.L5))
-    return[H2,P5]
-   if H2<=H3:
-    H4=(H3+H4)/2
-    H3=max(-1e8,H3-L9)
-    Q3=L6
-   elif H2>=H4:
-    H4=min(1e8,H4+L9)
-    Q3=min(1,Q3-min(1e8,H2)/2)
-   L9=L9+L9/2
  def G7(Z,G9,L6,H3,H4):
   G0=-1e8
   F41=None
@@ -335,8 +314,8 @@ class G4:
   L6=max(L6,1)
   for K7 in sorted(G9.D8(),key=G9.calculate_score,reverse=E7):
    Z.L5+=1
-   temp_Z4=G9.D4(K7)
-   if temp_Z4.I9:
+   temp_Z4=G9.D4(K7,1)
+   if temp_Z4.I9():
     continue
    H2=-Z.pvs(temp_Z4,-H4,-H3,L6-1,E7)
    if H2>=G0:
@@ -363,11 +342,9 @@ class G4:
     return J7['M9']
   H2=-1e8
   E7=G9.B4%2==0
-  for K7 in sorted(G9.D8(),key=G9.calculate_score,reverse=E7):
+  for K7 in G9.D8():
    Z.L5+=1
    temp_Z4=G9.D4(K7)
-   if temp_Z4.I9:
-    continue
    H2=-Z.pvs(temp_Z4,-H3-1,-H3,L6-1,L0)
    if H3<H2<H4:
     H2=-Z.pvs(temp_Z4,-H4,-H2,L6-1,L0)
@@ -419,7 +396,7 @@ def main():
    elif Z2.startswith("go"):
     I2=1e8
     I3=1e8
-    I4=6
+    I4=7
     P8=0
     I5=Z2.split()
     for key,arg in enumerate(I5):
@@ -439,10 +416,10 @@ def main():
     else:
      I7=I3/(K4*1e3)
     if I7<15:
-     I4=5
+     I4=6
     if I7<4:
      I7=2
-     I4=3
+     I4=4
     I4=max(P8,I4)
     G7er.L5=0
     G7er.M2=0

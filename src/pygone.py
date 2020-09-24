@@ -193,7 +193,7 @@ class Board:
 
         return local_score
 
-    def make_move(self, uci_coordinate):
+    def make_move(self, uci_coordinate,calculate_next=False):
         board = Board()
         board.played_move_count = self.played_move_count
         board.board_state = [x[:] for x in self.board_state]
@@ -231,7 +231,8 @@ class Board:
             board.apply_move(uci_coordinate)
             board.move_list.append(uci_coordinate)
             board.played_move_count += 1
-            board.get_valid_moves()
+            if calculate_next:
+                board.get_valid_moves()
 
         board.rolling_score = -board.rolling_score
 
@@ -447,7 +448,7 @@ class Search:
         start_time = get_perf_counter()
         self.end_time = get_perf_counter() + move_time
 
-        # alpha = -1e8
+        alpha = -1e8
         beta = 1e8
 
         iterative_score = -1e8
@@ -459,7 +460,9 @@ class Search:
             self.v_depth += 1
             v_depth -= 1
 
-            (iterative_score, iterative_move) = self.search(local_board, self.v_depth, iterative_score, beta)
+            (iterative_score, iterative_move) = self.search(local_board, self.v_depth, alpha, beta)
+
+            # alpha = max(alpha, iterative_score)
 
             elapsed_time = math.ceil(get_perf_counter() - start_time)
             v_nps = math.ceil(self.v_nodes / elapsed_time)
@@ -481,7 +484,7 @@ class Search:
         for s_move in sorted(local_board.get_valid_moves(), key=local_board.calculate_score, reverse=is_white):
             self.v_nodes += 1
 
-            temp_board = local_board.make_move(s_move)
+            temp_board = local_board.make_move(s_move, True)
 
             if temp_board.in_check():
                 continue
@@ -495,11 +498,6 @@ class Search:
         return [global_score, chosen_move]
 
     def pvs(self, local_board, alpha, beta, v_depth, score_white):
-        # if the last move resulted in check, we just want to bounce it
-        # if local_board.in_check():
-        #     if score_white == (local_board.played_move_count % 2 == 0):
-        #         return -1e8 if local_board.played_move_count % 2 == 0 else 1e8
-
         if v_depth < 1:
             return local_board.rolling_score
 
@@ -526,7 +524,7 @@ class Search:
 
         is_white = local_board.played_move_count % 2 == 0
 
-        for s_move in sorted(local_board.get_valid_moves(), key=local_board.calculate_score, reverse=is_white):
+        for s_move in local_board.get_valid_moves():
             self.v_nodes += 1
 
             temp_board = local_board.make_move(s_move)
@@ -596,7 +594,7 @@ def main():
             elif line.startswith("go"):
                 white_time = 1e8
                 black_time = 1e8
-                go_depth = 6
+                go_depth = 7
                 input_depth = 0
 
                 args = line.split()
@@ -622,10 +620,10 @@ def main():
                     move_time = black_time / (time_move_calc * 1e3)
 
                 if move_time < 15:
-                    go_depth = 5
+                    go_depth = 6
                 if move_time < 4:
                     move_time = 2
-                    go_depth = 3
+                    go_depth = 4
 
                 go_depth = max(input_depth, go_depth)
 
