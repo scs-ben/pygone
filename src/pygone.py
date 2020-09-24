@@ -459,50 +459,14 @@ class Search:
             self.v_depth += 1
             v_depth -= 1
 
-            (iterative_score, iterative_move) = self.aspiration_window(local_board, self.v_depth, iterative_score)
-            # (iterative_score, iterative_move) = self.search(local_board, self.v_depth, iterative_score, beta)
+            (iterative_score, iterative_move) = self.search(local_board, self.v_depth, iterative_score, beta)
 
             elapsed_time = math.ceil(get_perf_counter() - start_time)
             v_nps = math.ceil(self.v_nodes / elapsed_time)
 
             print_stats(str(self.v_depth), str(math.ceil(iterative_score)), str(elapsed_time), str(self.v_nodes), str(v_nps), iterative_move)
 
-            # if get_perf_counter() >= self.end_time or v_depth < 1:
-            #     break
-
         return [iterative_score, iterative_move]
-
-    def aspiration_window(self, local_board, v_depth, initial_score):
-        alpha = -1e8
-        beta = 1e8
-
-        delta = 10
-
-        l_depth = v_depth
-
-        if l_depth > 3:
-            alpha = max(-1e8, initial_score - delta)
-            beta = min(1e8, initial_score + delta)
-
-        local_score = -1e8
-        local_move = None
-
-        while True:
-            (local_score, local_move) = self.search(local_board, l_depth, alpha, beta)
-
-            if alpha < local_score < beta:
-                print_to_terminal("info nodes " + str(self.v_nodes))
-                return [local_score, local_move]
-
-            if local_score <= alpha:
-                beta = (alpha + beta) / 2
-                alpha = max(-1e8, alpha - delta)
-                l_depth = v_depth
-            elif local_score >= beta:
-                beta = min(1e8, beta + delta)
-                l_depth = min(1, l_depth - min(1e8, local_score) / 2)
-
-            delta = delta + delta / 2
 
     def search(self, local_board, v_depth, alpha, beta):
         global_score = -1e8
