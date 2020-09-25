@@ -9,3 +9,5 @@ src/__pycache__*
 bin/debug.log
 bin/games.pgn
 bin/pygone_10
+
+bin/nanochess/

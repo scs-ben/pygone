@@ -3,11 +3,12 @@
     -engine \
         name=pygone11 \
         cmd=pygone \
-    -engine \
-        name=sunfish \
-        cmd=sunfish/sunfish \
-    -each \
         proto=uci \
+    -engine \
+        name=nanochess \
+        cmd=nanochess/nanochess \
+        proto=xboard \
+    -each \
         tc=0/300+2 \
         restart=off \
         -openings file=book.pgn \
