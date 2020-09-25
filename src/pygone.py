@@ -446,9 +446,6 @@ class Search:
 
             print_stats(str(self.v_depth), str(math.ceil(iterative_score)), str(elapsed_time), str(self.v_nodes), str(v_nps), iterative_move)
 
-            if get_perf_counter() >= self.end_time:
-                break
-
         return [iterative_score, iterative_move]
 
     def search(self, local_board, v_depth, alpha, beta):
@@ -482,9 +479,7 @@ class Search:
         return [global_score, chosen_move]
 
     def pvs(self, local_board, alpha, beta, v_depth):
-        start_time = get_perf_counter()
-
-        if v_depth < 1 or start_time >= self.end_time:
+        if v_depth < 1:
             # check to see if last move was in previous list of captures
             if local_board.move_list[-1] in local_board.capture_moves[-1] + local_board.capture_moves[-2]:
                 return self.q_search(local_board, alpha, beta, 8)
@@ -613,7 +608,7 @@ def main():
             elif line.startswith("go"):
                 white_time = 1e8
                 black_time = 1e8
-                go_depth = 10
+                go_depth = 7
                 input_depth = 0
 
                 args = line.split()
@@ -622,10 +617,11 @@ def main():
                         white_time = int(args[key + 1])
                     elif arg == 'btime':
                         black_time = int(args[key + 1])
-                    elif arg == 'depth':
-                        go_depth = int(args[key + 1])
-                    elif arg == 'infinite':
-                        input_depth = 30
+                    # these are commented out to save space since engine will be run on time
+                    # elif arg == 'depth':
+                    #     go_depth = int(args[key + 1])
+                    # elif arg == 'infinite':
+                    #     input_depth = 30
 
                 time_move_calc = max(40 - game_board.played_move_count, 2)
 
@@ -640,7 +636,16 @@ def main():
 
                 searcher.end_time = get_perf_counter() + move_time
 
-                go_depth = max(input_depth, go_depth)
+                # go_depth = max(input_depth, go_depth)
+
+                if move_time < 40:
+                    go_depth = 6
+                if move_time < 20:
+                    go_depth = 5
+                if move_time < 15:
+                    go_depth = 4
+                if move_time < 4:
+                    go_depth = 2
 
                 searcher.v_nodes = 0
                 searcher.v_tthits = 0

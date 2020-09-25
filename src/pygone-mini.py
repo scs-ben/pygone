@@ -274,8 +274,6 @@ class G4:
    I6=math.ceil(N3()-I8)
    Q1=math.ceil(Z.L5/I6)
    Q4(str(Z.L6),str(math.ceil(J3)),str(I6),str(Z.L5),str(Q1),J4)
-   if N3()>=Z.G6:
-    break
   return[J3,J4]
  def G7(Z,G9,L6,H3,H4):
   G0=-1e8
@@ -297,8 +295,7 @@ class G4:
     S1=N3()+5
   return[G0,F41]
  def pvs(Z,G9,H3,H4,L6):
-  I8=N3()
-  if L6<1 or I8>=Z.G6:
+  if L6<1:
    if G9.C1[-1]in G9.Q8[-1]+G9.Q8[-2]:
     return Z.G72(G9,H3,H4,8)
    else:
@@ -389,7 +386,7 @@ def main():
    elif Z2.startswith("go"):
     I2=1e8
     I3=1e8
-    I4=10
+    I4=7
     P8=0
     I5=Z2.split()
     for key,arg in enumerate(I5):
@@ -397,10 +394,6 @@ def main():
       I2=int(I5[key+1])
      elif arg=='btime':
       I3=int(I5[key+1])
-     elif arg=='depth':
-      I4=int(I5[key+1])
-     elif arg=='infinite':
-      P8=30
     K4=max(40-H8.B4,2)
     I7=1e8
     E7=H8.B4%2==0
@@ -409,7 +402,14 @@ def main():
     else:
      I7=(I3/(K4*1e3))
     G7er.G6=N3()+I7
-    I4=max(P8,I4)
+    if I7<40:
+     I4=6
+    if I7<20:
+     I4=5
+    if I7<15:
+     I4=4
+    if I7<4:
+     I4=2
     G7er.L5=0
     G7er.M2=0
     (_,K7)=G7er.G71(H8,I4)
