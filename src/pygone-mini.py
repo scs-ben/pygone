@@ -394,7 +394,7 @@ def main():
       I2=int(I5[key+1])
      elif arg=='btime':
       I3=int(I5[key+1])
-    K4=max(40-H8.B4,2)
+    K4=max(25-H8.B4,2)
     I7=1e8
     E7=H8.B4%2==0
     if E7:

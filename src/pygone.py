@@ -623,7 +623,7 @@ def main():
                     # elif arg == 'infinite':
                     #     input_depth = 30
 
-                time_move_calc = max(40 - game_board.played_move_count, 2)
+                time_move_calc = max(25 - game_board.played_move_count, 2)
 
                 move_time = 1e8
 
