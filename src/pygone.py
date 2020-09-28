@@ -444,7 +444,7 @@ class Search:
             elapsed_time = math.ceil(get_perf_counter() - start_time)
             v_nps = math.ceil(self.v_nodes / elapsed_time)
 
-            print_stats(str(self.v_depth), str(math.ceil(iterative_score)), str(elapsed_time), str(self.v_nodes), str(v_nps), iterative_move)
+            print_stats(str(self.v_depth), str(math.ceil(-iterative_score)), str(elapsed_time), str(self.v_nodes), str(v_nps), iterative_move)
 
         return [iterative_score, iterative_move]
 
@@ -479,7 +479,7 @@ class Search:
         return [global_score, chosen_move]
 
     def pvs(self, local_board, alpha, beta, v_depth):
-        if v_depth < 1:
+        if v_depth < 1 or local_board.rolling_score > (beta + 60 * v_depth):
             # check to see if last move was in previous list of captures
             if local_board.move_list[-1] in local_board.capture_moves[-1] + local_board.capture_moves[-2]:
                 return self.q_search(local_board, alpha, beta, 8)
@@ -510,11 +510,9 @@ class Search:
         for s_move in sorted(local_board.get_valid_moves(), key=local_board.calculate_score, reverse=True):
             self.v_nodes += 1
 
-            temp_board = local_board.make_move(s_move)
-
-            local_score = -self.pvs(temp_board, -alpha - 1, -alpha, v_depth - 1)
+            local_score = -self.pvs(local_board.make_move(s_move), -alpha - 1, -alpha, v_depth - 1)
             if alpha < local_score < beta:
-                local_score = -self.pvs(temp_board, -beta, -local_score, v_depth - 1)
+                local_score = -self.pvs(local_board.make_move(s_move), -beta, -local_score, v_depth - 1)
 
             alpha = max(alpha, local_score)
 
@@ -608,8 +606,8 @@ def main():
             elif line.startswith("go"):
                 white_time = 1e8
                 black_time = 1e8
-                go_depth = 7
-                input_depth = 0
+                go_depth = 6
+                # input_depth = 0
 
                 args = line.split()
                 for key, arg in enumerate(args):
@@ -623,7 +621,7 @@ def main():
                     # elif arg == 'infinite':
                     #     input_depth = 30
 
-                time_move_calc = max(25 - game_board.played_move_count, 2)
+                time_move_calc = max(40 - game_board.played_move_count, 2)
 
                 move_time = 1e8
 
@@ -638,14 +636,14 @@ def main():
 
                 # go_depth = max(input_depth, go_depth)
 
-                if move_time < 40:
-                    go_depth = 6
-                if move_time < 20:
+                print(move_time)
+
+                if move_time < 30:
                     go_depth = 5
-                if move_time < 15:
+                if move_time < 7:
                     go_depth = 4
                 if move_time < 4:
-                    go_depth = 2
+                    go_depth = 3
 
                 searcher.v_nodes = 0
                 searcher.v_tthits = 0
