@@ -12,22 +12,21 @@ K6=['p','r','n','b','q','k']
 I0=1
 Q6=2
 Q7=3
-MATE_Q7=A1['k']-10*A1['q']
-MATE_Q6=A1['k']+10*A1['q']
-def B1(Z5):
- return abs((ord(Z5)-96)-1)
-def B2(number):
- return chr(number+96)
+Q71=A1['k']-10*A1['q']
+Q61=A1['k']+10*A1['q']
+def B2(Z6):
+ return chr(Z6+96)
 def N2(Z5):
  print(Z5,flush=1)
 def N3():
  return time.perf_counter()
-def Q4(L6,L8,P0,L5,Q1,Q2):
- N2("info depth "+L6+" score cp "+L8+" time "+P0+" nodes "+L5+" nps "+Q1+" pv "+Q2)
+def Q4(L6,L8,P0,L5,Q2):
+ N2("info depth "+L6+" score cp "+L8+" time "+P0+" nodes "+L5+" pv "+Q2)
 class H9:
  B3=[]
  B4=0
  C1=[]
+ S8=[]
  N4=[[],[]]
  Q8=[]
  P2=[[],[]]
@@ -41,13 +40,11 @@ class H9:
   Z.B3=[['r','n','b','q','k','b','n','r'],['p']*8,['-']*8,['-']*8,['-']*8,['-']*8,['P']*8,['R','N','B','Q','K','B','N','R']]
  def B32(Z,B3):
   Z.B3=B3
+ def S9(Z,C2):
+  return(abs((ord(C2[0:1])-96)-1),abs(int(C2[1:2])-8),abs((ord(C2[2:3])-96)-1),abs(int(C2[3:4])-8))
  def D1(Z,C2):
-  C5=B1(C2[0:1])
-  C6=abs(int(C2[1:2])-8)
-  C7=B1(C2[2:3])
-  C8=abs(int(C2[3:4])-8)
+  (C5,C6,C7,C8)=Z.S9(C2)
   C9=Z.B3[C6][C5]
-  C0=Z.B3[C8][C7]
   E7=Z.B4%2==0
   Z.B3[C8][C7]=C9
   Z.B3[C6][C5]='-'
@@ -82,6 +79,7 @@ class H9:
   Z4.Q8=Z.Q8.copy()
   Z4.P2=[x[:]for x in Z.P2]
   Z4.C1=Z.C1.copy()
+  Z4.S8=Z.S8.copy()
   Z4.O7=Z.O7.copy()
   Z4.O8=Z.O8.copy()
   Z4.O9=Z.O9
@@ -105,20 +103,18 @@ class H9:
   Z4.B4+=1
   if Q0:
    Z4.D8()
+  Z4.S8.append(Z4.M6())
   Z4.P9=-Z4.P9
   return Z4
  def Q9(Z,C2):
   Q5=0 if Z.B4%2==0 else 7
-  C5=B1(C2[0:1])
-  C6=abs(int(C2[1:2])-8)
-  C7=B1(C2[2:3])
-  C8=abs(int(C2[3:4])-8)
+  (C5,C6,C7,C8)=Z.S9(C2)
   C9=Z.B3[C6][C5]
   C0=Z.B3[C8][C7]
   H2=A9[C9.lower()][abs(C8-Q5)][abs(C7-Q5)]-A9[C9.lower()][abs(C6-Q5)][abs(C5-Q5)]
   if C0!='-':
    H2+=A9[C0.lower()][abs(C8-Q5)][abs(C7-Q5)]
-  if(C9 in('K','k')and C2 in('e1g1','e1c1','e8g8','e8c8')):
+  if C9 in('K','k')and abs(C6-C8)==2:
    if C2[2]=='g':
     H2+=A9['r'][abs(C8-Q5)][abs(C7-1-Q5)]-A9['r'][abs(C8-Q5)][abs(C7+1-Q5)]
    else:
@@ -252,29 +248,28 @@ class H9:
   return Z.O0 in Z.P2[0]
 class G4:
  L5=0
- M2=0
  L6=0
  G6=0
  M3={}
- def K3(Z):
-  Z.L5=0
-  Z.M2=0
-  Z.M3={}
- def G71(Z,G9,L6):
+ def G71(Z,G9):
   I8=N3()
   H3=-1e8
   H4=1e8
   J3=-1e8
-  J4=None
-  Z.L6=0
-  while L6>0:
-   Z.L6+=1
-   L6-=1
-   (J3,J4)=Z.G7(G9,Z.L6,H3,H4)
+  picked_score=-1e8
+  picked_move=None
+  L6=0
+  while Z.L6>L6:
+   L6+=1
+   (J3,J4)=Z.G7(G9,L6,H3,H4)
+   if abs(J3)<1e10 and not J4 is None:
+    picked_score=J3
+    picked_move=J4
    I6=math.ceil(N3()-I8)
-   Q1=math.ceil(Z.L5/I6)
-   Q4(str(Z.L6),str(math.ceil(-J3)),str(I6),str(Z.L5),str(Q1),J4)
-  return[J3,J4]
+   Q4(str(L6),str(math.ceil(picked_score)),str(I6),str(Z.L5),str(picked_move))
+   if N3()>Z.G6:
+    break
+  return picked_move
  def G7(Z,G9,L6,H3,H4):
   G0=-1e8
   F41=None
@@ -295,25 +290,27 @@ class G4:
     S1=N3()+5
   return[G0,F41]
  def pvs(Z,G9,H3,H4,L6):
-  if L6<1 or G9.P9>(H4+60*L6):
+  if N3()>=Z.G6:
+   return-1e10
+  if L6<1:
    if G9.C1[-1]in G9.Q8[-1]+G9.Q8[-2]:
     return Z.G72(G9,H3,H4,8)
    else:
     return G9.P9
-  if G9.P9<=-MATE_Q7:
-   return-MATE_Q6
+  if G9.S8.count(G9.M6())>2:
+   return 0
+  if G9.P9<=-Q71:
+   return-Q61
   H31=H3
   J7=Z.M4(G9)
   if J7['M8']>=L6:
    if J7['M0']==I0:
-    Z.L5+=1
     return J7['M9']
    if J7['M0']==Q7:
     H3=max(H3,J7['M9'])
    elif J7['M0']==Q6:
     H4=min(H4,J7['M9'])
    if H3>=H4:
-    Z.L5+=1
     return J7['M9']
   H2=-1e8
   for K7 in sorted(G9.D8(),key=G9.Q9,reverse=1):
@@ -337,8 +334,8 @@ class G4:
  def G72(Z,G9,H3,H4,L6):
   if L6<=0 or len(G9.Q8[-1])==0:
    return G9.P9
-  if G9.P9<=-MATE_Q7:
-   return-MATE_Q6
+  if G9.P9<=-Q71:
+   return-Q61
   if G9.P9>=H4:
    return H4
   H3=max(G9.P9,H3)
@@ -358,22 +355,19 @@ class G4:
   return Z.M3[M5]
  def R2(Z,G9,J7):
   M5=G9.M6()
-  if len(Z.M3)>1e7:
-   Z.M3.clear()
-  Z.M3[M5]=J7
 def main():
- G7er=G4()
  H8=H9()
+ G7er=G4()
  while 1:
   try:
    Z2=input()
    if Z2=="quit":
     sys.exit()
    elif Z2=="uci":
-    N2("pygone 1.1\nuciok")
+    N2("pygone 1.2\nuciok")
    elif Z2=="ucinewgame":
     H8=H9()
-    G7er.K3()
+    G7er=G4()
    elif Z2=="isready":
     N2("readyok")
    elif Z2.startswith("position"):
@@ -385,31 +379,28 @@ def main():
    elif Z2.startswith("go"):
     I2=1e8
     I3=1e8
-    I4=6
+    G7er.L6=30
     I5=Z2.split()
     for key,arg in enumerate(I5):
      if arg=='wtime':
       I2=int(I5[key+1])
      elif arg=='btime':
       I3=int(I5[key+1])
+     elif arg=='depth':
+      G7er.L6=int(I5[key+1])
     K4=max(40-H8.B4,2)
     I7=1e8
     E7=H8.B4%2==0
+    I7=(I3/(K4*1e3))
     if E7:
      I7=(I2/(K4*1e3))
-    else:
-     I7=(I3/(K4*1e3))
+    if H8.B4<13:
+     I7+=20
+    I7=max(I7,1)
     G7er.G6=N3()+I7
-    print(I7)
-    if I7<30:
-     I4=5
-    if I7<7:
-     I4=4
-    if I7<4:
-     I4=3
     G7er.L5=0
     G7er.M2=0
-    (_,K7)=G7er.G71(H8,I4)
+    K7=G7er.G71(H8)
     N2("bestmove "+K7)
   except(KeyboardInterrupt,SystemExit):
    N2('quit')

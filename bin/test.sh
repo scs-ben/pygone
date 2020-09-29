@@ -5,9 +5,10 @@
         cmd=pygone \
         proto=uci \
     -engine \
-        name=nanochess \
-        cmd=nanochess/nanochess \
-        proto=xboard \
+        name=sf \
+        cmd=stockfish_20090418_x64 \
+        proto=uci \
+        depth=1 \
     -each \
         tc=0/300+2 \
         restart=off \

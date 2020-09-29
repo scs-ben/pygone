@@ -47,7 +47,6 @@ sed -i -e 's/eval_state/E1/g' pygone-mini.py
 sed -i -e 's/temp_row/E21/g' pygone-mini.py
 sed -i -e 's/rowIncrement/E23/g' pygone-mini.py
 sed -i -e 's/set_row/E24/g' pygone-mini.py
-
 sed -i -e 's/set_column/E33/g' pygone-mini.py
 sed -i -e 's/colIncrement/E32/g' pygone-mini.py
 sed -i -e 's/temp_col/E31/g' pygone-mini.py
@@ -183,7 +182,9 @@ sed -i -e 's/l_depth/Q3/g' pygone-mini.py
 sed -i -e 's/print_stats/Q4/g' pygone-mini.py
 sed -i -e 's/en_passant_offset/Q51/g' pygone-mini.py
 sed -i -e 's/offset/Q5/g' pygone-mini.py
+sed -i -e 's/MATE_UPPER/Q61/g' pygone-mini.py
 sed -i -e 's/UPPER/Q6/g' pygone-mini.py
+sed -i -e 's/MATE_LOWER/Q71/g' pygone-mini.py
 sed -i -e 's/LOWER/Q7/g' pygone-mini.py
 sed -i -e 's/capture_moves/Q8/g' pygone-mini.py
 sed -i -e 's/calculate_score/Q9/g' pygone-mini.py
@@ -204,9 +205,9 @@ sed -i -e 's/min_row/S3/g' pygone-mini.py
 sed -i -e 's/max_row/S4/g' pygone-mini.py
 sed -i -e 's/offset/S5/g' pygone-mini.py
 sed -i -e 's/piece_set/S6/g' pygone-mini.py
-sed -i -e 's/MATE_LOWER/S7/g' pygone-mini.py
-sed -i -e 's/MATE_UPPER/S8/g' pygone-mini.py
-sed -i -e 's/move_normal/S9/g' pygone-mini.py
+sed -i -e 's/move_normal/S7/g' pygone-mini.py
+sed -i -e 's/repetitions/S8/g' pygone-mini.py
+sed -i -e 's/unpack_coordinate/S9/g' pygone-mini.py
 
 sed -i -e 's/row/E2/g' pygone-mini.py
 sed -i -e 's/self/Z/g' pygone-mini.py
@@ -216,6 +217,7 @@ sed -i -e 's/moves/Z3/g' pygone-mini.py
 sed -i -e 's/board/Z4/g' pygone-mini.py
 sed -i -e 's/letter/Z5/g' pygone-mini.py
 sed -i -e 's/coordinate/Z6/g' pygone-mini.py
+sed -i -e 's/number/Z6/g' pygone-mini.py
 
 sed -i -e 's/KeyZ4Interrupt/KeyboardInterrupt/g' pygone-mini.py
 
