@@ -1,15 +1,15 @@
 /home/vagrant/code/pygone/bin/cutechess-cli \
     -debug \
     -engine \
-        name=pygone12 \
+        name=pygone13 \
         cmd=pygone \
         proto=uci \
-        depth=3 \
+	depth=2 \
     -engine \
-        name=sf12 \
-        cmd=stockfish_20090418_x64 \
+        name=pygone12 \
+        cmd=pygone12 \
         proto=uci \
-        depth=1 \
+	depth=2 \
     -each \
         tc=inf \
         restart=off \
