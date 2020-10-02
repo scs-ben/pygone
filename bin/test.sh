@@ -1,17 +1,15 @@
 /home/vagrant/code/pygone/bin/cutechess-cli \
     -debug \
     -engine \
-        name=pygone12 \
+        name=pygone13 \
         cmd=pygone \
         proto=uci \
-        depth=3 \
     -engine \
-        name=sf12 \
-        cmd=stockfish_20090418_x64 \
-        proto=uci \
-        depth=1 \
+        name=nanochess \
+        cmd=nanochess/nanochess \
+        proto=xboard \
     -each \
-        tc=inf \
+        tc=0/300+2 \
         restart=off \
         -openings file=book.pgn \
         -repeat \

@@ -11,3 +11,7 @@ bin/games.pgn
 bin/pygone_10
 
 bin/nanochess/
+
+bin/umax
+
+bin/umax.c
