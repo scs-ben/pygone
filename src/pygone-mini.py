@@ -125,12 +125,14 @@ class H9:
   (C5,C6,C7,C8)=S9(C2)
   C9=Z.B3[C6][C5]
   from_score_Z1=C9.lower()
-  if Z.get_R2()<=16 and C9.lower()=='k':
+  if Z.get_R2()<=14 and C9.lower()=='k':
    from_score_Z1='ke'
-  if Z.get_R2()<=16 and C9.lower()=='p':
+  if Z.get_R2()<=14 and C9.lower()=='p':
    from_score_Z1='pe'
   C0=Z.B3[C8][C7]
   H2=A9[from_score_Z1][abs(C8-Q5)][C7]-A9[from_score_Z1][abs(C6-Q5)][C5]
+  if Z.get_R2()<=14 and C9.lower()in 'nbrq':
+   H2+=A1[from_score_Z1]*0.05
   if C0!='-':
    H2+=A9[C0.lower()][abs(C8-Q5)][C7]
   if C9 in('K','k'):
@@ -143,6 +145,7 @@ class H9:
    H2+=A9[from_score_Z1][abs(C8-Q5)][abs(C7-Q5)]
   if len(C2)>4:
    H2+=A9['q'][abs(C8-Q5)][C7]-A9['p'][abs(C8-Q5)][C7]
+  H2+=Z.R5()
   return H2
  def R5(Z):
   E7=Z.B4%2==0
@@ -283,10 +286,7 @@ class G4:
   I8=time.time()
   last_score=-Q61
   for L6 in range(1,100):
-   H3=-Q61
-   if L6>5:
-    H3=max(H3,last_score)
-   score=Z.G7(G9,H3,Q61,L6)
+   score=Z.G7(G9,-Q61,Q61,L6)
    last_score=max(score,last_score)
    T5=Z.tt_Z3[G9.M6()]
    I6=time.time()-I8
@@ -312,15 +312,12 @@ class G4:
    H4=min(H4,J7.value)
   if H3>=H4:
    return J7.value
-  local_eval=J7.value if J7.value>-Q61 else G9.P9
-  if not is_pv_node and not is_I9 and L6<=6 and(local_eval-85*L6>H4):
-   return local_eval
   if L6==0:
    return G9.P9
   best_score=-Q61
   played_Z3=0
   current_R2=G9.get_R2()
-  H2=-1e8
+  P4=-1e8
   if L6>0:
    H2=-Z.G7(G9.S0(),-H4,-H3,L6-3,root=0)
   killer=Z.tt_Z3.get(G9.M6())

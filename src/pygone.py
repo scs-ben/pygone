@@ -250,21 +250,21 @@ class Board:
 
         from_piece = self.board_state[from_number][from_letter_number]
         from_score_piece = from_piece.lower()
-        if self.get_piece_count() <= 16 and from_piece.lower() == 'k':
+        if self.get_piece_count() <= 14 and from_piece.lower() == 'k':
             from_score_piece = 'ke'
-        if self.get_piece_count() <= 16 and from_piece.lower() == 'p':
+        if self.get_piece_count() <= 14 and from_piece.lower() == 'p':
             from_score_piece = 'pe'
 
         to_piece = self.board_state[to_number][to_letter_number]
 
         local_score = ALLPSQT[from_score_piece][abs(to_number - offset)][to_letter_number] - ALLPSQT[from_score_piece][abs(from_number - offset)][from_letter_number]
 
-        # if self.get_piece_count() <= 16 and from_piece.lower() in 'nbrq':
-        #     local_score += PIECEPOINTS[from_score_piece] * 0.05
+        if self.get_piece_count() <= 14 and from_piece.lower() in 'nbrq':
+            local_score += PIECEPOINTS[from_score_piece] * 0.05
 
         if to_piece != '-':
             local_score += ALLPSQT[to_piece.lower()][abs(to_number - offset)][to_letter_number]
-            # if self.get_piece_count() <= 16:
+            # if self.get_piece_count() <= 14:
             #     local_score += 5
 
         if from_piece in ('K', 'k'):
@@ -281,7 +281,7 @@ class Board:
             # adjust value for promoting from pawn to queen
             local_score += ALLPSQT['q'][abs(to_number - offset)][to_letter_number] - ALLPSQT['p'][abs(to_number - offset)][to_letter_number]
 
-        # local_score += self.score_pawns()
+        local_score += self.score_pawns()
 
         return local_score
 
@@ -497,12 +497,7 @@ class Search:
         last_score = -MATE_UPPER
 
         for v_depth in range(1, 100):
-            alpha = -MATE_UPPER
-
-            if v_depth > 5:
-                alpha = max(alpha, last_score) - 50
-
-            score = self.search(local_board, alpha, MATE_UPPER, v_depth)
+            score = self.search(local_board, -MATE_UPPER, MATE_UPPER, v_depth)
 
             last_score = max(score, last_score)
 
@@ -523,7 +518,7 @@ class Search:
 
         is_pv_node = alpha != beta - 1
 
-        v_depth = max(1, v_depth)
+        v_depth = max(0, v_depth)
 
         is_in_check = local_board.in_check(local_board.played_move_count %2 != 0)
 
@@ -550,7 +545,7 @@ class Search:
         # if not is_pv_node and not is_in_check and v_depth <= 6 and (local_eval - 85 * v_depth > beta):
         #     return local_eval
 
-        if v_depth <= 1:
+        if v_depth == 0:
             return local_board.rolling_score
 
         best_score = -MATE_UPPER
