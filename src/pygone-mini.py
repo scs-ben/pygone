@@ -145,7 +145,6 @@ class H9:
    H2+=A9[from_score_Z1][abs(C8-Q5)][abs(C7-Q5)]
   if len(C2)>4:
    H2+=A9['q'][abs(C8-Q5)][C7]-A9['p'][abs(C8-Q5)][C7]
-  H2+=Z.R5()
   return H2
  def R5(Z):
   E7=Z.B4%2==0
@@ -286,7 +285,7 @@ class G4:
   I8=time.time()
   last_score=-Q61
   for L6 in range(1,100):
-   score=Z.G7(G9,-Q61,Q61,L6)
+   score=-Z.G7(G9,-Q61,Q61,L6)
    last_score=max(score,last_score)
    T5=Z.tt_Z3[G9.M6()]
    I6=time.time()-I8
@@ -298,11 +297,13 @@ class G4:
   H31=H3
   is_pv_node=H3!=H4-1
   L6=max(0,L6)
-  is_I9=G9.I9(G9.B4%2!=0)
-  if not root and G9.S8.count(G9.M6())>2:
+  is_I9=G9.I9(G9.B4%2==0)
+  if not root and G9.S8.count(G9.M6())>=2:
    return 0
   if G9.P9<=-Q71:
    return-Q61
+  if L6==0:
+   return G9.P9
   J7=Z.M3.get((G9.M6(),L6,root),T2(-Q61,L6,Q7))
   if J7.flag==I0:
    return J7.value
@@ -312,8 +313,6 @@ class G4:
    H4=min(H4,J7.value)
   if H3>=H4:
    return J7.value
-  if L6==0:
-   return G9.P9
   best_score=-Q61
   played_Z3=0
   current_R2=G9.get_R2()
@@ -422,7 +421,7 @@ def main():
      I7+=10
     I7=max(I7,3)
     if I7<=4:
-     G7.L6=3
+     G7er.L6=3
     G7er.G6=time.time()+I7-2
     G7er.L5=0
     K7=None

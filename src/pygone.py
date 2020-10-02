@@ -281,7 +281,7 @@ class Board:
             # adjust value for promoting from pawn to queen
             local_score += ALLPSQT['q'][abs(to_number - offset)][to_letter_number] - ALLPSQT['p'][abs(to_number - offset)][to_letter_number]
 
-        local_score += self.score_pawns()
+        # local_score += self.score_pawns()
 
         return local_score
 
@@ -520,13 +520,16 @@ class Search:
 
         v_depth = max(0, v_depth)
 
-        is_in_check = local_board.in_check(local_board.played_move_count %2 != 0)
+        is_in_check = local_board.in_check(local_board.played_move_count %2 == 0)
 
-        if not root and local_board.repetitions.count(local_board.str_board()) > 2:
+        if not root and local_board.repetitions.count(local_board.str_board()) >= 2:
             return 0
 
         if local_board.rolling_score <= -MATE_LOWER:
             return -MATE_UPPER
+
+        if v_depth == 0:
+            return local_board.rolling_score
 
         tt_entry = self.tt_bucket.get((local_board.str_board(), v_depth, root), Entry(-MATE_UPPER, v_depth, LOWER))
 
@@ -544,9 +547,6 @@ class Search:
 
         # if not is_pv_node and not is_in_check and v_depth <= 6 and (local_eval - 85 * v_depth > beta):
         #     return local_eval
-
-        if v_depth == 0:
-            return local_board.rolling_score
 
         best_score = -MATE_UPPER
 
@@ -704,7 +704,7 @@ def main():
                 move_time = max(move_time, 3)
 
                 if move_time <= 4:
-                    search.v_depth = 3
+                    searcher.v_depth = 3
 
                 searcher.end_time = time.time() + move_time - 2
 
