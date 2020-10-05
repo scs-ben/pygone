@@ -8,3 +8,12 @@ bin/sunfish.log
 src/__pycache__*
 bin/debug.log
 bin/games.pgn
+bin/pygone_10
+
+bin/nanochess/
+
+bin/umax
+
+bin/umax.c
+
+src/sunfish.log
