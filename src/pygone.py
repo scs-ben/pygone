@@ -421,7 +421,7 @@ class Board:
                         max_row = 1
                         offset = 1
 
-                    if eval_state[row + offset][column] == '-':
+                    if row + offset in range(8) and eval_state[row + offset][column] == '-':
                         valid_moves.append(start_coordinate + number_to_letter(column + 1) + str(abs(row - 8 + offset)))
                     if row == max_row and eval_state[row + offset][column] == '-' and eval_state[row + 2*offset][column] == '-':
                         valid_moves.append(start_coordinate + number_to_letter(column + 1) + str(abs(row - 8 + 2*offset)))
@@ -597,7 +597,7 @@ def main():
             # elif line == "print":
             #     game_board.show_board()
             elif line == "uci":
-                print_to_terminal("pygone 1.4\nuciok")
+                print_to_terminal("pygone 1.3\nuciok")
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
