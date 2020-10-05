@@ -597,7 +597,7 @@ def main():
             # elif line == "print":
             #     game_board.show_board()
             elif line == "uci":
-                print_to_terminal("pygone 1.3\nuciok")
+                print_to_terminal("pygone 1.4\nuciok")
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
