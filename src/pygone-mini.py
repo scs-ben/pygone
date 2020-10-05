@@ -3,7 +3,7 @@ import math,sys,time
 import gc
 from itertools import chain
 from collections import namedtuple
-A1={'pe':180,'p':90,'r':500,'n':320,'b':330,'q':900,'k':2e4,'ke':2e4}
+A1={'pe':100,'p':90,'r':500,'n':320,'b':330,'q':900,'k':2e4,'ke':2e4}
 A9={'p':[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],[5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],'pe':[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[5,5,10,25,25,10,5,5],[5,5,10,25,25,10,5,5],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],'n':[[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,0,10,15,15,10,0,-30],[-30,5,15,20,20,15,5,-30],[-30,0,15,20,20,15,0,-30],[-30,5,10,15,15,10,5,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],'b':[[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],'r':[[0,0,0,0,0,0,0,0],[5,10,10,10,10,10,10,5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[0,0,0,5,5,0,0,0]],'q':[[-20,-10,-10,-5,-5,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],'k':[[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],[20,20,-10,-10,-10,-10,20,20],[20,30,10,0,0,10,30,20]],'ke':[[-50,-40,-30,-20,-20,-30,-40,-50],[-30,-20,-10,0,0,-10,-20,-30],[-30,-10,20,30,30,20,-10,-30],[-30,-10,30,40,40,30,-10,-30],[-30,-10,30,40,40,30,-10,-30],[-30,-10,20,30,30,20,-10,-30],[-30,-30,0,0,0,0,-30,-30],[-50,-30,-30,-30,-30,-30,-30,-50]]}
 for S2,_ in A9.items():
  for E24 in range(8):
@@ -29,7 +29,7 @@ class H9:
  B4=0
  C1=[]
  S8=[]
- N4=[[],[]]
+ N4=[]
  P2=[[],[]]
  O7=[1,1]
  O8=[1,1]
@@ -74,7 +74,7 @@ class H9:
   Z4=H9()
   Z4.B4=Z.B4
   Z4.B3=[x[:]for x in Z.B3]
-  Z4.N4=[x[:]for x in Z.N4]
+  Z4.N4=Z.N4.copy()
   Z4.P2=[x[:]for x in Z.P2]
   Z4.C1=Z.C1.copy()
   Z4.S8=Z.S8.copy()
@@ -106,10 +106,6 @@ class H9:
   Z4=H9()
   Z4.B4=Z.B4+1
   Z4.B3=[x[:]for x in Z.B3]
-  Z4.N4=[x[:]for x in Z.N4]
-  Z4.P2=[x[:]for x in Z.P2]
-  Z4.C1=Z.C1.copy()
-  Z4.S8=Z.S8.copy()
   Z4.O7=Z.O7.copy()
   Z4.O8=Z.O8.copy()
   Z4.O9=''
@@ -123,16 +119,18 @@ class H9:
   E7=Z.B4%2==0
   Q5=0 if E7 else 7
   (C5,C6,C7,C8)=S9(C2)
+  H2=0
   C9=Z.B3[C6][C5]
   from_score_Z1=C9.lower()
-  if Z.get_R2()<=14 and C9.lower()=='k':
-   from_score_Z1='ke'
-  if Z.get_R2()<=14 and C9.lower()=='p':
-   from_score_Z1='pe'
+  if Z.get_R2()<=14:
+   if C9.lower()=='k':
+    H2+=2
+    from_score_Z1='ke'
+   if C9.lower()=='p':
+    H2+=2
+    from_score_Z1='pe'
   C0=Z.B3[C8][C7]
-  H2=A9[from_score_Z1][abs(C8-Q5)][C7]-A9[from_score_Z1][abs(C6-Q5)][C5]
-  if Z.get_R2()<=14 and C9.lower()in 'nbrq':
-   H2+=A1[from_score_Z1]*0.05
+  H2+=A9[from_score_Z1][abs(C8-Q5)][C7]-A9[from_score_Z1][abs(C6-Q5)][C5]
   if C0!='-':
    H2+=A9[C0.lower()][abs(C8-Q5)][C7]
   if C9 in('K','k'):
@@ -141,28 +139,27 @@ class H9:
      H2+=A9['r'][abs(C8-Q5)][C7-1]-A9['r'][abs(C8-Q5)][C7+1]
     else:
      H2+=A9['r'][abs(C8-Q5)][C7+1]-A9['r'][abs(C8-Q5)][C7-2]
-  elif C9 in('P','p')and C2[2:4]==Z.R7:
-   H2+=A9[from_score_Z1][abs(C8-Q5)][abs(C7-Q5)]
+  elif C9 in('P','p'):
+   p_Q5=-1 if E7 else 1
+   p_Z1='P' if E7 else 'p'
+   protected_pawns=0
+   if C8>0 and C8<7:
+    if C7>0:
+     protected_pawns+=Z.B3[C8+p_Q5][C7-1]==p_Z1
+    if C7<7:
+     protected_pawns+=Z.B3[C8+p_Q5][C7+1]==p_Z1
+   if protected_pawns>0:
+    H2+=10
+   if C2[2:4]==Z.R7:
+    H2+=A9[from_score_Z1][abs(C8-Q5)][C7]
   if len(C2)>4:
    H2+=A9['q'][abs(C8-Q5)][C7]-A9['p'][abs(C8-Q5)][C7]
   return H2
- def R5(Z):
-  E7=Z.B4%2==0
-  Z1='P' if E7 else 'p'
-  H2=0
-  for E3 in range(8):
-   E34=0
-   for E2 in range(8):
-    if Z.B3[E2][E3]==Z1:
-     E34+=1
-   if E34>1:
-    H2-=(E34-1)*5
-  return H2
- def M6(Z,T8=1):
+ def M6(Z):
   return ''.join(list(chain.from_iterable(Z.B3)))+str(Z.B4%2==0)
- def D8(Z,R7=0):
+ def generate_N4(Z,reverse=0):
   E7=Z.B4%2==0
-  if R7:
+  if reverse:
    E7=not E7
   N4=[]
   P2=[]
@@ -173,22 +170,21 @@ class H9:
   for E2 in range(8):
    for E3 in range(8):
     Z1=E1[E2][E3]
-    if Z1=="-" or(E7 and Z1 in K6)or(not E7 and Z1 in K5):
+    if Z1=="-" or(E7 and Z1.islower())or(not E7 and Z1.isupper()):
      continue
     K7=B2(E3+1)+str(abs(E2-8))
     if Z1.lower()=='k':
      E8={1:{'E3':(E3+0),'E2':(E2+1)},2:{'E3':(E3+0),'E2':(E2-1)},3:{'E3':(E3+1),'E2':(E2+0)},4:{'E3':(E3-1),'E2':(E2+0)},5:{'E3':(E3+1),'E2':(E2+1)},6:{'E3':(E3+1),'E2':(E2-1)},7:{'E3':(E3-1),'E2':(E2+1)},8:{'E3':(E3-1),'E2':(E2-1)},}
      if E7:
-      if Z.O7[1]and K7=='e1' and ''.join(E1[7][5:8])=='--R' and not any(Z6 in Z.P2[1]for Z6 in['e1','f1','g1']):
+      if Z.O7[1]and K7=='e1' and ''.join(E1[7][5:8])=='--R' and not any(Z6 in Z.P2[0]for Z6 in['e1','f1','g1']):
        N4.append(K7+'g1')
-      if Z.O7[0]and K7=='e1' and ''.join(E1[7][0:4])=='R---' and not any(Z6 in Z.P2[1]for Z6 in['e1','d1','c1']):
+      if Z.O7[0]and K7=='e1' and ''.join(E1[7][0:4])=='R---' and not any(Z6 in Z.P2[0]for Z6 in['e1','d1','c1']):
        N4.append(K7+'c1')
      else:
-      if Z.O8[1]and K7=='e8' and ''.join(E1[0][5:8])=='--r' and not any(Z6 in Z.P2[0]for Z6 in['e8','f8','g8']):
+      if Z.O8[1]and K7=='e8' and ''.join(E1[0][5:8])=='--r' and not any(Z6 in Z.P2[1]for Z6 in['e8','f8','g8']):
        N4.append(K7+'g8')
-      if Z.O8[0]and K7=='e8' and ''.join(E1[0][0:4])=='r---' and not any(Z6 in Z.P2[0]for Z6 in['e8','d8','c8']):
+      if Z.O8[0]and K7=='e8' and ''.join(E1[0][0:4])=='r---' and not any(Z6 in Z.P2[1]for Z6 in['e8','d8','c8']):
        N4.append(K7+'c8')
-     past_N4=Z.N4[E7]
      for _,E81 in E8.items():
       if E81['E3']in range(8)and E81['E2']in range(8):
        E9=E1[E81['E2']][E81['E3']]
@@ -225,56 +221,52 @@ class H9:
         N4.append(K7+F1)
         P2.append(F1)
     if Z1.lower()=='p':
-     if E7:
-      S3=1
-      S4=6
-      Q5=-1
-     else:
+     S3=1
+     S4=6
+     Q5=-1
+     if not E7:
       S3=6
       S4=1
       Q5=1
-     if E2 in range(1,7)and E2!=S3 and E1[E2+Q5][E3]=='-':
+     if E1[E2+Q5][E3]=='-':
       N4.append(K7+B2(E3+1)+str(abs(E2-8+Q5)))
      if E2==S4 and E1[E2+Q5][E3]=='-' and E1[E2+2*Q5][E3]=='-':
       N4.append(K7+B2(E3+1)+str(abs(E2-8+2*Q5)))
      if E2==S3 and E1[E2+Q5][E3]=='-':
       N4.append(K7+B2(E3+1)+str(abs(E2-8+Q5))+'q')
-     if((E3-1)>=0 and(E2+Q5)in range(8))or((E3+1)<8 and(E2+Q5)in range(8)):
+     if E2+Q5 in range(8)and 1<=E3<7:
       O3=''
       if E2==S3:
        O3='q'
-      if(E3-1)>=0:
+      if E3>0:
        F1=B2(E3)+str(abs(E2-8+Q5))
        F1_Z1=E1[E2+Q5][E3-1]
        if F1_Z1 in R8:
         if F1_Z1!='-' or F1==Z.R7:
          N4.append(K7+F1+O3)
         P2.append(F1)
-      if(E3+1)<8:
+      if E3<7:
        F1=B2(E3+2)+str(abs(E2-8+Q5))
        F1_Z1=E1[E2+Q5][E3+1]
        if F1_Z1 in R8:
         if F1_Z1!='-' or F1==Z.R7:
          N4.append(K7+F1+O3)
         P2.append(F1)
-  Z.N4[0 if E7 else 1]=N4
-  Z.P2[0 if E7 else 1]=P2
+  Z.N4=N4
+  Z.P2[E7]=P2
   return N4
  def I9(Z,E7):
   if E7:
-   return Z.O9 in Z.P2[1]
-  return Z.O0 in Z.P2[0]
+   return Z.O9 in Z.P2[not E7]
+  return Z.O0 in Z.P2[not E7]
 R9=9e5
-R0=115
-T1=15
-T2=namedtuple('T2','value depth flag')
+T2=namedtuple('T2','lower upper')
 class G4:
  L5=0
  L6=0
  G6=0
  M3={}
  tt_Z3={}
- G73=0
  def K3(Z):
   Z.L5=0
   Z.L6=0
@@ -283,100 +275,72 @@ class G4:
   Z.tt_Z3.clear()
  def G71(Z,G9):
   I8=time.time()
-  last_score=-Q61
+  initial_move=Z.tt_Z3.get(G9.M6())
+  if initial_move:
+   if initial_move in('e1c1','e1g1','e8c8','e8g8')and G9.I9(G9.B4%2==0):
+    Z.tt_Z3[G9.M6()]=None
   for L6 in range(1,100):
-   score=-Z.G7(G9,-Q61,Q61,L6)
-   last_score=max(score,last_score)
-   T5=Z.tt_Z3[G9.M6()]
+   lower_Z9=-Q61
+   upper_Z9=Q61
+   while lower_Z9<upper_Z9-10:
+    score_cutoff=(lower_Z9+upper_Z9+1)//2
+    H2=Z.G7(G9,score_cutoff,L6)
+    if H2>=score_cutoff:
+     lower_Z9=H2
+    if H2<score_cutoff:
+     upper_Z9=H2
+   Z.G7(G9,lower_Z9,L6)
+   best_move=Z.tt_Z3.get(G9.M6())
+   score=Z.M3.get((G9.M6(),L6,1)).lower
    I6=time.time()-I8
    Q1=math.ceil(Z.L5/I6)
-   Q4(str(L6),str(math.ceil(score)),str(math.ceil(I6)),str(Z.L5),str(Q1),str(T5))
-   yield L6,T5,score
- def G7(Z,G9,H3,H4,L6,q_count=0,root=1):
+   Q4(str(L6),str(math.ceil(score)),str(math.ceil(I6)),str(Z.L5),str(Q1),str(best_move))
+   yield L6,best_move,score
+ def G7(Z,G9,score_cutoff,L6,parent_G7=1,root=1):
   Z.L5+=1
-  H31=H3
-  is_pv_node=H3!=H4-1
   L6=max(0,L6)
-  is_I9=G9.I9(G9.B4%2==0)
+  if G9.P9<=-Q71:
+   return-Q61
   if not root and G9.S8.count(G9.M6())>=2:
    return 0
-  if G9.P9<=-Q71:
-   return-Q61
-  if L6==0:
-   return G9.P9
-  J7=Z.M3.get((G9.M6(),L6,root),T2(-Q61,L6,Q7))
-  if J7.flag==I0:
-   return J7.value
-  if J7.flag==Q7:
-   H3=max(H3,J7.value)
-  elif J7.flag==Q6:
-   H4=min(H4,J7.value)
-  if H3>=H4:
-   return J7.value
+  J7=Z.M3.get((G9.M6(),L6,root),T2(-Q61,Q61))
+  if J7.lower>=score_cutoff and(not root or Z.tt_Z3.get(G9.M6())is not None):
+   return J7.lower
+  if J7.upper<score_cutoff:
+   return J7.upper
+  def Z3():
+   current_R2=G9.get_R2()
+   if L6==0:
+    yield None,G9.P9
+   killer=Z.tt_Z3.get(G9.M6())
+   if killer:
+    killer_score=G9.Q9(killer)
+    killer_Z4=G9.D4(killer)
+    if L6>0 or killer_score>800 or current_R2!=killer_Z4.get_R2():
+     yield killer,-Z.G7(killer_Z4,1-score_cutoff,L6-1,root=0)
+   for K7 in sorted(G9.generate_N4(),key=G9.Q9,reverse=parent_G7):
+    current_move_score=G9.Q9(K7)
+    moved_Z4=G9.D4(K7)
+    moved_R2=moved_Z4.get_R2()
+    if L6>0 or current_move_score>800 or current_R2!=moved_R2:
+     yield K7,-Z.G7(moved_Z4,1-score_cutoff,L6-1,root=0)
   best_score=-Q61
-  played_Z3=0
-  current_R2=G9.get_R2()
-  P4=-1e8
-  if L6>0:
-   H2=-Z.G7(G9.S0(),-H4,-H3,L6-3,root=0)
-  killer=Z.tt_Z3.get(G9.M6())
-  if killer:
-   killer_Z4=G9.D4(killer)
-   if L6>0 and current_R2==killer_Z4.get_R2():
-    H2=max(H2,-Z.G7(killer_Z4,-H4,-H3,L6-1,root=0))
-   elif current_R2!=killer_Z4.get_R2():
-    H2=max(H2,-Z.G72(killer_Z4,-H4,-H3,8))
-  for K7 in sorted(G9.D8(),key=G9.Q9,reverse=1):
-   current_move_score=G9.Q9(K7)
-   moved_Z4=G9.D4(K7)
-   moved_Z4.D8()
-   moved_R2=moved_Z4.get_R2()
-   if moved_Z4.I9(moved_Z4.B4%2!=0)or current_move_score<=-Q61:
-    continue
-   played_Z3+=1
-   if current_R2!=moved_R2:
-    H2=max(H2,-Z.G72(moved_Z4,-H4,-H3,8))
-   elif L6>0:
-    H2=max(H2,-Z.G7(moved_Z4,-H3-1,-H3,L6-1,root=0))
-    if H2>H3:
-     H2=max(H2,-Z.G7(moved_Z4,-H4,-H3,L6-1))
-   if H2>best_score:
-    best_score=H2
-    Z.tt_Z3[G9.M6()]=K7
-   H3=max(H3,H2)
-   if H3>=H4:
-    break;
-  if L6>0 and played_Z3==0:
-   return-Q61 if is_I9 else 0
-  if best_score<=H31:
-   flag=Q6
-  elif best_score>=H4:
-   flag=Q7
-  else:
-   flag=I0
-  Z.M3[G9.M6(),L6,root]=T2(best_score,L6,flag)
+  for K7,H2 in Z3():
+   best_score=max(best_score,H2)
+   if best_score>=score_cutoff:
+    if parent_G7:
+     Z.tt_Z3[G9.M6()]=K7
+    break
+  if best_score<score_cutoff and best_score<0 and L6>0:
+   is_dead=lambda G9:any(G9.Q9(m)>=Q71 for m in G9.generate_N4())
+   if all(is_dead(G9.D4(m))for m in G9.generate_N4()):
+    I9=is_dead(G9.S0())
+    best_score=-Q61 if I9 else 0
+  if best_score>=score_cutoff:
+   Z.M3[G9.M6(),L6,root]=T2(best_score,J7.upper)
+  if best_score<score_cutoff:
+   Z.M3[G9.M6(),L6,root]=T2(J7.lower,best_score)
   return best_score
- def G72(Z,G9,H3,H4,L6):
-  Z.L5+=1
-  if L6<=0:
-   return G9.P9
-  if G9.P9<=-Q71:
-   return-Q61
-  if G9.P9>=H4:
-   return H4
-  H3=max(G9.P9,H3)
-  current_R2=G9.get_R2()
-  H2=-1e8
-  for K7 in G9.D8():
-   moved_Z4=G9.D4(K7)
-   moved_R2=moved_Z4.get_R2()
-   if moved_R2==current_R2:
-    continue
-   H2=-Z.G72(G9.D4(K7),-H4,-H3,L6-1)
-   if H2>=H4:
-    return H4
-   H3=max(H2,H3)
-  return H3
 def main():
  H8=H9()
  G7er=G4()
@@ -398,7 +362,8 @@ def main():
     H8=H9()
     for F42 in Z3[3:]:
      H8=H8.D4(F42)
-    H8.D8(1)
+    H8.generate_N4()
+    H8.generate_N4(1)
    elif Z2.startswith("go"):
     I2=1e8
     I3=1e8
@@ -420,13 +385,15 @@ def main():
     if H8.B4<13:
      I7+=10
     I7=max(I7,3)
-    if I7<=4:
-     G7er.L6=3
-    G7er.G6=time.time()+I7-2
+    G7er.G6=time.time()+I7-1
     G7er.L5=0
     K7=None
     start=time.time()
     for _depth,K7,score in G7er.G71(H8):
+     if H8.B4>13 and(G7er.G6-time.time())<25:
+      G7er.L6=5
+     if H8.B4>13 and(G7er.G6-time.time())<4:
+      G7er.L6=3
      if _depth>=G7er.L6 or time.time()>G7er.G6:
       break
     N2("bestmove "+K7)

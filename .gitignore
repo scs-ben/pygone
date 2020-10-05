@@ -15,3 +15,5 @@ bin/nanochess/
 bin/umax
 
 bin/umax.c
+
+src/sunfish.log
