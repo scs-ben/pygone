@@ -4,12 +4,12 @@
         name=pygone13 \
         cmd=pygone \
         proto=uci \
-    	depth=2 \
+    	depth=3 \
     -engine \
-        name=sunfish \
-        cmd=sunfish/sunfish \
+        name=stockfish \
+        cmd=stockfish \
         proto=uci \
-	    depth=2 \
+	    depth=3 \
     -each \
         tc=inf \
         restart=off \
