@@ -1,0 +1,478 @@
+#!/usr/bin/env pypy3
+import math,sys,time
+import gc
+from itertools import chain
+from collections import namedtuple
+A1={'pe':100,'p':90,'r':500,'n':320,'b':330,'q':900,'k':2e4,'ke':2e4}
+A9={'p':[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],[5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],'pe':[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[5,5,10,25,25,10,5,5],[5,5,10,25,25,10,5,5],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],'n':[[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,0,10,15,15,10,0,-30],[-30,5,15,20,20,15,5,-30],[-30,0,15,20,20,15,0,-30],[-30,5,10,15,15,10,5,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],'b':[[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],'r':[[0,0,0,0,0,0,0,0],[5,10,10,10,10,10,10,5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[0,0,0,5,5,0,0,0]],'q':[[-20,-10,-10,-5,-5,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],'k':[[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],[20,20,-10,-10,-10,-10,20,20],[20,30,10,0,0,10,30,20]],'ke':[[-50,-40,-30,-20,-20,-30,-40,-50],[-30,-20,-10,0,0,-10,-20,-30],[-30,-10,20,30,30,20,-10,-30],[-30,-10,30,40,40,30,-10,-30],[-30,-10,30,40,40,30,-10,-30],[-30,-10,20,30,30,20,-10,-30],[-30,-30,0,0,0,0,-30,-30],[-50,-30,-30,-30,-30,-30,-30,-50]]}
+for S2,_ in A9.items():
+ for E24 in range(8):
+  for E33 in range(8):
+   A9[S2][E24][E33]+=A1[S2]
+K5=['P','R','N','B','Q','K']
+K6=['p','r','n','b','q','k']
+I0=1
+Q6=2
+Q7=3
+Q71=A1['k']-10*A1['q']
+Q61=A1['k']+10*A1['q']
+def B2(number):
+ return chr(number+96)
+def N2(letter):
+ print(letter,flush=True)
+def Q4(L6,L8,P0,L5,Q1,Q2):
+ N2("info depth "+L6+" score cp "+L8+" time "+P0+" nodes "+L5+" nps "+Q1+" pv "+Q2)
+def S9(C2):
+ return(abs((ord(C2[0:1])-96)-1),abs(int(C2[1:2])-8),abs((ord(C2[2:3])-96)-1),abs(int(C2[3:4])-8))
+class H9:
+ B3=[]
+ B4=0
+ C1=[]
+ S8=[]
+ N4=[]
+ P2=[[],[]]
+ O7=[True,True]
+ O8=[True,True]
+ O9='e1'
+ O0='e8'
+ P9=0
+ R7=''
+ def __init__(self):
+  self.B3=[['r','n','b','q','k','b','n','r'],['p']*8,['-']*8,['-']*8,['-']*8,['-']*8,['P']*8,['R','N','B','Q','K','B','N','R']]
+ def B32(self,B3):
+  self.B3=B3
+ def D1(self,C2):
+  (C5,C6,C7,C8)=S9(C2)
+  C9=self.B3[C6][C5]
+  E7=self.B4%2==0
+  self.B3[C8][C7]=C9
+  self.B3[C6][C5]='-'
+  R6=False
+  if C9 in('P','p'):
+   R6=abs(C6-C8)==2
+   Q51=-1 if E7 else 1
+   if R6:
+    self.R7=C2[0:1]+str(int(C2[3:4])+Q51)
+   elif C2[2:4]==self.R7:
+    self.B3[C8-Q51][C7]='-'
+   if len(C2)>4:
+    self.B3[C8][C7]=C2[4:5].upper()if E7 else C2[4:5]
+  if not R6:
+   self.R7=''
+  if C9 in('K','k'):
+   if C9=='K':
+    self.O9=C2[2:4]
+   else:
+    self.O0=C2[2:4]
+   if C2 in('e1g1','e8g8'):
+    self.B3[C8][C7+1]='-'
+    self.B3[C6][C5+1]='R' if C9=='K' else 'r'
+   elif C2 in('e1c1','e8c8'):
+    self.B3[C8][C7-2]='-'
+    self.B3[C6][C5-1]='R' if C9=='K' else 'r'
+ def D4(self,C2):
+  board=H9()
+  board.B4=self.B4
+  board.B3=[x[:]for x in self.B3]
+  board.N4=self.N4.copy()
+  board.P2=[x[:]for x in self.P2]
+  board.C1=self.C1.copy()
+  board.S8=self.S8.copy()
+  board.O7=self.O7.copy()
+  board.O8=self.O8.copy()
+  board.O9=self.O9
+  board.O0=self.O0
+  board.R7=self.R7
+  board.P9=self.P9+self.Q9(C2)
+  if 'e1' in C2:
+   board.O7=[False,False]
+  if 'a1' in C2:
+   board.O7[0]=False
+  if 'h1' in C2:
+   board.O7[1]=False
+  if 'e8' in C2:
+   board.O8=[False,False]
+  if 'a8' in C2:
+   board.O8[0]=False
+  if 'h8' in C2:
+   board.O8[1]=False
+  board.D1(C2)
+  board.C1.append(C2)
+  board.B4+=1
+  board.S8.append(board.M6())
+  board.P9=-board.P9
+  return board
+ def S0(self):
+  board=H9()
+  board.B4=self.B4+1
+  board.B3=[x[:]for x in self.B3]
+  board.O7=self.O7.copy()
+  board.O8=self.O8.copy()
+  board.O9=''
+  board.O0=''
+  board.R7=''
+  board.P9=-self.P9
+  return board
+ def R21(self):
+  return 64-(self.M6()).count('-')
+ def Q9(self,C2):
+  E7=self.B4%2==0
+  Q5=0 if E7 else 7
+  (C5,C6,C7,C8)=S9(C2)
+  H2=0
+  C9=self.B3[C6][C5]
+  T0=C9.lower()
+  if self.R21()<=14:
+   if C9.lower()=='k':
+    H2+=2
+    T0='ke'
+   if C9.lower()=='p':
+    H2+=2
+    T0='pe'
+  C0=self.B3[C8][C7]
+  H2+=A9[T0][abs(C8-Q5)][C7]-A9[T0][abs(C6-Q5)][C5]
+  if C0!='-':
+   H2+=A9[C0.lower()][abs(C8-Q5)][C7]
+  if C9 in('K','k'):
+   if abs(C6-C8)==2:
+    if C2[2]=='g':
+     H2+=A9['r'][abs(C8-Q5)][C7-1]-A9['r'][abs(C8-Q5)][C7+1]
+    else:
+     H2+=A9['r'][abs(C8-Q5)][C7+1]-A9['r'][abs(C8-Q5)][C7-2]
+  elif C9 in('P','p'):
+   Q53=-1 if E7 else 1
+   U2='P' if E7 else 'p'
+   U3=0
+   if C8>0 and C8<7:
+    if C7>0:
+     U3+=self.B3[C8+Q53][C7-1]==U2
+    if C7<7:
+     U3+=self.B3[C8+Q53][C7+1]==U2
+   if U3>0:
+    H2+=10
+   if C2[2:4]==self.R7:
+    H2+=A9[T0][abs(C8-Q5)][C7]
+  if len(C2)>4:
+   D3=C2[4:5]
+   H2+=A9[D3][abs(C8-Q5)][C7]-A9['p'][abs(C8-Q5)][C7]
+  return H2+self.R5(E7)
+ def R5(self,E7):
+  U4='P' if E7 else 'p'
+  U5=0
+  E35=0
+  for E3 in range(8):
+   U6=False
+   for row in range(8):
+    if self.B3[row][E3]==U4:
+     U5+=1
+     U6=True
+   E35+=U6
+  return(E35-U5)*15
+ def M6(self):
+  return ''.join(list(chain.from_iterable(self.B3)))+str(self.B4%2==0)
+ def D8(self,R7=False):
+  E7=self.B4%2==0
+  if R7:
+   E7=not E7
+  self.P2[E7]=[]
+  R8=['p','r','n','b','q','k','-']
+  if not E7:
+   R8=['P','R','N','B','Q','K','-']
+  E1=self.B3
+  for row in range(8):
+   for E3 in range(8):
+    piece=E1[row][E3]
+    if piece=="-" or(E7 and piece.islower())or(not E7 and piece.isupper()):
+     continue
+    K7=B2(E3+1)+str(abs(row-8))
+    if piece.lower()=='k':
+     E8={1:{'E3':(E3+0),'row':(row+1)},2:{'E3':(E3+0),'row':(row-1)},3:{'E3':(E3+1),'row':(row+0)},4:{'E3':(E3-1),'row':(row+0)},5:{'E3':(E3+1),'row':(row+1)},6:{'E3':(E3+1),'row':(row-1)},7:{'E3':(E3-1),'row':(row+1)},8:{'E3':(E3-1),'row':(row-1)},}
+     if E7:
+      if self.O7[1]and K7=='e1' and ''.join(E1[7][5:8])=='--R':
+       yield K7+'g1'
+      if self.O7[0]and K7=='e1' and ''.join(E1[7][0:4])=='R---':
+       yield K7+'c1'
+     else:
+      if self.O8[1]and K7=='e8' and ''.join(E1[0][5:8])=='--r':
+       yield K7+'g8'
+      if self.O8[0]and K7=='e8' and ''.join(E1[0][0:4])=='r---':
+       yield K7+'c8'
+     for _,E81 in E8.items():
+      if E81['E3']in range(8)and E81['row']in range(8):
+       E9=E1[E81['row']][E81['E3']]
+       F1=B2(E81['E3']+1)+str(abs(E81['row']-8))
+       if E9 in R8:
+        yield K7+F1
+       self.P2[E7].append(F1)
+    if piece.lower()in('b','r','q'):
+     F7={1:{'E3':E3,'row':(row-1),'E32':0,'E23':-1},2:{'E3':E3,'row':(row+1),'E32':0,'E23':1},3:{'E3':(E3-1),'row':row,'E32':-1,'E23':0},4:{'E3':(E3+1),'row':row,'E32':1,'E23':0},5:{'E3':(E3-1),'row':(row-1),'E32':-1,'E23':-1},6:{'E3':(E3+1),'row':(row+1),'E32':1,'E23':1},7:{'E3':(E3-1),'row':(row+1),'E32':-1,'E23':1},8:{'E3':(E3+1),'row':(row-1),'E32':1,'E23':-1},}
+     for key,F8 in F7.items():
+      if(key<=4 and piece.lower()=='b')or(key>=5 and piece.lower()=='r'):
+       continue
+      E21=F8['row']
+      E31=F8['E3']
+      while E21 in range(8)and E31 in range(8):
+       E9=E1[E21][E31]
+       if E9 in R8:
+        F1=B2(E31+1)+str(abs(E21-8))
+        yield K7+F1
+        self.P2[E7].append(F1)
+        if E9!='-':
+         break
+       else:
+        break
+       E21+=F8['E23']
+       E31+=F8['E32']
+    if piece.lower()=='n':
+     F3={1:{'E3':(E3+1),'row':(row-2)},2:{'E3':(E3-1),'row':(row-2)},3:{'E3':(E3+2),'row':(row-1)},4:{'E3':(E3-2),'row':(row-1)},5:{'E3':(E3+1),'row':(row+2)},6:{'E3':(E3-1),'row':(row+2)},7:{'E3':(E3+2),'row':(row+1)},8:{'E3':(E3-2),'row':(row+1)}}
+     for _,F4 in F3.items():
+      if F4['E3']in range(8)and F4['row']in range(8):
+       E9=E1[F4['row']][F4['E3']]
+       if E9 in R8:
+        F1=B2(F4['E3']+1)+str(abs(F4['row']-8))
+        yield K7+F1
+        self.P2[E7].append(F1)
+    if piece.lower()=='p':
+     S3=1
+     S4=6
+     Q5=-1
+     if not E7:
+      S3=6
+      S4=1
+      Q5=1
+     if row+Q5 in range(8)and E1[row+Q5][E3]=='-':
+      yield K7+B2(E3+1)+str(abs(row-8+Q5))
+     if row==S4 and E1[row+Q5][E3]=='-' and E1[row+2*Q5][E3]=='-':
+      yield K7+B2(E3+1)+str(abs(row-8+2*Q5))
+     if row==S3 and E1[row+Q5][E3]=='-':
+      for O3 in('q','r','b','n'):
+       yield K7+B2(E3+1)+str(abs(row-8+Q5))+O3
+     if((E3-1)>=0 and(row+Q5)in range(8))or((E3+1)<8 and(row+Q5)in range(8)):
+      O3=''
+      if row==S3:
+       O3='q'
+      if(E3-1)>=0:
+       F1=B2(E3)+str(abs(row-8+Q5))
+       F11=E1[row+Q5][E3-1]
+       if F11 in R8:
+        if F11!='-' or F1==self.R7:
+         yield K7+F1+O3
+         if O3!='':
+          for O3 in('r','b','n'):
+           yield K7+F1+O3
+        self.P2[E7].append(F1)
+      if(E3+1)<8:
+       F1=B2(E3+2)+str(abs(row-8+Q5))
+       F11=E1[row+Q5][E3+1]
+       if F11 in R8:
+        if F11!='-' or F1==self.R7:
+         yield K7+F1+O3
+         if O3!='':
+          for O3 in('r','b','n'):
+           yield K7+F1+O3
+        self.P2[E7].append(F1)
+ def I9(self,E7):
+  if E7:
+   return self.O9 in self.P2[0]
+  return self.O0 in self.P2[1]
+ def is_legal(self,K7):
+  if self.O9=='e1' and K7=='e1g1':
+   return not any(coordinate in self.P2[0]for coordinate in['e1','f1','g1'])
+  elif self.O9=='e1' and K7=='e1c1':
+   return not any(coordinate in self.P2[0]for coordinate in['e1','d1','c1'])
+  elif self.O0=='e8' and K7=='e8g8':
+   return not any(coordinate in self.P2[1]for coordinate in['e8','f8','g8'])
+  elif self.O0=='e8' and K7=='e8c8':
+   return not any(coordinate in self.P2[1]for coordinate in['e8','d8','c8'])
+  return True
+R9=9e5
+T2=namedtuple('T2','lower upper')
+U8=0
+class G4:
+ L5=0
+ L6=0
+ G6=0
+ critical_time=0
+ M3={}
+ U7={}
+ perft_captures=0
+ perft_checks=0
+ def K3(self):
+  self.L5=0
+  self.L6=0
+  self.G6=0
+  self.critical_time=0
+  self.M3.clear()
+  self.U7.clear()
+ def perft(self,G9,L6):
+  self.L5=0
+  if L6==0:
+   return 1
+  for K7 in G9.D8():
+   moved_board=G9.D4(K7);
+   all(moved_board.D8(True))
+   if G9.R21()!=moved_board.R21():
+    self.perft_captures+=1
+   if moved_board.I9(moved_board.B4%2==0):
+    self.perft_checks+=1
+   if not moved_board.I9(G9.B4%2==0)and G9.is_legal(K7):
+    self.L5+=self.perft(moved_board,L6-1)
+  return self.L5
+ def G71(self,G9):
+  I8=time.time()
+  U9=self.U7.get(G9.M6())
+  if U9:
+   if U9 in('e1c1','e1g1','e8c8','e8g8')and G9.I9(G9.B4%2==0):
+    self.U7[G9.M6()]=None
+  for L6 in range(1,100):
+   U0=-Q61
+   V1=Q61
+   while U0<V1-10:
+    score_cutoff=(U0+V1+1)//2
+    H2=self.G7(G9,score_cutoff,L6)
+    if H2>=score_cutoff:
+     U0=H2
+    if H2<score_cutoff:
+     V1=H2
+   self.G7(G9,U0,L6)
+   best_move=self.U7.get(G9.M6())
+   if self.M3.get((G9.M6(),L6,True))is not None:
+    score=self.M3.get((G9.M6(),L6,True)).lower
+   else:
+    score=H2
+   I6=time.time()-I8
+   Q1=math.ceil(self.L5/I6)
+   Q4(str(L6),str(math.ceil(score)),str(math.ceil(I6)),str(self.L5),str(Q1),str(best_move))
+   yield L6,best_move,score
+ def G7(self,G9,score_cutoff,L6,G74=True,root=True):
+  self.L5+=1
+  if time.time()>self.critical_time:
+   return G9.P9
+  L6=max(0,L6)
+  if G9.P9<=-Q71:
+   return-Q61
+  if not root and G9.S8.count(G9.M6())>=2:
+   return U8
+  J7=self.M3.get((G9.M6(),L6,root),T2(-Q61,Q61))
+  if J7 is not None and J7.lower>=score_cutoff and(not root or self.U7.get(G9.M6())is not None):
+   return J7.lower
+  if J7 is not None and J7.upper<score_cutoff:
+   return J7.upper
+  def moves():
+   R22=G9.R21()
+   if L6==0:
+    yield None,G9.P9
+   killer=self.U7.get(G9.M6())
+   if killer:
+    killer_score=G9.Q9(killer)
+    killer_board=G9.D4(killer)
+    if L6>0 or killer_score>800 or R22!=killer_board.R21():
+     yield killer,-self.G7(killer_board,1-score_cutoff,L6-1,root=False)
+   for K7 in sorted(G9.D8(),key=G9.Q9,reverse=G74):
+    current_move_score=G9.Q9(K7)
+    if not G9.is_legal(K7):
+     continue
+    moved_board=G9.D4(K7)
+    R23=moved_board.R21()
+    if moved_board.I9(G9.B4%2==0):
+     continue
+    if L6>0 or current_move_score>800 or R22!=R23:
+     yield K7,-self.G7(moved_board,1-score_cutoff,L6-1,root=False)
+  best_score=-Q61
+  for K7,H2 in moves():
+   best_score=max(best_score,H2)
+   if best_score>=score_cutoff:
+    if G74:
+     self.U7[G9.M6()]=K7
+    break
+  if best_score<score_cutoff and best_score<0 and L6>0:
+   is_dead=lambda G9:any(G9.Q9(m)>=Q71 for m in G9.D8())
+   if all(is_dead(G9.D4(m))for m in G9.D8()):
+    I9=is_dead(G9.S0())
+    best_score=-Q61 if I9 else U8
+  if best_score>=score_cutoff:
+   self.M3[G9.M6(),L6,root]=T2(best_score,J7.upper)
+  if best_score<score_cutoff:
+   self.M3[G9.M6(),L6,root]=T2(J7.lower,best_score)
+  return best_score
+def main():
+ H8=H9()
+ G712=G4()
+ while 1:
+  try:
+   line=input()
+   if line=="quit":
+    sys.exit()
+   elif line=="uci":
+    N2("pygone 1.3\nuciok")
+   elif line=="ucinewgame":
+    H8=H9()
+    G712.K3()
+    gc.collect()
+   elif line=="isready":
+    N2("readyok")
+   elif line.startswith("position"):
+    moves=line.split()
+    H8=H9()
+    for F42 in moves[3:]:
+     H8=H8.D4(F42)
+    all(H8.D8())
+    all(H8.D8(True))
+   elif line.startswith("go"):
+    I2=1e8
+    I3=1e8
+    G712.L6=30
+    is_perft=False
+    I5=line.split()
+    for key,arg in enumerate(I5):
+     if arg=='wtime':
+      I2=int(I5[key+1])
+     elif arg=='btime':
+      I3=int(I5[key+1])
+     elif arg=='depth':
+      G712.L6=int(I5[key+1])
+     elif arg=='perft':
+      G712.L6=int(I5[key+1])
+      is_perft=True
+    if is_perft:
+     I8=time.time()
+     G712.L5=0
+     G712.perft(H8,G712.L6)
+     I6=time.time()-I8
+     Q1=math.ceil(G712.L5/I6)
+     print('captures: ',G712.perft_captures)
+     print('checks: ',G712.perft_checks)
+     N2("Nodes G7ed: "+str(G712.L5)+" in "+str(I6)+" at "+str(Q1)+" nps")
+     continue
+    I7=1e8
+    E7=H8.B4%2==0
+    I7=(I3/20000)
+    G712.critical_time=time.time()+(I3/1000)-3
+    if E7:
+     I7=(I2/20000)
+     G712.critical_time=time.time()+(I2/1000)-3
+    if H8.B4<13:
+     I7+=10
+    I7=max(I7,3)
+    G712.G6=time.time()+I7
+    G712.L5=0
+    K7=None
+    start=time.time()
+    for _depth,K7,score in G712.G71(H8):
+     if H8.B4>13:
+      if(G712.G6-time.time())<25:
+       G712.L6=5
+     if _depth>=G712.L6 or time.time()>G712.G6:
+      break
+    N2("bestmove "+K7)
+    if len(G712.U7)>R9:
+     G712.U7.clear()
+    if len(G712.M3)>R9:
+     G712.M3.clear()
+  except(KeyboardInterrupt,SystemExit):
+   sys.exit()
+  except Exception as exc:
+   N2(exc)
+   raise
+main()
+# Created by pyminifier (https://github.com/liftoff/pyminifier)

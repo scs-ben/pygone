@@ -6,10 +6,10 @@
         proto=uci \
     	depth=2 \
     -engine \
-        name=pygone12 \
-        cmd=pygone12 \
+        name=sunfish \
+        cmd=sunfish/sunfish \
         proto=uci \
-	   depth=2 \
+	    depth=2 \
     -each \
         tc=inf \
         restart=off \
