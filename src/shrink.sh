@@ -40,6 +40,7 @@ sed -i -e 's/black_castling/B3/g' pygone-mini.py
 sed -i -e 's/white_king_position/B4/g' pygone-mini.py
 sed -i -e 's/black_king_position/B5/g' pygone-mini.py
 sed -i -e 's/rolling_score/B6/g' pygone-mini.py
+sed -i -e 's/set_en_passant/B71/g' pygone-mini.py
 sed -i -e 's/en_passant/B7/g' pygone-mini.py
 sed -i -e 's/apply_move/B8/g' pygone-mini.py
 sed -i -e 's/from_letter_number/B9/g' pygone-mini.py
@@ -73,6 +74,7 @@ sed -i -e 's/min_row/E6/g' pygone-mini.py
 sed -i -e 's/max_row/E7/g' pygone-mini.py
 sed -i -e 's/eval_state/E8/g' pygone-mini.py
 sed -i -e 's/start_coordinate/E9/g' pygone-mini.py
+sed -i -e 's/is_in_check/E01/g' pygone-mini.py
 sed -i -e 's/in_check/E0/g' pygone-mini.py
 sed -i -e 's/is_legal/F1/g' pygone-mini.py
 sed -i -e 's/s_move/F2/g' pygone-mini.py
@@ -115,6 +117,7 @@ sed -i -e 's/killer/I5/g' pygone-mini.py
 sed -i -e 's/current_move_score/I6/g' pygone-mini.py
 sed -i -e 's/game_board/I7/g' pygone-mini.py
 sed -i -e 's/searcher/I8/g' pygone-mini.py
+sed -i -e 's/start_moves/I91/g' pygone-mini.py
 sed -i -e 's/moves/I9/g' pygone-mini.py
 sed -i -e 's/position_move/I0/g' pygone-mini.py
 sed -i -e 's/white_time/J1/g' pygone-mini.py
@@ -124,6 +127,18 @@ sed -i -e 's/result_score/J3/g' pygone-mini.py
 sed -i -e 's/moved_piece_count/J4/g' pygone-mini.py
 sed -i -e 's/best_score/J5/g' pygone-mini.py
 sed -i -e 's/move_time/J6/g' pygone-mini.py
+sed -i -e 's/string_join/J7/g' pygone-mini.py
+sed -i -e 's/out_string/J8/g' pygone-mini.py
+sed -i -e 's/in_list/J9/g' pygone-mini.py
+sed -i -e 's/string_count/J0/g' pygone-mini.py
+sed -i -e 's/haystack/K1/g' pygone-mini.py
+sed -i -e 's/needle/K2/g' pygone-mini.py
+sed -i -e 's/board_string/K3/g' pygone-mini.py
+sed -i -e 's/piece_count/K4/g' pygone-mini.py
+sed -i -e 's/force_move/K5/g' pygone-mini.py
+sed -i -e 's/all_dead/K6/g' pygone-mini.py
+sed -i -e 's/v_score/K7/g' pygone-mini.py
+sed -i -e 's/s_count/K8/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py

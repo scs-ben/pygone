@@ -5,8 +5,8 @@
         cmd=/home/vagrant/code/pygone/bin/pygone \
         proto=uci \
     -engine \
-        name=nanochess \
-        cmd=/home/vagrant/code/pygone/bin/nanochess/nanochess \
+        name=umax \
+        cmd=/home/vagrant/code/pygone/bin/umax/umax \
         proto=xboard \
     -each \
         tc=0/300+2 \
