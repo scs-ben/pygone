@@ -6,8 +6,8 @@
         proto=uci \
     	depth=3 \
     -engine \
-        name=stockfish \
-        cmd=stockfish \
+        name=pygone13a \
+        cmd=pygone13a \
         proto=uci \
 	    depth=3 \
     -each \

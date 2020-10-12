@@ -157,6 +157,11 @@ sed -i -e 's/current_eval/L7/g' pygone-mini.py
 sed -i -e 's/pieces/L8/g' pygone-mini.py
 sed -i -e 's/r_value/L9/g' pygone-mini.py
 sed -i -e 's/stand_pat/L0/g' pygone-mini.py
+sed -i -e 's/value/M1/g' pygone-mini.py
+sed -i -e 's/flag/M2/g' pygone-mini.py
+sed -i -e 's/move_sort/M3/g' pygone-mini.py
+sed -i -e 's/sorting/M4/g' pygone-mini.py
+sed -i -e 's/k_score/M5/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
@@ -166,6 +171,7 @@ sed -i -e 's/column/Z4/g' pygone-mini.py
 sed -i -e 's/board/Z5/g' pygone-mini.py
 sed -i -e 's/letter/Z6/g' pygone-mini.py
 sed -i -e 's/coordinate/Z7/g' pygone-mini.py
+sed -i -e 's/Entry/Z8/g' pygone-mini.py
 
 sed -i -e 's/KeyZ5Interrupt/KeyboardInterrupt/g' pygone-mini.py
 sed -i -e 's/perf_T4/perf_counter/g' pygone-mini.py

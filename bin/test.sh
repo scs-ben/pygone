@@ -9,7 +9,7 @@
         cmd=/home/vagrant/code/pygone/bin/nanochess/nanochess \
         proto=xboard \
     -each \
-        tc=0/300+2 \
+        tc=0/120+2 \
         restart=off \
         -openings file=book.pgn \
         -repeat \
