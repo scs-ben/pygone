@@ -275,7 +275,7 @@ class Board:
         return 64 - string_count(self.board_string, '-')
 
     def is_endgame(self):
-        return self.piece_count <= 14
+        return self.piece_count <= 16
 
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
@@ -293,6 +293,7 @@ class Board:
             offset = 7
 
         p_offset = -1 if is_white else 1
+        row = 7 if is_white else 0
 
         (from_letter_number, from_number, to_letter_number, to_number) = unpack_coordinate(uci_coordinate)
 
@@ -305,8 +306,7 @@ class Board:
             if from_score_piece == 'k':
                 from_score_piece = 'ke'
             if from_score_piece == 'p':
-                if sorting:
-                    local_score += 30
+                local_score += 20
                 from_score_piece = 'pe'
 
         to_piece = self.board_state[to_number][to_letter_number].lower()
@@ -318,10 +318,7 @@ class Board:
             local_score += ALLPSQT[to_piece][abs(to_number - offset)][to_letter_number]
 
             if sorting:
-                if played_move_count < 12 and from_piece != 'p':
-                    local_score -= 120
-                else:
-                    local_score += 180
+                local_score += 100
 
         if from_piece == 'k':
             if abs(from_letter_number - to_letter_number) == 2:
@@ -339,7 +336,7 @@ class Board:
                     local_score -= 200
             if (to_number + p_offset) in range(8):
                 if self.board_state[to_number + p_offset][to_letter_number].lower() == 'p':
-                    local_score += 40
+                    local_score += 10
                 if (to_letter_number - 1 > 0) and self.board_state[to_number + p_offset][to_letter_number - 1].lower() == 'p':
                     local_score += 10
                 if (to_letter_number + 1 < 8) and self.board_state[to_number + p_offset][to_letter_number + 1].lower() == 'p':
@@ -352,6 +349,14 @@ class Board:
             if uci_coordinate[2:4] == self.en_passant:
                 # add in an extra pawn for EP capture
                 local_score += ALLPSQT[from_score_piece][abs(to_number - offset)][to_letter_number]
+            # else:
+                # if not EP, credit pawn structure
+                # if to_letter_number > 0:
+                #     if self.board_state[to_number - p_offset][to_letter_number - 1].lower() == 'p':
+                #         local_score += 30
+                # if to_letter_number < 7:
+                #     if self.board_state[to_number - p_offset][to_letter_number + 1].lower() == 'p':
+                #         local_score += 30
 
             if len(uci_coordinate) > 4:
                 promote = uci_coordinate[4:5]
@@ -361,15 +366,10 @@ class Board:
 
                 # re-set from-piece for check scoring detection
                 from_piece = promote
-            elif played_move_count > 8 and not self.is_endgame() and to_number in range(1,7):
-                if to_letter_number > 0:
-                    if self.board_state[to_number - p_offset][to_letter_number - 1].lower() == 'p':
-                        local_score += 30
-                if to_letter_number < 7:
-                    if self.board_state[to_number - p_offset][to_letter_number + 1].lower() == 'p':
-                        local_score += 30
 
         if sorting and from_piece != 'k':
+            local_score += (from_number == row) * 15
+
             enemy_king_position = self.black_king_position if is_white else self.white_king_position
 
             for piece_move in TO_MOVES[from_piece]:
@@ -630,22 +630,22 @@ class Search:
         if not pv_node and not is_in_check and v_depth <= 8 and current_eval - 85 * v_depth > beta:
             return current_eval
 
-        v_score = local_board.rolling_score if v_depth == 0 else -MATE_UPPER
+        v_score = local_board.rolling_score if v_depth == 0 else -MATE_UPPER - 1
 
         pieces = 'RNBQ' if is_white else 'rnbq'
 
         if not pv_node and not is_in_check and current_eval >= beta and \
             v_depth >= 2 and not pieces in local_board.board_string:
 
-            k_score = -self.search(local_board.nullmove(), -beta, -beta+1, v_depth - 3, False)
+            v_score = -self.search(local_board.nullmove(), -beta, -beta+1, v_depth - 3, False)
 
-            if k_score >= beta:
+            if v_score >= beta:
                 return beta
 
         if not pv_node and not is_in_check and v_depth > 0:
             killer = self.tt_moves.get(local_board.board_string)
             if killer and local_board.calculate_score(killer) > 220:
-                v_score = -self.search(local_board.make_move(killer), v_depth - 1, -beta, -alpha, False)
+                v_score = max(v_score, -self.search(local_board.make_move(killer), v_depth - 1, -beta, -alpha, False))
 
                 if v_score >= beta:
                     return beta
@@ -739,7 +739,7 @@ def main():
                         white_time = int(args[key + 1])
                     elif arg == 'btime':
                         black_time = int(args[key + 1])
-                    # these are commented out to save space since engine will be run on time
+                    # depth input can be commented out to save space since engine will be run on time
                     elif arg == 'depth':
                         searcher.v_depth = int(args[key + 1])
                     # elif arg == 'perft':
@@ -777,15 +777,8 @@ def main():
 
                 s_move = None
 
-                # searcher.v_depth = 5
-
                 start = time.time()
                 for v_depth, s_move, v_score in searcher.iterative_search(game_board):
-                    # if game_board.played_move_count - start_moves > 9:
-                    #     if (searcher.end_time - time.time()) < 25:
-                    #         searcher.v_depth = 7
-                    #     # if (searcher.end_time - time.time()) < 10:
-                    #     #     searcher.v_depth = 4
                     if (searcher.end_time - time.time()) < 2:
                         searcher.v_depth = 3
 

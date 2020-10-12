@@ -144,7 +144,7 @@ class A6:
  def C7(Z):
   return 64-J0(Z.K3,'-')
  def C8(Z):
-  return Z.K4<=14
+  return Z.K4<=16
  def M3(Z,A1):
   return Z.A4(A1,1)
  def A4(Z,A1,M4=0):
@@ -157,6 +157,7 @@ class A6:
    C3=0
    D1=7
   D11=-1 if C3 else 1
+  Z1=7 if C3 else 0
   (B9,B0,C1,O)=Y(A1)
   D2=0
   C2=Z.A7[B0][B9].lower()
@@ -165,18 +166,14 @@ class A6:
    if D3=='k':
     D3='ke'
    if D3=='p':
-    if M4:
-     D2+=30
+    D2+=20
     D3='pe'
   D4=Z.A7[O][C1].lower()
   D2+=B[D3][abs(O-D1)][C1]- B[D3][abs(B0-D1)][B9]
   if D4!='-':
    D2+=B[D4][abs(O-D1)][C1]
    if M4:
-    if A8<12 and C2!='p':
-     D2-=120
-    else:
-     D2+=180
+    D2+=100
   if C2=='k':
    if abs(B9-C1)==2:
     if M4:
@@ -190,7 +187,7 @@ class A6:
      D2-=200
    if(O+D11)in range(8):
     if Z.A7[O+D11][C1].lower()=='p':
-     D2+=40
+     D2+=10
     if(C1-1>0)and Z.A7[O+D11][C1-1].lower()=='p':
      D2+=10
     if(C1+1<8)and Z.A7[O+D11][C1+1].lower()=='p':
@@ -206,14 +203,8 @@ class A6:
     D7=A1[4:5]
     D2+=B[D7][abs(O-D1)][C1]- B['p'][abs(O-D1)][C1]
     C2=D7
-   elif A8>8 and not Z.C8()and O in range(1,7):
-    if C1>0:
-     if Z.A7[O-D11][C1-1].lower()=='p':
-      D2+=30
-    if C1<7:
-     if Z.A7[O-D11][C1+1].lower()=='p':
-      D2+=30
   if M4 and C2!='k':
+   D2+=(B0==Z1)*15
    D8=Z.B5 if C3 else Z.B4
    for F3 in M[C2]:
     F4=C1+F3[0]
@@ -347,16 +338,16 @@ class F0:
   L5=I1.M1 if I1.M1<J else A3.B6
   if not L1 and not E01 and S<=8 and L5-85*S>L4:
    return L5
-  T=A3.B6 if S==0 else-J
+  T=A3.B6 if S==0 else-J-1
   L8='RNBQ' if C3 else 'rnbq'
   if not L1 and not E01 and L5>=L4 and S>=2 and not L8 in A3.K3:
-   M5=-Z.H9(A3.C5(),-L4,-L4+1,S-3,0)
-   if M5>=L4:
+   T=-Z.H9(A3.C5(),-L4,-L4+1,S-3,0)
+   if T>=L4:
     return L4
   if not L1 and not E01 and S>0:
    I5=Z.G4.get(A3.K3)
    if I5 and A3.A4(I5)>220:
-    T=-Z.H9(A3.C4(I5),S-1,-L4,-L3,0)
+    T=max(T,-Z.H9(A3.C4(I5),S-1,-L4,-L3,0))
     if T>=L4:
      return L4
   I92=0
