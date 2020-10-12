@@ -180,21 +180,21 @@ class A6:
   if C2=='k':
    if abs(B9-C1)==2:
     if M4:
-     D2+=120
+     D2+=200
     if A1[2]=='g':
      D2+=B['r'][abs(O-D1)][C1-1]- B['r'][abs(O-D1)][C1+1]
     else:
      D2+=B['r'][abs(O-D1)][C1+1]- B['r'][abs(O-D1)][C1-2]
    elif C2 in('K','k')and A8>15 and not Z.C8():
     if M4:
-     D2-=120
-    if(O+D11)in range(8):
-     if Z.A7[O+D11][C1].lower()=='p':
-      D2+=60
-     if(C1-1>0)and Z.A7[O+D11][C1-1].lower()=='p':
-      D2+=10
-     if(C1+1<8)and Z.A7[O+D11][C1+1].lower()=='p':
-      D2+=10
+     D2-=200
+   if(O+D11)in range(8):
+    if Z.A7[O+D11][C1].lower()=='p':
+     D2+=40
+    if(C1-1>0)and Z.A7[O+D11][C1-1].lower()=='p':
+     D2+=10
+    if(C1+1<8)and Z.A7[O+D11][C1+1].lower()=='p':
+     D2+=10
   elif M4 and C2=='b' and A8<20 and abs(O-B0)>4:
    D2-=300
   elif M4 and C2=='q' and A8<20 and abs(O-B0)>2:
@@ -356,8 +356,8 @@ class F0:
   if not L1 and not E01 and S>0:
    I5=Z.G4.get(A3.K3)
    if I5 and A3.A4(I5)>220:
-    M5=-Z.H9(A3.C4(I5),S-1,-L4,-L3,0)
-    if M5>=L4:
+    T=-Z.H9(A3.C4(I5),S-1,-L4,-L3,0)
+    if T>=L4:
      return L4
   I92=0
   H94=1

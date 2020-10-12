@@ -326,7 +326,7 @@ class Board:
         if from_piece == 'k':
             if abs(from_letter_number - to_letter_number) == 2:
                 if sorting:
-                    local_score += 120
+                    local_score += 200
 
                 if uci_coordinate[2] == 'g':
                     local_score += ALLPSQT['r'][abs(to_number - offset)][to_letter_number - 1] - \
@@ -336,14 +336,14 @@ class Board:
                                     ALLPSQT['r'][abs(to_number - offset)][to_letter_number - 2]
             elif from_piece in ('K', 'k') and played_move_count > 15 and not self.is_endgame():
                 if sorting:
-                    local_score -= 120
-                if (to_number + p_offset) in range(8):
-                    if self.board_state[to_number + p_offset][to_letter_number].lower() == 'p':
-                        local_score += 60
-                    if (to_letter_number - 1 > 0) and self.board_state[to_number + p_offset][to_letter_number - 1].lower() == 'p':
-                        local_score += 10
-                    if (to_letter_number + 1 < 8) and self.board_state[to_number + p_offset][to_letter_number + 1].lower() == 'p':
-                        local_score += 10
+                    local_score -= 200
+            if (to_number + p_offset) in range(8):
+                if self.board_state[to_number + p_offset][to_letter_number].lower() == 'p':
+                    local_score += 40
+                if (to_letter_number - 1 > 0) and self.board_state[to_number + p_offset][to_letter_number - 1].lower() == 'p':
+                    local_score += 10
+                if (to_letter_number + 1 < 8) and self.board_state[to_number + p_offset][to_letter_number + 1].lower() == 'p':
+                    local_score += 10
         elif sorting and from_piece == 'b' and played_move_count < 20 and abs(to_number - from_number) > 4:
             local_score -= 300
         elif sorting and from_piece == 'q' and played_move_count < 20 and abs(to_number - from_number) > 2:
@@ -645,9 +645,9 @@ class Search:
         if not pv_node and not is_in_check and v_depth > 0:
             killer = self.tt_moves.get(local_board.board_string)
             if killer and local_board.calculate_score(killer) > 220:
-                k_score = -self.search(local_board.make_move(killer), v_depth - 1, -beta, -alpha, False)
+                v_score = -self.search(local_board.make_move(killer), v_depth - 1, -beta, -alpha, False)
 
-                if k_score >= beta:
+                if v_score >= beta:
                     return beta
 
         played_moves = 0
