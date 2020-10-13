@@ -1,14 +1,12 @@
 #!/usr/bin/env pypy3
 import math, sys, time
-import gc
-from itertools import chain
 from collections import namedtuple
 
 PIECEPOINTS = {'pe': 100, 'p': 90, 'n': 290, 'b': 300, 'r': 500, 'q': 900, 'k': 2e4, 'ke': 2e4}
 
 ALLPSQT = {
     'p': [[0, 0, 0, 0, 0, 0, 0, 0],
-          [65, 65, 65, 65, 65, 65, 65, 65],
+          [50, 50, 50, 50, 50, 50, 50, 50],
           [10, 10, 20, 30, 30, 20, 10, 10],
           [5, 5, 10, 25, 25, 10, 5, 5],
           [0, 0, 0, 20, 20, 0, 0, 0],
@@ -16,7 +14,7 @@ ALLPSQT = {
           [5, 10, 10, -20, -20, 10, 10, 5],
           [0, 0, 0, 0, 0, 0, 0, 0]],
     'pe': [[0, 0, 0, 0, 0, 0, 0, 0],
-          [65, 65, 65, 65, 65, 65, 65, 65],
+          [50, 50, 50, 50, 50, 50, 50, 50],
           [10, 10, 20, 30, 30, 20, 10, 10],
           [10, 10, 20, 30, 30, 20, 10, 10],
           [10, 10, 20, 30, 30, 20, 10, 10],
@@ -417,6 +415,8 @@ class Board:
 
         valid_moves = []
 
+        vma = valid_moves.append
+
         offset = 1
         min_row = 1
         max_row = 6
@@ -444,19 +444,19 @@ class Board:
                 if piece == 'K':
                     if self.white_castling[1] and start_coordinate == 'e1' and string_join(eval_state[7][5:8]) == '--R' and \
                         not any(coordinate in self.attack_squares[0] for coordinate in ['e1', 'f1', 'g1']):
-                        valid_moves.append(start_coordinate + 'g1')
+                        vma(start_coordinate + 'g1')
                     if self.white_castling[0] and start_coordinate == 'e1' and string_join(eval_state[7][0:4]) == 'R---' and \
                         not any(coordinate in self.attack_squares[0] for coordinate in ['e1', 'd1', 'c1']):
-                        valid_moves.append(start_coordinate + 'c1')
+                        vma(start_coordinate + 'c1')
                 elif piece == 'k':
                     if self.black_castling[1] and start_coordinate == 'e8' and string_join(eval_state[0][5:8]) == '--r' and \
                         not any(coordinate in self.attack_squares[1] for coordinate in ['e8', 'f8', 'g8']):
-                        valid_moves.append(start_coordinate + 'g8')
+                        vma(start_coordinate + 'g8')
                     if self.black_castling[0] and start_coordinate == 'e8' and string_join(eval_state[0][0:4]) == 'r---' and \
                         not any(coordinate in self.attack_squares[1] for coordinate in ['e8', 'd8', 'c8']):
-                        valid_moves.append(start_coordinate + 'c8')
+                        vma(start_coordinate + 'c8')
                 elif piece_lower == 'p' and row == max_row and eval_state[row + offset][column] == '-' and eval_state[row + 2*offset][column] == '-':
-                    valid_moves.append(start_coordinate + number_to_letter(column + 1) + str(abs(row - 8 + 2*offset)))
+                    vma(start_coordinate + number_to_letter(column + 1) + str(abs(row - 8 + 2*offset)))
 
                 for piece_move in TO_MOVES[piece_lower]:
                     to_column = column + piece_move[0]
@@ -471,14 +471,14 @@ class Board:
                             if (row == min_row and piece_move[0] == 0 and eval_piece == '-') or \
                                 (row == min_row and piece_move[0] != 0 and eval_piece != '-' and eval_piece in valid_pieces):
                                 for prom in ('q', 'r', 'b', 'n'):
-                                    valid_moves.append(start_coordinate + dest + prom)
+                                    vma(start_coordinate + dest + prom)
                             else:
                                 if (piece_move[0] == 0 and eval_piece == '-') or \
                                     (piece_move[0] != 0 and eval_piece != '-' and eval_piece in valid_pieces) or \
                                     dest == self.en_passant:
-                                    valid_moves.append(start_coordinate + dest)
+                                    vma(start_coordinate + dest)
                         elif eval_piece in valid_pieces:
-                            valid_moves.append(start_coordinate + dest)
+                            vma(start_coordinate + dest)
 
                         if piece_move[2]:
                             self.attack_squares[is_white].append(dest)
@@ -506,8 +506,7 @@ class Search:
     critical_time = 0
     tt_bucket = {}
     tt_moves = {}
-    # perft_captures = 0
-    # perft_checks = 0
+    pieces = 'RNBQ'
 
     def reset(self):
         self.v_nodes = 0
@@ -526,6 +525,7 @@ class Search:
     #         for s_move in local_board.generate_valid_moves():
     #             is_in_check = local_board.in_check(local_board.played_move_count % 2 == 0)
     #             moved_board = local_board.make_move(s_move)
+
     #             all(moved_board.generate_valid_moves(True))
 
     #             if moved_board.in_check(local_board.played_move_count % 2 == 0):
@@ -544,8 +544,9 @@ class Search:
     #     for s_move in local_board.generate_valid_moves():
     #         is_in_check = local_board.in_check(local_board.played_move_count % 2 == 0)
     #         moved_board = local_board.make_move(s_move)
-    #         all(moved_board.generate_valid_moves(True))
-    #         all(moved_board.generate_valid_moves())
+
+    #         moved_board.generate_valid_moves(True)
+    #         # all(moved_board.generate_valid_moves())
 
     #         if moved_board.in_check(local_board.played_move_count % 2 == 0):
     #             continue
@@ -576,10 +577,16 @@ class Search:
 
         is_white = local_board.played_move_count % 2 == 0
 
+        self.pieces = self.pieces.upper() if is_white else self.pieces.lower()
+
         alpha = -MATE_UPPER
         beta = MATE_UPPER
 
-        for v_depth in range(1, 100):
+        v_depth = 1
+
+        local_score = -MATE_UPPER
+
+        while v_depth in range(50):
             local_board.generate_valid_moves(True)
             local_board.generate_valid_moves()
 
@@ -610,9 +617,6 @@ class Search:
 
         v_depth = max(is_in_check, v_depth)
 
-        # if v_depth == 0:
-        #     return local_board.rolling_score
-
         if not root_search and local_board.repetitions.count(local_board.board_string) >= 2:
             return 0
 
@@ -632,10 +636,8 @@ class Search:
 
         v_score = local_board.rolling_score if v_depth == 0 else -MATE_UPPER - 1
 
-        pieces = 'RNBQ' if is_white else 'rnbq'
-
         if not pv_node and not is_in_check and current_eval >= beta and \
-            v_depth >= 2 and not pieces in local_board.board_string:
+            v_depth >= 2 and not self.pieces in local_board.board_string:
 
             v_score = -self.search(local_board.nullmove(), -beta, -beta+1, v_depth - 3, False)
 
@@ -661,11 +663,12 @@ class Search:
 
             moved_board = local_board.make_move(s_move)
             # check for check
-            moved_board.generate_valid_moves(True)
             moved_board.generate_valid_moves()
 
             if moved_board.in_check(is_white):
                 continue
+
+            moved_board.generate_valid_moves(True)
 
             played_moves += 1
 
@@ -682,7 +685,7 @@ class Search:
 
             alpha = max(alpha, local_score)
 
-            if v_depth > 1 and alpha >= beta:
+            if alpha >= beta:
                 break
 
         if played_moves == 0:
@@ -715,7 +718,6 @@ def main():
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
-                gc.collect()
                 start_moves = 0
             elif line == "isready":
                 print_to_terminal("readyok")
@@ -742,9 +744,9 @@ def main():
                     # depth input can be commented out to save space since engine will be run on time
                     elif arg == 'depth':
                         searcher.v_depth = int(args[key + 1])
-                    # elif arg == 'perft':
-                    #     searcher.v_depth = int(args[key + 1])
-                    #     is_perft = True
+                #     elif arg == 'perft':
+                #         searcher.v_depth = int(args[key + 1])
+                #         is_perft = True
 
                 # if is_perft:
                 #     # 1) start pos
