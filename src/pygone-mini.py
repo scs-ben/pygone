@@ -1,5 +1,7 @@
 #!/usr/bin/env pypy3
 import math,sys,time
+import gc
+from itertools import chain
 from collections import namedtuple
 A={'pe':100,'p':90,'n':290,'b':300,'r':500,'q':900,'k':2e4,'ke':2e4}
 B={'p':[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],[5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],'pe':[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[10,10,20,30,30,20,10,10],[10,10,20,30,30,20,10,10],[10,10,20,30,30,20,10,10],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],'n':[[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,5,10,15,15,10,5,-30],[-30,10,15,20,20,15,10,-30],[-30,5,15,25,25,15,5,-30],[-30,10,10,10,10,10,10,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],'b':[[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],'r':[[0,0,0,0,0,0,0,0],[5,10,10,10,10,10,10,5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,5,0,5,0,-5],[0,0,0,5,5,0,0,0]],'q':[[-20,-10,-10,-5,-5,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],'k':[[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],[20,20,-10,-10,-10,-10,20,20],[20,10,30,0,0,10,30,20]],'ke':[[-50,-40,-30,-20,-20,-30,-40,-50],[-30,-20,-10,0,0,-10,-20,-30],[-30,-10,20,30,30,20,-10,-30],[-30,-10,30,40,40,30,-10,-30],[-30,-10,30,40,40,30,-10,-30],[-30,-10,20,30,30,20,-10,-30],[-30,-30,0,0,0,0,-30,-30],[-50,-30,-30,-30,-30,-30,-30,-50]]}
@@ -18,7 +20,7 @@ def N(O):
 def Q(P):
  print(P,flush=1)
 def R(S,T,U,V,W,X):
- Q(f"info depth {S} score cp {T} time {U} nodes {V} nps {W} pv {X}")
+ Q("info depth "+S+" score cp "+T+" time "+U+" nodes "+V+" nps "+W+" pv "+X)
 def Y(A1):
  return((ord(A1[0:1])-97),abs(int(A1[1:2])-8),(ord(A1[2:3])-97),abs(int(A1[3:4])-8))
 def J7(J9):
@@ -142,7 +144,7 @@ class A6:
  def C7(Z):
   return 64-J0(Z.K3,'-')
  def C8(Z):
-  return Z.K4<=16
+  return Z.K4<=14
  def M3(Z,A1):
   return Z.A4(A1,1)
  def A4(Z,A1,M4=0):
@@ -202,7 +204,7 @@ class A6:
     D2+=B[D7][abs(O-D1)][C1]- B['p'][abs(O-D1)][C1]
     C2=D7
   if M4 and C2!='k':
-   D2+=(B0==Z1)*40
+   D2+=(B0==Z1)*15
    D8=Z.B5 if C3 else Z.B4
    for F3 in M[C2]:
     F4=C1+F3[0]
@@ -228,7 +230,6 @@ class A6:
    C3=not C3
   Z.B1[C3]=[]
   B=[]
-  vma=B.append
   D1=1
   E6=1
   E7=6
@@ -249,16 +250,16 @@ class A6:
      D1=-1
     if Z2=='K':
      if Z.B2[1]and E9=='e1' and J7(E8[7][5:8])=='--R' and not any(Z7 in Z.B1[0]for Z7 in['e1','f1','g1']):
-      vma(E9+'g1')
+      B.append(E9+'g1')
      if Z.B2[0]and E9=='e1' and J7(E8[7][0:4])=='R---' and not any(Z7 in Z.B1[0]for Z7 in['e1','d1','c1']):
-      vma(E9+'c1')
+      B.append(E9+'c1')
     elif Z2=='k':
      if Z.B3[1]and E9=='e8' and J7(E8[0][5:8])=='--r' and not any(Z7 in Z.B1[1]for Z7 in['e8','f8','g8']):
-      vma(E9+'g8')
+      B.append(E9+'g8')
      if Z.B3[0]and E9=='e8' and J7(E8[0][0:4])=='r---' and not any(Z7 in Z.B1[1]for Z7 in['e8','d8','c8']):
-      vma(E9+'c8')
+      B.append(E9+'c8')
     elif K0=='p' and Z1==E7 and E8[Z1+D1][Z4]=='-' and E8[Z1+2*D1][Z4]=='-':
-     vma(E9+N(Z4+1)+str(abs(Z1-8+2*D1)))
+     B.append(E9+N(Z4+1)+str(abs(Z1-8+2*D1)))
     for F3 in M[K0]:
      F4=Z4+F3[0]
      F5=Z1+(F3[1]*D1)
@@ -268,12 +269,12 @@ class A6:
       if K0=='p':
        if(Z1==E6 and F3[0]==0 and F6=='-')or (Z1==E6 and F3[0]!=0 and F6!='-' and F6 in E5):
         for G8 in('q','r','b','n'):
-         vma(E9+F7+G8)
+         B.append(E9+F7+G8)
        else:
         if(F3[0]==0 and F6=='-')or (F3[0]!=0 and F6!='-' and F6 in E5)or F7==Z.B7:
-         vma(E9+F7)
+         B.append(E9+F7)
       elif F6 in E5:
-       vma(E9+F7)
+       B.append(E9+F7)
       if F3[2]:
        Z.B1[C3].append(F7)
       if F6!='-' or K0 in('k','n','p'):
@@ -293,7 +294,6 @@ class F0:
  G2=0
  G3={}
  G4={}
- L8='RNBQ'
  def G9(Z):
   Z.V=0
   Z.S=0
@@ -308,12 +308,9 @@ class F0:
    if H3 in('e1c1','e1g1','e8c8','e8g8')and A3.E0(A3.A8%2==0):
     Z.G4[A3.K3]=None
   C3=A3.A8%2==0
-  Z.L8=Z.L8.upper()if C3 else Z.L8.lower()
   L3=-J
   L4=J
-  S=1
-  D2=-J
-  while 1:
+  for S in range(1,100):
    A3.A5(1)
    A3.A5()
    D2=Z.H9(A3,S,L3,L4)
@@ -322,9 +319,6 @@ class F0:
    W=math.ceil(Z.V/H8)
    R(str(S),str(math.ceil(D2)),str(math.ceil(H8)),str(Z.V),str(W),str(H7))
    yield S,H7,D2
-   S+=1
-   if S>30:
-    break
  def H9(Z,A3,S,L3,L4,H95=1):
   if time.time()>Z.G2:
    return A3.B6
@@ -338,14 +332,15 @@ class F0:
   if not H95 and A3.A0.count(A3.K3)>=2:
    return 0
   I1=Z.G3.get((A3.K3,S,H95),Z8(2*J,K))
-  if not E01 and I1.M2==H or (I1.M2==L and I1.M1>=L4)or (I1.M2==K and I1.M1<=L3):
+  if not L1 and not E01 and(I1.M2==H or(I1.M2==L and I1.M1>=L4)or(I1.M2==K and I1.M1<=L3)):
    return I1.M1
   L2=L3
   L5=I1.M1 if I1.M1<J else A3.B6
   if not L1 and not E01 and S<=8 and L5-85*S>L4:
    return L5
   T=A3.B6 if S==0 else-J-1
-  if not L1 and not E01 and L5>=L4 and S>=2 and not Z.L8 in A3.K3:
+  L8='RNBQ' if C3 else 'rnbq'
+  if not L1 and not E01 and L5>=L4 and S>=2 and not L8 in A3.K3:
    T=-Z.H9(A3.C5(),-L4,-L4+1,S-3,0)
    if T>=L4:
     return L4
@@ -358,13 +353,13 @@ class F0:
   I92=0
   H94=1
   D2=-J
-  for F2 in sorted(A3.A5(),reverse=1,key=A3.M3):
+  for F2 in sorted(A3.A5(),key=A3.M3,reverse=1):
    I6=A3.A4(F2)
    G7=A3.C4(F2)
+   G7.A5(1)
    G7.A5()
    if G7.E0(C3):
     continue
-   G7.A5(1)
    I92+=1
    if S>0 and not H94:
     D2=-Z.H9(G7,S-1,-L3-1,-L3,0)
@@ -401,6 +396,7 @@ def main():
    elif Z3=="ucinewgame":
     I7=A6()
     H91.G9()
+    gc.collect()
     I91=0
    elif Z3=="isready":
     Q("readyok")
@@ -442,7 +438,7 @@ def main():
       H91.S=3
      if S>=H91.S or time.time()>H91.G1 or abs(T)>=J:
       break
-    Q(f"bestmove {str(F2)}")
+    Q("bestmove "+str(F2))
     if len(H91.G4)>9e5:
      H91.G4.clear()
     if len(H91.G3)>9e5:
