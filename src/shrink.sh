@@ -163,6 +163,8 @@ sed -i -e 's/move_sort/M3/g' pygone-mini.py
 sed -i -e 's/sorting/M4/g' pygone-mini.py
 sed -i -e 's/k_score/M5/g' pygone-mini.py
 sed -i -e 's/moves/M6/g' pygone-mini.py
+sed -i -e 's/is_lmr/M7/g' pygone-mini.py
+sed -i -e 's/lmr/M8/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
