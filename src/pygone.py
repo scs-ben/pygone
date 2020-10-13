@@ -8,16 +8,16 @@ PIECEPOINTS = {'pe': 100, 'p': 90, 'n': 290, 'b': 300, 'r': 500, 'q': 900, 'k': 
 
 ALLPSQT = {
     'p': [[0, 0, 0, 0, 0, 0, 0, 0],
-          [60, 60, 60, 60, 60, 60, 60, 60],
-          [40, 40, 40, 40, 40, 40, 40, 40],
+          [65, 65, 65, 65, 65, 65, 65, 65],
+          [10, 10, 20, 30, 30, 20, 10, 10],
           [5, 5, 10, 25, 25, 10, 5, 5],
           [0, 0, 0, 20, 20, 0, 0, 0],
           [5, -5, -10, 0, 0, -10, -5, 5],
           [5, 10, 10, -20, -20, 10, 10, 5],
           [0, 0, 0, 0, 0, 0, 0, 0]],
     'pe': [[0, 0, 0, 0, 0, 0, 0, 0],
-          [60, 60, 60, 60, 60, 60, 60, 60],
-          [40, 40, 40, 40, 40, 40, 40, 40],
+          [65, 65, 65, 65, 65, 65, 65, 65],
+          [10, 10, 20, 30, 30, 20, 10, 10],
           [10, 10, 20, 30, 30, 20, 10, 10],
           [10, 10, 20, 30, 30, 20, 10, 10],
           [10, 10, 20, 30, 30, 20, 10, 10],
@@ -102,7 +102,7 @@ def print_to_terminal(print_string):
     print(print_string, flush=True)
 
 def print_stats(v_depth, v_score, v_time, v_nodes, v_nps, v_pv):
-    print_to_terminal("info depth " + v_depth + " score cp " + v_score + " time " + v_time + " nodes " + v_nodes + " nps " + v_nps + " pv " + v_pv)
+    print_to_terminal(f"info depth {v_depth} score cp {v_score} time {v_time} nodes {v_nodes} nps {v_nps} pv {v_pv}")
 
 def unpack_coordinate(uci_coordinate):
     return ((ord(uci_coordinate[0:1]) - 97),
@@ -368,7 +368,7 @@ class Board:
                 from_piece = promote
 
         if sorting and from_piece != 'k':
-            local_score += (from_number == row) * 15
+            local_score += (from_number == row) * 40
 
             enemy_king_position = self.black_king_position if is_white else self.white_king_position
 
@@ -656,7 +656,7 @@ class Search:
 
         local_score = -MATE_UPPER
 
-        for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
+        for s_move in sorted(local_board.generate_valid_moves(), reverse=True, key=local_board.move_sort):
             current_move_score = local_board.calculate_score(s_move)
 
             moved_board = local_board.make_move(s_move)
@@ -682,7 +682,7 @@ class Search:
 
             alpha = max(alpha, local_score)
 
-            if alpha >= beta:
+            if v_depth > 1 and alpha >= beta:
                 break
 
         if played_moves == 0:
@@ -785,7 +785,7 @@ def main():
                     if v_depth >= searcher.v_depth or time.time() > searcher.end_time or abs(v_score) >= MATE_UPPER:
                         break
 
-                print_to_terminal("bestmove " + str(s_move))
+                print_to_terminal(f"bestmove {str(s_move)}")
 
                 if len(searcher.tt_moves) > 9e5:
                     searcher.tt_moves.clear()

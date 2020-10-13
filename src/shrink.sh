@@ -162,6 +162,7 @@ sed -i -e 's/flag/M2/g' pygone-mini.py
 sed -i -e 's/move_sort/M3/g' pygone-mini.py
 sed -i -e 's/sorting/M4/g' pygone-mini.py
 sed -i -e 's/k_score/M5/g' pygone-mini.py
+sed -i -e 's/moves/M6/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
