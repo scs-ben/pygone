@@ -390,7 +390,7 @@ class Board:
 
                     dest = number_to_letter(to_column + 1) + str(abs(to_row - 8))
 
-                    if dest == enemy_king_position or eval_piece != '-' or from_piece in ('n', 'p'):
+                    if dest == enemy_king_position or eval_piece != '-' or from_piece in 'np':
                         self.attack_squares[is_white].append(dest)
                         break
 
@@ -477,7 +477,7 @@ class Board:
                         if piece_lower == 'p':
                             if (row == min_row and piece_move[0] == 0 and eval_piece == '-') or \
                                 (row == min_row and piece_move[0] != 0 and eval_piece != '-' and eval_piece in valid_pieces):
-                                for prom in ('q', 'r', 'b', 'n'):
+                                for prom in 'qrbn':
                                     valid_moves.append(start_coordinate + dest + prom)
                             else:
                                 if (piece_move[0] == 0 and eval_piece == '-') or \
@@ -490,7 +490,7 @@ class Board:
                         if piece_move[2]:
                             self.attack_squares[is_white].append(dest)
 
-                        if eval_piece != '-' or piece_lower in ('k', 'n', 'p'):
+                        if eval_piece != '-' or piece_lower in 'knp':
                             break
 
                         to_column += piece_move[0]
@@ -503,8 +503,6 @@ class Board:
             return self.white_king_position in self.attack_squares[0]
 
         return self.black_king_position in self.attack_squares[1]
-
-# Entry = namedtuple('Entry', 'value flag depth')
 
 class Search:
     v_nodes = 0
