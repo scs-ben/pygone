@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 E=/tmp/$$
 tail -n N $0 | gunzip -c -q > $E
 chmod +x $E

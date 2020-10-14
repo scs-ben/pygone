@@ -218,7 +218,7 @@ class A6:
     while F4 in range(8)and F5 in range(8):
      F6=Z.A7[F5][F4]
      F7=N(F4+1)+str(abs(F5-8))
-     if F7==D8 or F6!='-' or C2 in('n','p'):
+     if F7==D8 or F6!='-' or C2 in 'np':
       Z.B1[C3].append(F7)
       break
      F4+=F3[0]
@@ -273,7 +273,7 @@ class A6:
       F7=N(F4+1)+str(abs(F5-8))
       if K0=='p':
        if(Z1==E6 and F3[0]==0 and F6=='-')or (Z1==E6 and F3[0]!=0 and F6!='-' and F6 in E5):
-        for G8 in('q','r','b','n'):
+        for G8 in 'qrbn':
          B.append(E9+F7+G8)
        else:
         if(F3[0]==0 and F6=='-')or (F3[0]!=0 and F6!='-' and F6 in E5)or F7==Z.B7:
@@ -282,7 +282,7 @@ class A6:
        B.append(E9+F7)
       if F3[2]:
        Z.B1[C3].append(F7)
-      if F6!='-' or K0 in('k','n','p'):
+      if F6!='-' or K0 in 'knp':
        break
       F4+=F3[0]
       F5+=(F3[1]*D1)
