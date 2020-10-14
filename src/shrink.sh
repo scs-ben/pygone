@@ -17,7 +17,7 @@ sed -i -e 's/print_string/P/g' pygone-mini.py
 sed -i -e 's/print_to_terminal/Q/g' pygone-mini.py
 sed -i -e 's/print_stats/R/g' pygone-mini.py
 sed -i -e 's/v_depth/S/g' pygone-mini.py
-sed -i -e 's/v_score/T/g' pygone-mini.py
+sed -i -e 's/best_score/T/g' pygone-mini.py
 sed -i -e 's/v_time/U/g' pygone-mini.py
 sed -i -e 's/v_nodes/V/g' pygone-mini.py
 sed -i -e 's/v_nps/W/g' pygone-mini.py
@@ -163,8 +163,9 @@ sed -i -e 's/move_sort/M3/g' pygone-mini.py
 sed -i -e 's/sorting/M4/g' pygone-mini.py
 sed -i -e 's/k_score/M5/g' pygone-mini.py
 sed -i -e 's/moves/M6/g' pygone-mini.py
-sed -i -e 's/is_lmr/M7/g' pygone-mini.py
-sed -i -e 's/lmr/M8/g' pygone-mini.py
+sed -i -e 's/is_quiet/M7/g' pygone-mini.py
+sed -i -e 's/reduce_depth/M8/g' pygone-mini.py
+sed -i -e 's/move_counter/M9/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py

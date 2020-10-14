@@ -1,26 +1,25 @@
 #!/usr/bin/env pypy3
 import math, sys, time
-from collections import namedtuple
 
 PIECEPOINTS = {'pe': 100, 'p': 90, 'n': 290, 'b': 300, 'r': 500, 'q': 900, 'k': 2e4, 'ke': 2e4}
 
 ALLPSQT = {
-    'p': [[0, 0, 0, 0, 0, 0, 0, 0],
-          [50, 50, 50, 50, 50, 50, 50, 50],
-          [40, 40, 40, 40, 40, 40, 40, 40],
+    'p': [[0]*8,
+          [50]*8,
+          [40]*8,
           [5, 5, 10, 25, 25, 10, 5, 5],
           [0, 0, 0, 20, 20, 0, 0, 0],
           [5, -5, -10, 0, 0, -10, -5, 5],
           [5, 10, 10, -20, -20, 10, 10, 5],
-          [0, 0, 0, 0, 0, 0, 0, 0]],
-    'pe': [[0, 0, 0, 0, 0, 0, 0, 0],
-           [50, 50, 50, 50, 50, 50, 50, 50],
-           [40, 40, 40, 40, 40, 40, 40, 40],
-           [30, 30, 30, 30, 30, 30, 30, 30],
-           [20, 20, 20, 20, 20, 20, 20, 20],
-           [10, 10, 10, 10, 10, 10, 10, 10],
-           [0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0]],
+          [0]*8],
+    'pe': [[0]*8,
+           [50]*8,
+           [40]*8,
+           [30]*8,
+           [20]*8,
+           [10]*8,
+           [0]*8,
+           [0]*8],
     'n': [[-50, -40, -30, -30, -30, -30, -40, -50],
           [-40, -20, 0, 0, 0, 0, -20, -40],
           [-30, 5, 10, 15, 15, 10, 5, -30],
@@ -37,7 +36,7 @@ ALLPSQT = {
           [-10, 10, 10, 10, 10, 10, 10, -10],
           [-10, 5, 0, 0, 0, 0, 5, -10],
           [-20, -10, -10, -10, -10, -10, -10, -20]],
-    'r': [[0, 0, 0, 0, 0, 0, 0, 0],
+    'r': [[0]*8,
           [5, 10, 10, 10, 10, 10, 10, 5],
           [-5, 0, 0, 0, 0, 0, 0, -5],
           [-5, 0, 0, 0, 0, 0, 0, -5],
@@ -80,8 +79,8 @@ EXACT = 1
 UPPER = 2
 LOWER = 3
 
-MATE_LOWER = 19e3
-MATE_UPPER = 29e3
+MATE_LOWER = PIECEPOINTS['k'] - 10*PIECEPOINTS['q']
+MATE_UPPER = PIECEPOINTS['k'] + 10*PIECEPOINTS['q']
 
 TO_MOVES = {
     # (column, row, can_capture)
@@ -110,8 +109,8 @@ def unpack_coordinate(uci_coordinate):
 
 def string_join(in_list):
     out_string = ''
-    for c in in_list:
-        out_string += c
+    for ch in in_list:
+        out_string += ch
 
     return out_string
 
@@ -138,6 +137,7 @@ class Board:
     rolling_score = 0
     piece_count = 32
     en_passant = ''
+    move_counter = 0
 
     def __init__(self):
         self.board_state = [['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
@@ -153,10 +153,13 @@ class Board:
     def apply_move(self, uci_coordinate):
         is_white = self.played_move_count % 2 == 0
 
+        self.move_counter += 1
+
         # break uci coordinate into location in board state list
         (from_letter_number, from_number, to_letter_number, to_number) = unpack_coordinate(uci_coordinate)
 
         from_piece = self.board_state[from_number][from_letter_number]
+        to_piece = self.board_state[to_number][to_letter_number]
 
         self.board_state[to_number][to_letter_number] = from_piece
         self.board_state[from_number][from_letter_number] = '-'
@@ -164,6 +167,7 @@ class Board:
         set_en_passant = False
 
         if from_piece in ('P', 'p'):
+            self.move_counter = 0
             set_en_passant = abs(from_number - to_number) == 2
             en_passant_offset = -1 if is_white else 1
             if set_en_passant:
@@ -190,6 +194,9 @@ class Board:
                 self.board_state[to_number][to_letter_number - 2] = '-'
                 self.board_state[from_number][from_letter_number - 1] = 'R' if from_piece == 'K' else 'r'
 
+        if to_piece != '-':
+            self.move_counter = 0
+
         self.board_string = self.str_board()
         self.piece_count = self.get_piece_count()
 
@@ -215,6 +222,7 @@ class Board:
         board.white_king_position = self.white_king_position
         board.black_king_position = self.black_king_position
         board.en_passant = self.en_passant
+        board.move_counter = self.move_counter
         # should calc score before moving
         board.rolling_score = self.rolling_score + self.calculate_score(uci_coordinate)
 
@@ -266,6 +274,7 @@ class Board:
         board.black_king_position = ''
         board.en_passant = ''
         board.rolling_score = -self.rolling_score
+        board.move_list = [None]
 
         return board
 
@@ -273,7 +282,7 @@ class Board:
         return 64 - string_count(self.board_string, '-')
 
     def is_endgame(self):
-        return self.piece_count <= 14 or self.piece_count <= 20 and 'q' not in self.board_string.lower()
+        return self.piece_count <= 16
 
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
@@ -335,9 +344,9 @@ class Board:
             if to_number + p_offset in range(8):
                 if self.board_state[to_number + p_offset][to_letter_number].lower() == 'p':
                     local_score += 10
-                if to_letter_number - 1 > 0 and self.board_state[to_number + p_offset][to_letter_number - 1].lower() == 'p':
+                if (to_letter_number - 1 > 0) and self.board_state[to_number + p_offset][to_letter_number - 1].lower() == 'p':
                     local_score += 10
-                if to_letter_number + 1 < 8 and self.board_state[to_number + p_offset][to_letter_number + 1].lower() == 'p':
+                if (to_letter_number + 1 < 8) and self.board_state[to_number + p_offset][to_letter_number + 1].lower() == 'p':
                     local_score += 10
         elif sorting and from_piece == 'b' and played_move_count < 20 and abs(to_number - from_number) > 4:
             local_score -= 300
@@ -381,7 +390,7 @@ class Board:
 
                     dest = number_to_letter(to_column + 1) + str(abs(to_row - 8))
 
-                    if dest == enemy_king_position or eval_piece != '-' or from_piece in 'np':
+                    if dest == enemy_king_position or eval_piece != '-' or from_piece in ('n', 'p'):
                         self.attack_squares[is_white].append(dest)
                         break
 
@@ -389,7 +398,7 @@ class Board:
                     to_row += (piece_move[1] * p_offset)
 
                 if dest == enemy_king_position:
-                    local_score += 200
+                    local_score += 400
                     break
 
         return local_score
@@ -481,7 +490,7 @@ class Board:
                         if piece_move[2]:
                             self.attack_squares[is_white].append(dest)
 
-                        if eval_piece != '-' or piece_lower in 'knp':
+                        if eval_piece != '-' or piece_lower in ('k', 'n', 'p'):
                             break
 
                         to_column += piece_move[0]
@@ -495,7 +504,7 @@ class Board:
 
         return self.black_king_position in self.attack_squares[1]
 
-Entry = namedtuple('Entry', 'value flag depth')
+# Entry = namedtuple('Entry', 'value flag depth')
 
 class Search:
     v_nodes = 0
@@ -503,9 +512,6 @@ class Search:
     end_time = 0
     critical_time = 0
     tt_bucket = {}
-    tt_moves = {}
-    # perft_captures = 0
-    # perft_checks = 0
 
     def reset(self):
         self.v_nodes = 0
@@ -513,7 +519,6 @@ class Search:
         self.end_time = 0
         self.critical_time = 0
         self.tt_bucket.clear()
-        self.tt_moves.clear()
 
     # def run_perft(self, local_board, original_depth, v_depth):
     #     if v_depth == 0:
@@ -565,23 +570,20 @@ class Search:
     def iterative_search(self, local_board):
         start_time = time.time()
 
-        initial_move = self.tt_moves.get(local_board.board_string)
+        # initial_move = self.tt_moves.get(local_board.board_string)
 
-        # castling being cached can override the "in check" check
-        if initial_move:
-            if initial_move in ('e1c1', 'e1g1', 'e8c8', 'e8g8') and local_board.in_check(local_board.played_move_count % 2 == 0):
-                self.tt_moves[local_board.board_string] = None
-
-        alpha = -MATE_UPPER
-        beta = MATE_UPPER
+        # # castling being cached can override the "in check" check
+        # if initial_move:
+        #     if initial_move in ('e1c1', 'e1g1', 'e8c8', 'e8g8') and local_board.in_check(local_board.played_move_count % 2 == 0):
+        #         self.tt_moves[local_board.board_string] = None
 
         for v_depth in range(1, 100):
             local_board.generate_valid_moves(True)
             local_board.generate_valid_moves()
 
-            local_score = self.search(local_board, v_depth, alpha, beta)
+            local_score = self.search(local_board, v_depth, -MATE_UPPER, MATE_UPPER)
 
-            best_move = self.tt_moves.get(local_board.board_string)
+            best_move = self.tt_bucket.get(local_board.board_string)['move']
 
             elapsed_time = time.time() - start_time
 
@@ -591,7 +593,7 @@ class Search:
 
             yield v_depth, best_move, local_score
 
-    def search(self, local_board, v_depth, alpha, beta, root_search=True, lmr=False):
+    def search(self, local_board, v_depth, alpha, beta, root_search=True):
         if time.time() > self.critical_time:
             return local_board.rolling_score
 
@@ -604,54 +606,55 @@ class Search:
         pv_node = (alpha != beta - 1)
         is_in_check = local_board.in_check(is_white)
 
-        v_depth = max(is_in_check, v_depth)
+        v_depth = max(0, v_depth)
 
-        if pv_node and v_depth == 0:
-            return local_board.rolling_score
+        if v_depth == 0:
+            return self.q_search(local_board, alpha, beta)
 
-        if not root_search and local_board.repetitions.count(local_board.board_string) >= 2:
+        if not root_search and local_board.repetitions.count(local_board.board_string) > 1 or local_board.move_counter >= 100:
             return 0
 
-        tt_entry = self.tt_bucket.get((local_board.board_string, root_search), Entry(2*MATE_UPPER, UPPER, v_depth))
+        tt_entry = self.tt_bucket.get((local_board.board_string), {'value': 2*MATE_UPPER, 'flag': UPPER, 'depth': 0, 'move': None})
 
-        if not pv_node and not is_in_check and tt_entry.depth >= v_depth and (tt_entry.flag == EXACT or \
-            (tt_entry.flag == LOWER and tt_entry.value >= beta) or \
-            (tt_entry.flag == UPPER and tt_entry.value <= alpha)):
-            return tt_entry.value
+        if tt_entry['depth'] >= v_depth and not pv_node and abs(tt_entry['value']) < MATE_UPPER:
+            if tt_entry['flag'] == EXACT or \
+            (tt_entry['flag'] == LOWER and tt_entry['value'] >= beta) or \
+            (tt_entry['flag'] == UPPER and tt_entry['value'] <= alpha):
+                return tt_entry['value']
 
         original_alpha = alpha
 
-        current_eval = tt_entry.value if tt_entry.value < MATE_UPPER else local_board.rolling_score
+        current_eval = tt_entry['value'] if tt_entry['value'] < MATE_UPPER else local_board.rolling_score
 
         if not pv_node and not is_in_check and v_depth <= 8 and current_eval - 85 * v_depth > beta:
             return current_eval
 
-        v_score = local_board.rolling_score if v_depth == 0 else -MATE_UPPER - 1
+        best_score = local_board.rolling_score if v_depth == 0 else -MATE_UPPER - 1
+        local_score = -MATE_UPPER
 
         pieces = 'RNBQ' if is_white else 'rnbq'
 
         if not pv_node and not is_in_check and current_eval >= beta and \
-            v_depth >= 2 and not pieces in local_board.board_string:
+            v_depth >= 2 and pieces in local_board.board_string and \
+            local_board.move_list[0]:
 
-            v_score = -self.search(local_board.nullmove(), -beta, -beta+1, v_depth - 3, False, True)
+            local_score = -self.search(local_board.nullmove(), v_depth - 3, -beta, -beta+1, False)
 
-            if v_score >= beta:
+            if local_score >= beta:
                 return beta
 
-        if not pv_node and not is_in_check and v_depth > 0:
-            killer = self.tt_moves.get(local_board.board_string)
-            if killer and local_board.calculate_score(killer) > 220:
-                v_score = max(v_score, -self.search(local_board.make_move(killer), v_depth - 1, -beta, -alpha, False, True))
+        if not pv_node and not is_in_check and local_board.move_list[0] is not None:
+            if tt_entry['move'] and local_board.calculate_score(tt_entry['move']) > 220:
+                local_score = max(local_score, -self.search(local_board.make_move(tt_entry['move']), v_depth - 1, -beta, -alpha, False))
 
-                if v_score >= beta:
+                if local_score >= beta:
                     return beta
 
         played_moves = 0
 
-        first_search = True
-        is_lmr = False
+        best_move = None
 
-        local_score = -MATE_UPPER
+        v_depth += is_in_check
 
         for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
             current_move_score = local_board.calculate_score(s_move)
@@ -666,49 +669,93 @@ class Search:
 
             played_moves += 1
 
-            q_search = current_move_score > 200 or local_board.piece_count != moved_board.piece_count or moved_board.in_check(not is_white)
+            is_quiet = current_move_score < 200 and local_board.piece_count == moved_board.piece_count and not moved_board.in_check(not is_white)
 
-            # attempting to hack LMR
-            if not lmr and v_depth >= 3 and not q_search:
-                is_lmr = True
-                v_depth -= 1
+            reduce_depth = 2 if not is_quiet and v_depth > 2 and played_moves > 3 else 0
 
-            if v_depth > 0 and not first_search or is_lmr:
-                local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha, False, lmr)
-                if is_lmr:
-                    v_depth += 1
-                    is_lmr = False
-            if first_search or alpha < local_score < beta:
-                if v_depth > 0 or q_search:
-                    local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False, lmr)
-                first_search = False
+            if reduce_depth > 0:
+                local_score = -self.search(moved_board, v_depth - reduce_depth, -alpha-1, -alpha, False)
 
-            if local_score > v_score:
-                self.tt_moves[local_board.board_string] = s_move
-                v_score = local_score
+            if (reduce_depth > 0 and local_score > alpha) or (not reduce_depth and not(pv_node and played_moves <= 3)):
+                local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha, False)
 
-            alpha = max(alpha, local_score)
+            if pv_node and (played_moves <= 3 or local_score > alpha):
+                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False)
 
-            if alpha >= beta:
-                break
+            if local_score > best_score:
+                best_move = s_move
+                best_score = local_score
+
+                if local_score > alpha:
+                    alpha = local_score
+
+                    if alpha >= beta:
+                        break
 
         if played_moves == 0:
             return -MATE_UPPER if is_in_check else 0
 
         #update TT
-        if v_score <= original_alpha:
-            self.tt_bucket[local_board.board_string, root_search] = Entry(v_score, UPPER, v_depth)
-        elif v_score >= beta:
-            self.tt_bucket[local_board.board_string, root_search] = Entry(v_score, LOWER, v_depth)
+        tt_entry['value'] = best_score
+        tt_entry['move'] = best_move
+        if best_score <= original_alpha:
+            tt_entry['flag'] = UPPER
+        elif best_score >= beta:
+            tt_entry['flag'] = LOWER
         else:
-            self.tt_bucket[local_board.board_string, root_search] = Entry(v_score, EXACT, v_depth)
+            tt_entry['flag'] = EXACT
 
-        return v_score
+        self.tt_bucket[local_board.board_string] = tt_entry
+
+        return best_score
+
+    def q_search(self, local_board, alpha, beta):
+        tt_entry = self.tt_bucket.get((local_board.board_string), {'value': 2*MATE_UPPER, 'flag': UPPER, 'depth': 0, 'move': None})
+
+        if tt_entry['flag'] == EXACT or \
+            (tt_entry['flag'] == LOWER and tt_entry['value'] >= beta) or \
+            (tt_entry['flag'] == UPPER and tt_entry['value'] <= alpha):
+            if abs(tt_entry['value']) < MATE_UPPER:
+                return tt_entry['value']
+
+        stand_pat = local_board.rolling_score
+        best_score = stand_pat
+        is_white = local_board.played_move_count % 2 == 0
+
+        alpha = max(alpha, best_score)
+
+        if alpha >= beta:
+            return stand_pat
+
+        for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
+            current_move_score = local_board.calculate_score(s_move)
+
+            moved_board = local_board.make_move(s_move)
+            # check for check
+            moved_board.generate_valid_moves(True)
+            moved_board.generate_valid_moves()
+
+            is_quiet = current_move_score < 200 and local_board.piece_count == moved_board.piece_count and not moved_board.in_check(not is_white)
+
+            if moved_board.in_check(is_white) or is_quiet:
+                continue
+
+            local_score = -self.q_search(moved_board, -beta, -alpha)
+
+            if local_score > best_score:
+                best_score = local_score
+
+                if local_score > alpha:
+                    alpha = local_score
+
+            if alpha > beta:
+                return best_score
+
+        return best_score
 
 def main():
     game_board = Board()
     searcher = Search()
-    start_moves = 0
 
     while 1:
         try:
@@ -722,7 +769,6 @@ def main():
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
-                start_moves = 0
             elif line == "isready":
                 print_to_terminal("readyok")
             elif line.startswith("position"):
@@ -730,8 +776,6 @@ def main():
                 game_board = Board()
                 for position_move in moves[3:]:
                     game_board = game_board.make_move(position_move)
-                if start_moves == 0:
-                    start_moves = game_board.played_move_count
             elif line.startswith("go"):
                 white_time = 1e8
                 black_time = 1e8
@@ -772,9 +816,6 @@ def main():
                     move_time = (white_time / 20000)
                     searcher.critical_time = time.time() + (white_time / 1000) - 3
 
-                if game_board.played_move_count - start_moves < 10:
-                    move_time += 10
-
                 move_time = max(move_time, 3)
 
                 searcher.end_time = time.time() + move_time
@@ -784,18 +825,18 @@ def main():
                 s_move = None
 
                 start = time.time()
-                for v_depth, s_move, v_score in searcher.iterative_search(game_board):
+                for v_depth, s_move, best_score in searcher.iterative_search(game_board):
                     if (searcher.end_time - time.time()) < 2:
                         searcher.v_depth = 3
 
-                    if v_depth >= searcher.v_depth or time.time() > searcher.end_time or abs(v_score) >= MATE_UPPER:
+                    if v_depth >= searcher.v_depth or time.time() > searcher.end_time:
                         break
 
                 print_to_terminal("bestmove " + str(s_move))
 
-                if len(searcher.tt_moves) > 9e5:
-                    searcher.tt_moves.clear()
-                if len(searcher.tt_bucket) > 9e5:
+                # if len(searcher.tt_moves) > 9e5:
+                #     searcher.tt_moves.clear()
+                if len(searcher.tt_bucket) > 2e6:
                     searcher.tt_bucket.clear()
 
         except (KeyboardInterrupt, SystemExit):
