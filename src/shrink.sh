@@ -167,6 +167,9 @@ sed -i -e 's/reduce_depth/M8/g' pygone-mini.py
 sed -i -e 's/move_counter/M9/g' pygone-mini.py
 sed -i -e 's/tt_depth/M0/g' pygone-mini.py
 sed -i -e 's/tt_move/N1/g' pygone-mini.py
+sed -i -e 's/aspiration_window/N2/g' pygone-mini.py
+sed -i -e 's/delta/N3/g' pygone-mini.py
+sed -i -e 's/original_depth/N4/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
