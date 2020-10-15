@@ -187,6 +187,7 @@ class A6:
   if E4:
    i=not i
   Z.B1[i]=[]
+  B=[]
   D1=1
   E6=1
   E7=6
@@ -207,16 +208,16 @@ class A6:
      D1=-1
     if Z2=='K':
      if Z.B2[1]and E9=='e1' and v(E8[7][5:8])=='--R' and not any(Z7 in Z.B1[0]for Z7 in['e1','f1','g1']):
-      yield(E9+'g1')
+      B.append(E9+'g1')
      if Z.B2[0]and E9=='e1' and v(E8[7][0:4])=='R---' and not any(Z7 in Z.B1[0]for Z7 in['e1','d1','c1']):
-      yield(E9+'c1')
+      B.append(E9+'c1')
     elif Z2=='k':
      if Z.B3[1]and E9=='e8' and v(E8[0][5:8])=='--r' and not any(Z7 in Z.B1[1]for Z7 in['e8','f8','g8']):
-      yield(E9+'g8')
+      B.append(E9+'g8')
      if Z.B3[0]and E9=='e8' and v(E8[0][0:4])=='r---' and not any(Z7 in Z.B1[1]for Z7 in['e8','d8','c8']):
-      yield(E9+'c8')
+      B.append(E9+'c8')
     elif K0=='p' and Z1==E7 and E8[Z1+D1][Z4]=='-' and E8[Z1+2*D1][Z4]=='-':
-     yield(E9+N(Z4+1)+str(abs(Z1-8+2*D1)))
+     B.append(E9+N(Z4+1)+str(abs(Z1-8+2*D1)))
     for F3 in M[K0]:
      F4=Z4+F3[0]
      F5=Z1+(F3[1]*D1)
@@ -226,18 +227,19 @@ class A6:
       if K0=='p':
        if(Z1==E6 and F3[0]==0 and F6=='-')or (Z1==E6 and F3[0]!=0 and F6!='-' and F6 in E5):
         for G8 in('q','r','b','n'):
-         yield(E9+F7+G8)
+         B.append(E9+F7+G8)
        else:
         if(F3[0]==0 and F6=='-')or (F3[0]!=0 and F6!='-' and F6 in E5)or F7==Z.B7:
-         yield(E9+F7)
+         B.append(E9+F7)
       elif F6 in E5:
-       yield(E9+F7)
+       B.append(E9+F7)
       if F3[2]:
        Z.B1[i].append(F7)
       if F6!='-' or K0 in('k','n','p'):
        break
       F4+=F3[0]
       F5+=(F3[1]*D1)
+  return B
  def E0(Z,i):
   if i:
    return Z.B4 in Z.B1[0]
@@ -256,11 +258,10 @@ class F0:
   Z.G3.clear()
  def H1(Z,l):
   H2=t()
-  D2=-J
   for S in range(1,100):
-   all(l.A5(1))
-   all(l.A5())
-   D2=Z.N2(l,S,D2)
+   l.A5(1)
+   l.A5()
+   D2=Z.H9(l,S,-J,J)
    if t()<Z.G2:
     H7=Z.G3.get(l.K3)['N1']
    else:
@@ -269,31 +270,6 @@ class F0:
    W=math.ceil(Z.V/H8)
    R(str(S),str(math.ceil(D2)),str(math.ceil(H8)),str(Z.V),str(W),str(H7))
    yield S,H7,D2
- def N2(Z,l,S,D2):
-  L3=-J
-  L4=J
-  N3=10
-  if S>2:
-   L3=max(-J,D2-N3)
-   L4=min(J,D2+N3)
-  N4=S
-  counter=0
-  while 1:
-   counter+=1
-   if counter>10:
-    L3=-J
-    L4=J
-   D2=Z.H9(l,S,L3,L4)
-   if L3<D2<L4 or t()>=Z.G2:
-    return D2
-   if D2<=L3:
-    L4=(L3+L4)/2
-    L3=max(-J,L3-N3)
-    S=N4
-   elif D2>=L4:
-    L4=min(J,L4+N3)
-    S=S-(abs(D2)<=J/2)
-   N3=N3+N3/2
  def H9(Z,l,S,L3,L4,H95=1,H93=1):
   if t()>Z.G2:
    return l.B6
@@ -306,7 +282,7 @@ class F0:
   S=max(0,S)
   if S==0:
    if H93:
-    return Z.H93(l,6,L3,L4)
+    return Z.H93(l,L3,L4)
    else:
     return l.B6
   if not H95 and l.A0.count(l.K3)>1 or l.M9>=100:
@@ -337,8 +313,8 @@ class F0:
   for F2 in sorted(l.A5(),key=l.M3,reverse=1):
    I6=l.A4(F2)
    G7=l.C4(F2)
-   all(G7.A5(1))
-   all(G7.A5())
+   G7.A5(1)
+   G7.A5()
    if G7.E0(i):
     continue
    I92+=1
@@ -374,10 +350,7 @@ class F0:
     I1['M2']=H
    Z.G3[l.K3]=I1
   return T
- def H93(Z,l,S,L3,L4):
-  if t()>Z.G2:
-   return l.B6
-  Z.V+=1
+ def H93(Z,l,L3,L4):
   I1=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
   if I1['M2']==H or (I1['M2']==L and I1['M1']>=L4)or (I1['M2']==K and I1['M1']<=L3):
    return I1['M1']
@@ -385,17 +358,17 @@ class F0:
   T=L0
   i=l.A8%2==0
   L3=max(L3,T)
-  if S==0 or L3>=L4:
+  if L3>=L4:
    return L0
   for F2 in sorted(l.A5(),key=l.M3,reverse=1):
    I6=l.A4(F2)
    G7=l.C4(F2)
-   all(G7.A5(1))
-   all(G7.A5())
+   G7.A5(1)
+   G7.A5()
    M7=l.K4!=G7.K4 or I6>800 or G7.E0(not i)
    if G7.E0(i)or not M7:
     continue
-   D2=-Z.H93(G7,S-1,-L4,-L3)
+   D2=-Z.H93(G7,-L4,-L3)
    if D2>T:
     T=D2
     if D2>L3:

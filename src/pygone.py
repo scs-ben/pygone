@@ -353,7 +353,7 @@ class Board:
 
         self.attack_squares[is_white] = []
 
-        # valid_moves = []
+        valid_moves = []
 
         offset = 1
         min_row = 1
@@ -382,20 +382,20 @@ class Board:
                 if piece == 'K':
                     if self.white_castling[1] and start_coordinate == 'e1' and string_join(eval_state[7][5:8]) == '--R' and \
                         not any(coordinate in self.attack_squares[0] for coordinate in ['e1', 'f1', 'g1']):
-                        yield(start_coordinate + 'g1')
+                        valid_moves.append(start_coordinate + 'g1')
                     if self.white_castling[0] and start_coordinate == 'e1' and string_join(eval_state[7][0:4]) == 'R---' and \
                         not any(coordinate in self.attack_squares[0] for coordinate in ['e1', 'd1', 'c1']):
-                        yield(start_coordinate + 'c1')
+                        valid_moves.append(start_coordinate + 'c1')
                 elif piece == 'k':
                     if self.black_castling[1] and start_coordinate == 'e8' and string_join(eval_state[0][5:8]) == '--r' and \
                         not any(coordinate in self.attack_squares[1] for coordinate in ['e8', 'f8', 'g8']):
-                        yield(start_coordinate + 'g8')
+                        valid_moves.append(start_coordinate + 'g8')
                     if self.black_castling[0] and start_coordinate == 'e8' and string_join(eval_state[0][0:4]) == 'r---' and \
                         not any(coordinate in self.attack_squares[1] for coordinate in ['e8', 'd8', 'c8']):
-                        yield(start_coordinate + 'c8')
+                        valid_moves.append(start_coordinate + 'c8')
                 elif piece_lower == 'p' and row == max_row and eval_state[row + offset][column] == '-' and \
                     eval_state[row + 2*offset][column] == '-':
-                    yield(start_coordinate + number_to_letter(column + 1) + str(abs(row - 8 + 2*offset)))
+                    valid_moves.append(start_coordinate + number_to_letter(column + 1) + str(abs(row - 8 + 2*offset)))
 
                 for piece_move in TO_MOVES[piece_lower]:
                     to_column = column + piece_move[0]
@@ -410,14 +410,14 @@ class Board:
                             if (row == min_row and piece_move[0] == 0 and eval_piece == '-') or \
                                 (row == min_row and piece_move[0] != 0 and eval_piece != '-' and eval_piece in valid_pieces):
                                 for prom in ('q', 'r', 'b', 'n'):
-                                    yield(start_coordinate + dest + prom)
+                                    valid_moves.append(start_coordinate + dest + prom)
                             else:
                                 if (piece_move[0] == 0 and eval_piece == '-') or \
                                     (piece_move[0] != 0 and eval_piece != '-' and eval_piece in valid_pieces) or \
                                     dest == self.en_passant:
-                                    yield(start_coordinate + dest)
+                                    valid_moves.append(start_coordinate + dest)
                         elif eval_piece in valid_pieces:
-                            yield(start_coordinate + dest)
+                            valid_moves.append(start_coordinate + dest)
 
                         if piece_move[2]:
                             self.attack_squares[is_white].append(dest)
@@ -428,7 +428,7 @@ class Board:
                         to_column += piece_move[0]
                         to_row += (piece_move[1] * offset)
 
-        # return valid_moves
+        return valid_moves
 
     def in_check(self, is_white):
         if is_white:
@@ -460,7 +460,6 @@ class Search:
     #             is_in_check = local_board.in_check(local_board.played_move_count % 2 == 0)
     #             moved_board = local_board.make_move(s_move)
     #             all(moved_board.generate_valid_moves(True))
-    #             all(moved_board.generate_valid_moves())
 
     #             if moved_board.in_check(local_board.played_move_count % 2 == 0):
     #                 continue
@@ -508,13 +507,11 @@ class Search:
         #     if initial_move in ('e1c1', 'e1g1', 'e8c8', 'e8g8') and local_board.in_check(local_board.played_move_count % 2 == 0):
         #         self.tt_moves[local_board.board_string] = None
 
-        local_score = -MATE_UPPER
-
         for v_depth in range(1, 100):
-            all(local_board.generate_valid_moves(True))
-            all(local_board.generate_valid_moves())
+            local_board.generate_valid_moves(True)
+            local_board.generate_valid_moves()
 
-            local_score = self.aspiration_window(local_board, v_depth, local_score)
+            local_score = self.search(local_board, v_depth, -MATE_UPPER, MATE_UPPER)
 
             if t() < self.critical_time:
                 best_move = self.tt_bucket.get(local_board.board_string)['tt_move']
@@ -528,40 +525,6 @@ class Search:
             print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move))
 
             yield v_depth, best_move, local_score
-
-    def aspiration_window(self, local_board, v_depth, local_score):
-        alpha = -MATE_UPPER
-        beta = MATE_UPPER
-        delta = 10
-
-        if v_depth > 2:
-            alpha = max(-MATE_UPPER, local_score - delta)
-            beta = min(MATE_UPPER, local_score + delta)
-
-        original_depth = v_depth
-
-        counter = 0
-
-        while True:
-            counter += 1
-            if counter > 10:
-                alpha = -MATE_UPPER
-                beta= MATE_UPPER
-
-            local_score = self.search(local_board, v_depth, alpha, beta)
-
-            if alpha < local_score < beta or t() >= self.critical_time:
-                return local_score
-
-            if local_score <= alpha:
-                beta = (alpha + beta) / 2
-                alpha = max(-MATE_UPPER, alpha - delta)
-                v_depth = original_depth
-            elif local_score >= beta:
-                beta = min(MATE_UPPER, beta + delta)
-                v_depth = v_depth - (abs(local_score) <= MATE_UPPER / 2)
-
-            delta = delta + delta / 2
 
     def search(self, local_board, v_depth, alpha, beta, root_search=True, q_search=True):
         if t() > self.critical_time:
@@ -580,7 +543,7 @@ class Search:
 
         if v_depth == 0:
             if q_search:
-                return self.q_search(local_board, 6, alpha, beta)
+                return self.q_search(local_board, alpha, beta)
             else:
                 return local_board.rolling_score
 
@@ -630,14 +593,12 @@ class Search:
         v_depth += is_in_check
 
         for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
-            # print(v_depth, s_move)
-
             current_move_score = local_board.calculate_score(s_move)
 
             moved_board = local_board.make_move(s_move)
             # check for check
-            all(moved_board.generate_valid_moves(True))
-            all(moved_board.generate_valid_moves())
+            moved_board.generate_valid_moves(True)
+            moved_board.generate_valid_moves()
 
             if moved_board.in_check(is_white):
                 continue
@@ -645,7 +606,6 @@ class Search:
             played_moves += 1
 
             is_noisy = local_board.piece_count != moved_board.piece_count or current_move_score > 800 or moved_board.in_check(not is_white)
-            # is_noisy = current_move_score > 220 or moved_board.in_check(not is_white)
 
             if played_moves < 4:
                 local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False, is_noisy)
@@ -661,6 +621,18 @@ class Search:
 
                 if alpha < local_score < beta:
                     local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False, is_noisy)
+
+            # reduce_depth = 2 if is_noisy and v_depth > 2 and played_moves > 2 else 0
+
+            # if reduce_depth > 0:
+            #     local_score = -self.search(moved_board, v_depth - reduce_depth, -alpha-1, -alpha, False, is_noisy)
+
+            # if (reduce_depth > 0 and local_score > alpha) or (not reduce_depth and not(pv_node and played_moves <= 2)):
+            # if not pv_node:
+            #     local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha, False, is_noisy)
+
+            # if pv_node and (played_moves <= 2 or local_score > alpha):
+            #     local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False, is_noisy)
 
             if local_score > best_score:
                 best_move = s_move
@@ -690,12 +662,7 @@ class Search:
 
         return best_score
 
-    def q_search(self, local_board, v_depth, alpha, beta):
-        if t() > self.critical_time:
-            return local_board.rolling_score
-
-        self.v_nodes += 1
-
+    def q_search(self, local_board, alpha, beta):
         tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*MATE_UPPER, 'tt_flag': UPPER, 'tt_depth': 0, 'tt_move': None})
 
         if tt_entry['tt_flag'] == EXACT or \
@@ -709,7 +676,7 @@ class Search:
 
         alpha = max(alpha, best_score)
 
-        if v_depth == 0 or alpha >= beta:
+        if alpha >= beta:
             return stand_pat
 
         for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
@@ -717,17 +684,15 @@ class Search:
 
             moved_board = local_board.make_move(s_move)
             # check for check
-            all(moved_board.generate_valid_moves(True))
-            all(moved_board.generate_valid_moves())
+            moved_board.generate_valid_moves(True)
+            moved_board.generate_valid_moves()
 
             is_noisy = local_board.piece_count != moved_board.piece_count or current_move_score > 800 or moved_board.in_check(not is_white)
-            # is_noisy = current_move_score > 220 or moved_board.in_check(not is_white)
 
             if moved_board.in_check(is_white) or not is_noisy:
-            # if not is_noisy:
                 continue
 
-            local_score = -self.q_search(moved_board, v_depth - 1, -beta, -alpha)
+            local_score = -self.q_search(moved_board, -beta, -alpha)
 
             if local_score > best_score:
                 best_score = local_score
@@ -774,9 +739,9 @@ while 1:
                 # depth input can be commented out to save space since engine will be run on time
                 elif arg == 'depth':
                     searcher.v_depth = int(args[key + 1])
-            #     elif arg == 'perft':
-            #         searcher.v_depth = int(args[key + 1])
-            #         is_perft = True
+                # elif arg == 'perft':
+                #     searcher.v_depth = int(args[key + 1])
+                #     is_perft = True
 
             # if is_perft:
             #     # 1) start pos
@@ -809,6 +774,8 @@ while 1:
 
             print_to_terminal(f"bestmove {str(s_move)}")
 
+            # if len(searcher.tt_moves) > 9e5:
+            #     searcher.tt_moves.clear()
             if len(searcher.tt_bucket) > 2e6:
                 searcher.tt_bucket.clear()
 
