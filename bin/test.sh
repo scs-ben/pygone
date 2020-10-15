@@ -5,11 +5,11 @@
         cmd=/home/vagrant/code/pygone/bin/pygone \
         proto=uci \
     -engine \
-        name=nanochess \
-        cmd=/home/vagrant/code/pygone/bin/nanochess/nanochess \
+        name=umax48 \
+        cmd=/home/vagrant/code/pygone/bin/umax/umax48 \
         proto=xboard \
     -each \
-        tc=0/120+2 \
+        tc=0/12+2 \
         restart=off \
         -openings file=book.pgn \
         -repeat \

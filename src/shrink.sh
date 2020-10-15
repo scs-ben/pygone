@@ -162,7 +162,7 @@ sed -i -e 's/move_sort/M3/g' pygone-mini.py
 sed -i -e 's/sorting/M4/g' pygone-mini.py
 sed -i -e 's/k_score/M5/g' pygone-mini.py
 sed -i -e 's/moves/M6/g' pygone-mini.py
-sed -i -e 's/is_quiet/M7/g' pygone-mini.py
+sed -i -e 's/is_noisy/M7/g' pygone-mini.py
 sed -i -e 's/reduce_depth/M8/g' pygone-mini.py
 sed -i -e 's/move_counter/M9/g' pygone-mini.py
 sed -i -e 's/tt_depth/M0/g' pygone-mini.py
