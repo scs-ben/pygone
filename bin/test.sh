@@ -1,17 +1,15 @@
 /home/vagrant/code/pygone/bin/cutechess-cli \
     -debug \
     -engine \
-        name=pygone13 \
+        name=pygone \
         cmd=/home/vagrant/code/pygone/bin/pygone \
         proto=uci \
-        depth=5 \
     -engine \
-        name=umax48 \
-        cmd=/home/vagrant/code/pygone/bin/umax/umax48 \
+        name=sunfish \
+        cmd=/home/vagrant/code/pygone/bin/sunfish/sunfish \
         proto=xboard \
-        depth=5 \
     -each \
-        tc=0/1000+4 \
+        tc=0/100+2 \
         restart=off \
         -openings file=book.pgn \
         -repeat \
@@ -19,5 +17,4 @@
         -recover \
         -wait 1000 \
         -resign movecount=6 score=800 \
-        -concurrency 4 \
         -games 2 -rounds 100 > debug.log
