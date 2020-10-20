@@ -16,7 +16,7 @@ ALLPSQT = {
           [5, 10, 10, -20, -20, 10, 10, 5],
           [0]*8],
     'n': [[-50, -40, -30, -30, -30, -30, -40, -50],
-          [-40, -20, 0, 0, 0, 0, -20, -40],
+          [-40, -20, 5, 5, 5, 5, -20, -40],
           [-30, 5, 10, 15, 15, 10, 5, -30],
           [-30, 10, 15, 25, 25, 15, 10, -30],
           [-30, 5, 15, 25, 25, 15, 5, -30],
@@ -48,11 +48,11 @@ ALLPSQT = {
           [-10, 0, 5, 0, 0, 0, 0, -10],
           [-20, -10, -10, -5, -5, -10, -10, -20]],
     'k': [[-50, -40, -30, -20, -20, -30, -40, -50],
-          [-30, -20, -10, 0, 0, -10, -20, -30],
-          [-30, -10, 20, 30, 30, 20, -10, -30],
-          [-30, -10, 30, 40, 40, 30, -10, -30],
-          [-30, -10, 30, 40, 40, 30, -10, -30],
-          [-30, -10, 20, 30, 30, 20, -10, -30],
+          [-20, -20, -10, 0, 0, -10, -20, -20],
+          [-20, -10, 20, 30, 30, 20, -10, -20],
+          [-20, -10, 30, 40, 40, 30, -10, -20],
+          [-20, -10, 30, 40, 40, 30, -10, -20],
+          [-20, -10, 20, 30, 30, 20, -10, -20],
           [20, 20, -10, -10, -10, -10, 20, 20],
           [0, 10, 30, 0, 0, 10, 30, 0]]
 }
@@ -68,6 +68,9 @@ LOWER = 3
 
 MATE_LOWER = PIECEPOINTS['k'] - 10*PIECEPOINTS['q'] #11e3
 MATE_UPPER = PIECEPOINTS['k'] + 10*PIECEPOINTS['q'] #29e3
+
+PROTECTED_PAWN_VALUE = 25
+STACKED_PAWN_VALUE = 40
 
 TO_MOVES = {
     # (column, row, can_capture)
@@ -258,7 +261,7 @@ class Board:
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
 
-    def calculate_score(self, uci_coordinate, sorting=False, reverse_capture=False):
+    def calculate_score(self, uci_coordinate, sorting=False):
         if not uci_coordinate:
             return 0
 
@@ -285,6 +288,16 @@ class Board:
             if sorting:
                 local_score += min(2, (PIECEPOINTS[to_piece] / 10) - (PIECEPOINTS[from_piece] / 10))
 
+            # if we capture a protected, need to remove bonus for protected pawn
+            if to_piece.lower() == 'p':
+                if self.protected_pawn(to_number, to_letter_number, -p_offset, to_piece):
+                    local_score += PROTECTED_PAWN_VALUE
+
+                # if we capture a stacked pawn, incur the penalty
+                if self.pawn_count(to_letter_number, p_piece) == 2:
+                    local_score -= STACKED_PAWN_VALUE
+
+
         if from_piece == 'k':
             if abs(from_letter_number - to_letter_number) == 2:
                 if sorting:
@@ -296,7 +309,7 @@ class Board:
                 else:
                     local_score += ALLPSQT['r'][abs(to_number - offset)][to_letter_number + 1] - \
                                     ALLPSQT['r'][abs(to_number - offset)][to_letter_number - 2]
-            elif sorting and not self.is_endgame():
+            elif sorting and not self.is_endgame() and not self.in_check(is_white):
                 local_score -= 1000
         elif sorting and self.played_move_count < 30 and from_piece == 'q' and abs(to_number - offset) > 3:
             local_score -= 300
@@ -317,16 +330,32 @@ class Board:
             else:
                 # score for pawn advances only
                 if to_piece == '-':
-                    if to_letter_number < 7 and self.board_state[to_number - p_offset][to_letter_number + 1] == p_piece:
-                        local_score += 10
-                    else:
-                        local_score -= 10
-                    if to_letter_number > 0 and self.board_state[to_number - p_offset][to_letter_number - 1] == p_piece:
-                        local_score += 10
-                    else:
-                        local_score -= 10
+                    if self.protected_pawn(to_number, to_letter_number, p_offset, p_piece):
+                        local_score += PROTECTED_PAWN_VALUE
+                    if self.protected_pawn(from_number, from_letter_number, p_offset, p_piece):
+                        local_score -= PROTECTED_PAWN_VALUE
+            if to_piece.lower() != '-' or uci_coordinate[2:4] == self.en_passant:
+                if self.protected_pawn(from_number, from_letter_number, p_offset, p_piece):
+                    local_score -= PROTECTED_PAWN_VALUE
+                # bonus for unstacking
+                if self.pawn_count(from_letter_number, p_piece) == 2:
+                    local_score += STACKED_PAWN_VALUE
+                # only penalize for first stacked pawn
+                if self.pawn_count(to_letter_number, p_piece) == 1:
+                    local_score -= STACKED_PAWN_VALUE
 
         return local_score
+
+    def protected_pawn(self, row, column, p_offset, p_piece):
+        return (column < 7 and self.board_state[row - p_offset][column + 1] == p_piece) or \
+            (column > 0 and self.board_state[row - p_offset][column - 1] == p_piece)
+
+    def pawn_count(self, column, p_piece):
+        piece_count = 0
+        for row in range(8):
+            piece_count += self.board_state[row][column] == p_piece
+
+        return piece_count
 
     def str_board(self):
         """Return string reprsentation of board state"""
@@ -428,7 +457,7 @@ class Board:
 
         return self.attack_position(is_white, king_position)
 
-    def attack_position(self, is_white, position):
+    def attack_position(self, is_white, position_move):
         offset = 1
 
         eval_state = self.board_state
@@ -452,7 +481,7 @@ class Board:
 
                         dest = number_to_letter(to_column + 1) + str(abs(to_row - 8))
 
-                        if dest == position:
+                        if dest == position_move:
                             return True
 
                         if eval_piece != '-' or piece in ('k', 'n', 'p'):
@@ -560,7 +589,19 @@ class Search:
 
             v_nps = math.ceil(self.v_nodes / elapsed_time)
 
-            print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move))
+            pv = ''
+            counter = 1
+            pv_board = local_board.make_move(best_move)
+            while counter < v_depth:
+                counter += 1
+
+                pv_entry = self.tt_bucket.get(pv_board.board_string)
+
+                pv_board = pv_board.make_move(pv_entry['tt_move'])
+
+                pv += ' ' + pv_entry['tt_move']
+
+            print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move + pv))
 
             yield v_depth, best_move, local_score
 
@@ -637,7 +678,7 @@ class Search:
 
             played_moves += 1
 
-            is_noisy = current_move_score > 240
+            is_noisy = current_move_score > 160
 
             if played_moves == 1:
                 # full window search for first move
@@ -669,7 +710,7 @@ class Search:
             return -MATE_UPPER if is_in_check else 0
 
         #update TT only if we are not in time cut
-        if t() < self.critical_time and abs(best_score) < MATE_UPPER:
+        if t() < self.critical_time:
             tt_entry['tt_value'] = best_score
             tt_entry['tt_move'] = best_move
             if best_score <= original_alpha:
@@ -703,7 +744,7 @@ class Search:
         alpha = max(alpha, best_score)
 
         if alpha >= beta:
-            return stand_pat
+            return beta
 
         for s_move in sorted(local_board.generate_valid_captures(), key=local_board.move_sort, reverse=True):
             local_score = -self.q_search(local_board.make_move(s_move), -beta, -alpha)
@@ -715,7 +756,7 @@ class Search:
                     alpha = local_score
 
             if alpha > beta:
-                return best_score
+                return beta
 
         return best_score
 

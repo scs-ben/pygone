@@ -170,6 +170,14 @@ sed -i -e 's/tt_move/N1/g' pygone-mini.py
 sed -i -e 's/aspiration_window/N2/g' pygone-mini.py
 sed -i -e 's/delta/N3/g' pygone-mini.py
 sed -i -e 's/original_depth/N4/g' pygone-mini.py
+sed -i -e 's/PROTECTED_PAWN_VALUE/N5/g' pygone-mini.py
+sed -i -e 's/protected_pawn/N6/g' pygone-mini.py
+sed -i -e 's/generate_valid_captures/N7/g' pygone-mini.py
+sed -i -e 's/captures_only/N8/g' pygone-mini.py
+sed -i -e 's/pawn_count/N9/g' pygone-mini.py
+sed -i -e 's/STACKED_PAWN_VALUE/N0/g' pygone-mini.py
+sed -i -e 's/king_position/O1/g' pygone-mini.py
+sed -i -e 's/attack_position/O2/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
