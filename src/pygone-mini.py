@@ -325,6 +325,8 @@ class F0:
    while counter<S:
     counter+=1
     pv_entry=Z.G3.get(pv_u.K3)
+    if not pv_entry:
+     break
     pv_u=pv_u.C4(pv_entry['N1'])
     pv+=' '+pv_entry['N1']
    R(str(S),str(math.ceil(D2)),str(math.ceil(H8)),str(Z.V),str(W),str(H7+pv))

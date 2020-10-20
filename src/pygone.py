@@ -598,13 +598,15 @@ class Search:
             v_nps = math.ceil(self.v_nodes / elapsed_time)
 
             pv = ''
-
             counter = 1
             pv_board = local_board.make_move(best_move)
             while counter < v_depth:
                 counter += 1
 
                 pv_entry = self.tt_bucket.get(pv_board.board_string)
+
+                if not pv_entry:
+                    break
 
                 pv_board = pv_board.make_move(pv_entry['tt_move'])
 
