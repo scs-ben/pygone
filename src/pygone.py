@@ -270,6 +270,7 @@ class Board:
         offset = 0 if is_white else 7
         p_offset = -1 if is_white else 1
         p_piece = 'P' if is_white else 'p'
+        is_endgame = self.is_endgame()
 
         (from_letter_number, from_number, to_letter_number, to_number) = unpack_coordinate(uci_coordinate)
 
@@ -309,7 +310,7 @@ class Board:
                 else:
                     local_score += ALLPSQT['r'][abs(to_number - offset)][to_letter_number + 1] - \
                                     ALLPSQT['r'][abs(to_number - offset)][to_letter_number - 2]
-            elif sorting and not self.is_endgame() and not self.in_check(is_white):
+            elif sorting and not is_endgame and not self.in_check(is_white):
                 local_score -= 1000
         elif sorting and self.played_move_count < 30 and from_piece == 'q' and abs(to_number - offset) > 3:
             local_score -= 300
@@ -343,6 +344,13 @@ class Board:
                 # only penalize for first stacked pawn
                 if self.pawn_count(to_letter_number, p_piece) == 1:
                     local_score -= STACKED_PAWN_VALUE
+
+
+            if not is_endgame:
+                if 'k' in ''.join(self.board_state[from_number - p_offset][max(0, from_letter_number - 1):min(7, from_letter_number + 1)]).lower():
+                    local_score -= 30
+                # if 'k' in ''.join(self.board_state[to_number - p_offset][max(0, to_letter_number - 1):min(7, to_letter_number + 1)]).lower():
+                #     local_score += 30
 
         return local_score
 
@@ -590,6 +598,7 @@ class Search:
             v_nps = math.ceil(self.v_nodes / elapsed_time)
 
             pv = ''
+
             counter = 1
             pv_board = local_board.make_move(best_move)
             while counter < v_depth:

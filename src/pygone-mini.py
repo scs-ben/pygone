@@ -143,6 +143,7 @@ class A6:
   D1=0 if i else 7
   D11=-1 if i else 1
   D5='P' if i else 'p'
+  C8=Z.C8()
   (B9,B0,C1,O)=Y(A1)
   D2=0
   C2=Z.A7[B0][B9].lower()
@@ -165,7 +166,7 @@ class A6:
      D2+=B['r'][abs(O-D1)][C1-1]- B['r'][abs(O-D1)][C1+1]
     else:
      D2+=B['r'][abs(O-D1)][C1+1]- B['r'][abs(O-D1)][C1-2]
-   elif M4 and not Z.C8()and not Z.E0(i):
+   elif M4 and not C8 and not Z.E0(i):
     D2-=1000
   elif M4 and Z.A8<30 and C2=='q' and abs(O-D1)>3:
    D2-=300
@@ -191,6 +192,9 @@ class A6:
      D2+=N0
     if Z.N9(C1,D5)==1:
      D2-=N0
+   if not C8:
+    if 'k' in ''.join(Z.A7[B0-D11][max(0,B9-1):min(7,B9+1)]).lower():
+     D2-=30
   return D2
  def N6(Z,Z1,Z4,D11,D5):
   return(Z4<7 and Z.A7[Z1-D11][Z4+1]==D5)or (Z4>0 and Z.A7[Z1-D11][Z4-1]==D5)
