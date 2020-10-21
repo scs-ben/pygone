@@ -5,11 +5,11 @@
         cmd=/home/vagrant/code/pygone/bin/pygone \
         proto=uci \
     -engine \
-        name=sunfish \
-        cmd=/home/vagrant/code/pygone/bin/sunfish/sunfish \
+        name=nanochess \
+        cmd=/home/vagrant/code/pygone/bin/nanochess/nanochess \
         proto=xboard \
     -each \
-        tc=0/100+2 \
+        tc=0/50+4 \
         restart=off \
         -openings file=book.pgn \
         -repeat \
