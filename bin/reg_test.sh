@@ -4,12 +4,12 @@
         name=pygone13 \
         cmd=/home/vagrant/code/pygone/bin/pygone \
         proto=uci \
-    	depth=3 \
+        depth=5 \
     -engine \
-        name=pygone12 \
-        cmd=/home/vagrant/code/pygone/bin/pygone12 \
+        name=sunfish \
+        cmd=/home/vagrant/code/pygone/bin/sunfish/sunfish \
         proto=uci \
-	    depth=3 \
+	    depth=5 \
     -each \
         tc=inf \
         restart=off \
@@ -17,5 +17,5 @@
         -repeat \
         -pgnout games.pgn min \
         -recover \
-        -concurrency 2 \
+        -concurrency 6 \
         -games 2 -rounds 200 > debug.log

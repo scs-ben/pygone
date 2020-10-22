@@ -189,9 +189,9 @@ sed -i -e 's/Entry/Z8/g' pygone-mini.py
 
 sed -i -e 's/alpha/a/g' pygone-mini.py
 sed -i -e 's/beta/b/g' pygone-mini.py
+sed -i -e 's/tt_entry/e/g' pygone-mini.py
 sed -i -e 's/is_white/i/g' pygone-mini.py
 sed -i -e 's/local_board/l/g' pygone-mini.py
-sed -i -e 's/tt_entry/t/g' pygone-mini.py
 sed -i -e 's/board/u/g' pygone-mini.py
 sed -i -e 's/string_join/v/g' pygone-mini.py
 

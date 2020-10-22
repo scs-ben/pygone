@@ -355,23 +355,23 @@ class F0:
    return Z.H93(l,a,b)
   if not H95 and(l.A0.count(l.K3)>1 or l.M9>=100):
    return 0
-  t=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
-  if t['M0']>=S>2 and abs(t['M1'])<J:
-   if t['M2']==H or (t['M2']==L and t['M1']>=b)or (t['M2']==K and t['M1']<=a):
-    return t['M1']
+  e=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
+  if e['M0']>=S>2 and abs(e['M1'])<J:
+   if e['M2']==H or (e['M2']==L and e['M1']>=b)or (e['M2']==K and e['M1']<=a):
+    return e['M1']
   L2=a
-  L5=t['M1']if t['M1']<J else l.B6
+  L5=e['M1']if e['M1']<J else l.B6
   if S<=7 and not L1 and not E01 and L5-(75*S)>=b:
    return L5
   T=-J-1
   D2=-J
   L8='RNBQ' if i else 'rnbq'
-  if not L1 and not E01 and L5>=b and S>=4 and L8 in l.K3 and l.A9[0]and t['M2']!=K and t['M1']<b:
+  if not L1 and not E01 and L5>=b and S>=4 and L8 in l.K3 and l.A9[0]and e['M2']!=K and e['M1']<b:
    D2=-Z.H9(l.C5(),min(1,S-4),-b,-b+1,0,0)
    if D2>=b:
     return b
-  if S>1 and not L1 and not E01 and l.A9[0]and t['N1']:
-   D2=-Z.H9(l.C4(t['N1']),S-1,-b,-a,0,1)
+  if S>1 and not L1 and not E01 and l.A9[0]and e['N1']:
+   D2=-Z.H9(l.C4(e['N1']),S-1,-b,-a,0,1)
    if D2>=b:
     return b
   I92=0
@@ -404,24 +404,24 @@ class F0:
       break
   if I92==0:
    return-J if E01 else 0
-  if t()<Z.G2 and S>=t['M0']:
-   t['M1']=T
-   t['N1']=H7
+  if t()<Z.G2 and S>=e['M0']:
+   e['M1']=T
+   e['N1']=H7
    if T<=L2:
-    t['M2']=K
+    e['M2']=K
    elif T>=b:
-    t['M2']=L
+    e['M2']=L
    else:
-    t['M2']=H
-   Z.G3[l.K3]=t
+    e['M2']=H
+   Z.G3[l.K3]=e
   return T
  def H93(Z,l,a,b):
   Z.V+=1
   if l.A0.count(l.K3)>1 or l.M9>=100:
    return 0
-  t=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
-  if t['M2']==H or (t['M2']==L and t['M1']>=b)or (t['M2']==K and t['M1']<=a):
-   return t['M1']
+  e=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
+  if e['M2']==H or (e['M2']==L and e['M1']>=b)or (e['M2']==K and e['M1']<=a):
+   return e['M1']
   L0=l.B6
   T=L0
   i=l.A8%2==0
