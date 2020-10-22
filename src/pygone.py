@@ -1,5 +1,5 @@
 #!/usr/bin/env pypy3
-import math, sys, time
+import copy, math, sys, time
 
 t = time.time
 
@@ -124,8 +124,8 @@ class Board:
     repetitions = []
     white_castling = [True, True]
     black_castling = [True, True]
-    white_king_position = ''
-    black_king_position = ''
+    white_king_position = 'e1'
+    black_king_position = 'e8'
     rolling_score = 0
     piece_count = 32
     en_passant = ''
@@ -194,17 +194,14 @@ class Board:
         # making the move will return an altered copy of the current state
         # this allows us to avoid "undoing" the move
         board = Board()
-        board.played_move_count = self.played_move_count
+        board = copy.deepcopy(self)
+        # board.played_move_count = self.played_move_count
         for row in range(8):
             board.board_state[row] = self.board_state[row].copy()
         board.move_list = self.move_list.copy()
         board.repetitions = self.repetitions.copy()
         board.white_castling = self.white_castling.copy()
         board.black_castling = self.black_castling.copy()
-        board.white_king_position = self.white_king_position
-        board.black_king_position = self.black_king_position
-        board.en_passant = self.en_passant
-        board.move_counter = self.move_counter
         # should calc score before moving
         board.rolling_score = -(self.rolling_score + self.calculate_score(uci_coordinate))
 
@@ -243,6 +240,7 @@ class Board:
         board.black_castling = self.black_castling.copy()
         # clear positions and ep for nullmove
         board.rolling_score = -self.rolling_score
+        board.white_king_position = board.black_king_position = ''
         board.move_list = [None]
 
         return board
