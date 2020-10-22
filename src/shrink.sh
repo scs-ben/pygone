@@ -114,7 +114,6 @@ sed -i -e 's/first_search/H94/g' pygone-mini.py
 sed -i -e 's/root_search/H95/g' pygone-mini.py
 sed -i -e 's/search/H9/g' pygone-mini.py
 sed -i -e 's/parent_search/H0/g' pygone-mini.py
-sed -i -e 's/tt_entry/I1/g' pygone-mini.py
 sed -i -e 's/current_piece_count/I2/g' pygone-mini.py
 sed -i -e 's/killer_score/I3/g' pygone-mini.py
 sed -i -e 's/killer_board/I4/g' pygone-mini.py
@@ -148,8 +147,6 @@ sed -i -e 's/king_piece/K9/g' pygone-mini.py
 sed -i -e 's/piece_lower/K0/g' pygone-mini.py
 sed -i -e 's/pv_node/L1/g' pygone-mini.py
 sed -i -e 's/original_alpha/L2/g' pygone-mini.py
-sed -i -e 's/alpha/L3/g' pygone-mini.py
-sed -i -e 's/beta/L4/g' pygone-mini.py
 sed -i -e 's/current_eval/L5/g' pygone-mini.py
 sed -i -e 's/f_margin/L6/g' pygone-mini.py
 sed -i -e 's/current_eval/L7/g' pygone-mini.py
@@ -174,10 +171,12 @@ sed -i -e 's/PROTECTED_PAWN_VALUE/N5/g' pygone-mini.py
 sed -i -e 's/protected_pawn/N6/g' pygone-mini.py
 sed -i -e 's/generate_valid_captures/N7/g' pygone-mini.py
 sed -i -e 's/captures_only/N8/g' pygone-mini.py
-sed -i -e 's/pawn_count/N9/g' pygone-mini.py
+sed -i -e 's/count_piece/N9/g' pygone-mini.py
 sed -i -e 's/STACKED_PAWN_VALUE/N0/g' pygone-mini.py
 sed -i -e 's/king_position/O1/g' pygone-mini.py
 sed -i -e 's/attack_position/O2/g' pygone-mini.py
+sed -i -e 's/count1/O3/g' pygone-mini.py
+sed -i -e 's/count2/O4/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
@@ -188,8 +187,11 @@ sed -i -e 's/letter/Z6/g' pygone-mini.py
 sed -i -e 's/coordinate/Z7/g' pygone-mini.py
 sed -i -e 's/Entry/Z8/g' pygone-mini.py
 
+sed -i -e 's/alpha/a/g' pygone-mini.py
+sed -i -e 's/beta/b/g' pygone-mini.py
 sed -i -e 's/is_white/i/g' pygone-mini.py
 sed -i -e 's/local_board/l/g' pygone-mini.py
+sed -i -e 's/tt_entry/t/g' pygone-mini.py
 sed -i -e 's/board/u/g' pygone-mini.py
 sed -i -e 's/string_join/v/g' pygone-mini.py
 

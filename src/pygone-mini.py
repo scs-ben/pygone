@@ -1,8 +1,8 @@
 #!/usr/bin/env pypy3
 import math,sys,time
 t=time.time
-A={'p':90,'n':290,'b':300,'r':500,'q':900,'k':2e4}
-B={'p':[[0]*8,[50]*8,[20]*8,[10,10,15,25,25,15,10,10],[0,0,0,20,20,0,0,0],[5,-5,-5,5,5,-5,-5,5],[5,10,10,-20,-20,10,10,5],[0]*8],'n':[[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,5,5,5,5,-20,-40],[-30,5,10,15,15,10,5,-30],[-30,5,15,25,25,15,5,-30],[-30,5,15,25,25,15,5,-30],[-30,10,10,10,10,10,10,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],'b':[[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[0,5,5,10,10,5,5,0],[0,0,10,10,10,10,0,0],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],'r':[[0]*8,[5,10,10,10,10,10,10,5],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-5,0,0,5,0,5,0,-5],[0,0,0,5,5,0,0,0]],'q':[[-20,-10,-10,-5,-5,-10,-10,-20],[-10,5,5,5,5,5,5,-10],[-10,5,5,5,5,5,5,-10],[-5,5,5,5,5,5,5,-5],[-5,5,5,5,5,5,5,-5],[-10,5,5,5,5,5,5,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],'k':[[-50,-40,-30,-20,-20,-30,-40,-50],[-20,-20,-10,0,0,-10,-20,-20],[-20,-10,20,30,30,20,-10,-20],[-20,-10,30,40,40,30,-10,-20],[-20,-10,30,40,40,30,-10,-20],[-20,-10,20,30,30,20,-10,-20],[20,20,-10,-10,-10,-10,20,20],[0,10,30,0,0,10,30,0]]}
+A={'p':100,'n':285,'b':305,'r':600,'q':1250,'k':2e4}
+B={'p':[[0]*8,[50]*8,[20]*8,[10,10,15,25,25,15,10,10],[0,0,0,20,20,0,0,0],[5,-5,-5,5,5,-5,-5,5],[5,10,10,-20,-20,10,10,5],[0]*8],'n':[[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,5,5,5,5,-20,-40],[-30,5,10,15,15,10,5,-30],[-30,5,15,25,25,15,5,-30],[-30,5,15,25,25,15,5,-30],[-30,10,10,10,10,10,10,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],'b':[[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[0,5,5,10,10,5,5,0],[0,0,10,10,10,10,0,0],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],'r':[[0]*8,[5,10,10,10,10,10,10,5],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-5,0,0,5,0,5,0,-5],[0,0,0,5,5,0,0,0]],'q':[[-20,-10,-10,-5,-5,-10,-10,-20],[-10,5,5,5,5,5,5,-10],[-10,5,5,5,5,5,5,-10],[-5,5,5,5,5,5,5,-5],[-5,5,5,5,5,5,5,-5],[-10,5,5,5,5,5,5,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],'k':[[-50,-40,-30,-20,-20,-30,-40,-50],[-20,-20,-10,0,0,-10,-20,-20],[-20,-10,20,30,30,20,-10,-20],[-20,-10,30,40,40,30,-10,-20],[-20,-10,30,40,40,30,-10,-20],[-20,-10,20,30,30,20,-10,-20],[20,20,-40,-40,-40,-40,20,20],[0,10,30,0,0,10,30,0]]}
 for C,_ in B.items():
  for D in range(8):
   for E in range(8):
@@ -12,7 +12,7 @@ K=2
 L=3
 I=A['k']-10*A['q']
 J=A['k']+10*A['q']
-N5=25
+N5=30
 N0=40
 M={'k':[(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)],'q':[(0,1),(0,-1),(1,0),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)],'r':[(0,1),(0,-1),(1,0),(-1,0)],'b':[(1,1),(1,-1),(-1,1),(-1,-1)],'n':[(1,-2),(-1,-2),(2,-1),(-2,-1),(1,2),(-1,2),(2,1),(-2,1)],'p':[(0,1),(1,1),(-1,1)]}
 def N(O):
@@ -42,26 +42,25 @@ class A6:
  A0=[]
  B2=[1,1]
  B3=[1,1]
- B4='e1'
- B5='e8'
+ B4=''
+ B5=''
  B6=0
  K4=32
  B7=''
  M9=0
  def __init__(Z):
   Z.A7=[['r','n','b','q','k','b','n','r'],['p']*8,['-']*8,['-']*8,['-']*8,['-']*8,['P']*8,['R','N','B','Q','K','B','N','R']]
-  Z.K3="rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR1"
  def B8(Z,A1):
   i=Z.A8%2==0
   Z.M9+=1
   (B9,B0,C1,O)=Y(A1)
-  C2=Z.A7[B0][B9]
+  C2=Z.A7[B0][B9].lower()
   if Z.A7[O][C1]!='-':
    Z.M9=0
-  Z.A7[O][C1]=C2
+  Z.A7[O][C1]=Z.A7[B0][B9]
   Z.A7[B0][B9]='-'
   B71=0
-  if C2.lower()=='p':
+  if C2=='p':
    Z.M9=0
    B71=abs(B0-O)==2
    B72=-1 if i else 1
@@ -71,7 +70,7 @@ class A6:
     Z.A7[O-B72][C1]='-'
    if len(A1)>4:
     Z.A7[O][C1]=A1[4:5].upper()if i else A1[4:5]
-  elif C2.lower()=='k':
+  elif C2=='k':
    if i:
     Z.B4=A1[2:4]
    else:
@@ -124,9 +123,6 @@ class A6:
    u.A7[Z1]=Z.A7[Z1].copy()
   u.B2=Z.B2.copy()
   u.B3=Z.B3.copy()
-  u.B4=''
-  u.B5=''
-  u.B7=''
   u.B6=-Z.B6
   u.A9=[None]
   return u
@@ -152,14 +148,18 @@ class A6:
   if D4!='-':
    D2+=B[D4][abs(O-D1)][C1]
    if M4:
-    D2+=min(2,(A[D4]/10)-(A[C2]/10))
-   if D4.lower()=='p':
+    D2+=5+A[D4]/A[C2]
+    if C8 and C2=='p':
+     D2-=50
+   if D4=='p':
     if Z.N6(O,C1,-D11,D4):
      D2+=N5
-    if Z.N9(C1,D5)==2:
+    if Z.N9(C1,D4)==2 or Z.N9(C1,D5)==1:
      D2-=N0
+    if Z.N9(C1,D5)==0:
+     D2+=N0
   if M4 and Z.A8<30 and C2!='k' and B0 in(0,7):
-   D2+=80
+   D2+=100
   if C2=='k':
    if abs(B9-C1)==2:
     if M4:
@@ -168,10 +168,15 @@ class A6:
      D2+=B['r'][abs(O-D1)][C1-1]- B['r'][abs(O-D1)][C1+1]
     else:
      D2+=B['r'][abs(O-D1)][C1+1]- B['r'][abs(O-D1)][C1-2]
-   elif M4 and not C8 and not Z.E0(i):
-    D2-=1000
-  elif M4 and Z.A8<30 and C2=='q' and abs(O-D1)>3:
-   D2-=300
+  elif M4 and Z.A8<26 and C2 in 'qrbn' and abs(B0-O)>3:
+   D2-=500-abs(O-8)
+  elif C2=='r':
+   O3=Z.N9(B9,'-')
+   O4=Z.N9(C1,'-')
+   if O3<7 and O4==8:
+    D2+=15
+   elif O3==7 and O4<8:
+    D2-=15
   elif C2=='p':
    if M4 and Z.A8<30:
     D2+=B[C2][abs(O-D1)][C1]/10
@@ -181,15 +186,20 @@ class A6:
     D7=A1[4:5]
     D2+=B[D7][abs(O-D1)][C1]- B['p'][abs(O-D1)][C1]
     C2=D7
-   else:
-    if D4=='-':
-     if Z.N6(O,C1,D11,D5):
-      D2+=N5
-     if Z.N6(B0,B9,D11,D5):
-      D2-=N5
-   if D4.lower()!='-' or A1[2:4]==Z.B7:
+   if D4=='-':
+    if Z.N6(O,C1,D11,D5):
+     D2+=N5
+    if Z.N6(O,C1,-D11,D5):
+     D2+=N5
     if Z.N6(B0,B9,D11,D5):
      D2-=N5
+    if Z.N6(B0,B9,-D11,D5):
+     D2-=N5
+   if(D4!='-' and D4!='p')or A1[2:4]==Z.B7:
+    if Z.N6(B0,B9,D11,D5):
+     D2-=N5
+    if Z.N6(O,C1,-D11,D5):
+     D2+=N5
     if Z.N9(B9,D5)==2:
      D2+=N0
     if Z.N9(C1,D5)==1:
@@ -197,9 +207,14 @@ class A6:
    if not C8:
     if 'k' in ''.join(Z.A7[B0-D11][max(0,B9-1):min(7,B9+1)]).lower():
      D2-=30
+   O1=Z.B4 if i else Z.B5
+   if M4 and A1[2:4]==O1:
+    D2+=300
   return D2
  def N6(Z,Z1,Z4,D11,D5):
-  return(Z4<7 and Z.A7[Z1-D11][Z4+1]==D5)or (Z4>0 and Z.A7[Z1-D11][Z4-1]==D5)
+  if(Z1-D11)in range(8):
+   return(Z4<7 and Z.A7[Z1-D11][Z4+1]==D5)or (Z4>0 and Z.A7[Z1-D11][Z4-1]==D5)
+  return 0
  def N9(Z,Z4,D5):
   K4=0
   for Z1 in range(8):
@@ -252,14 +267,14 @@ class A6:
       if not N8 or(N8 and F6!='-'):
        if K0=='p':
         if(Z1==E6 and F3[0]==0 and F6=='-')or (Z1==E6 and F3[0]!=0 and F6!='-' and F6 in E5):
-         for G8 in('q','r','b','n'):
+         for G8 in 'qrbn':
           yield(E9+F7+G8)
         else:
          if(F3[0]==0 and F6=='-')or (F3[0]!=0 and F6!='-' and F6 in E5)or F7==Z.B7:
           yield(E9+F7)
        elif F6 in E5:
         yield(E9+F7)
-      if F6!='-' or K0 in('k','n','p'):
+      if F6!='-' or K0 in 'knp':
        break
       F4+=F3[0]
       F5+=(F3[1]*D1)
@@ -278,16 +293,16 @@ class A6:
      D1=-1
     Z2=Z2.lower()
     for F3 in M[Z2]:
-     F4=Z4+F3[0]
-     F5=Z1+(F3[1]*D1)
      if Z2=='p' and not F3[0]:
       continue
+     F4=Z4+F3[0]
+     F5=Z1+(F3[1]*D1)
      while F4 in range(8)and F5 in range(8):
       F6=E8[F5][F4]
       F7=N(F4+1)+str(abs(F5-8))
       if F7==I0:
        return 1
-      if F6!='-' or Z2 in('k','n','p'):
+      if F6!='-' or Z2 in 'knp':
        break
       F4+=F3[0]
       F5+=(F3[1]*D1)
@@ -306,15 +321,15 @@ class F0:
   Z.G3.clear()
  def H1(Z,l):
   H2=t()
-  L3=-J
-  L4=J
+  a=-J
+  b=J
   D2=-J
   for S in range(1,100):
    if S>2:
-    L3=D2-20
-    L4=D2+20
-   D2=Z.H9(l,S,L3,L4)
-   if D2<=L3 or D2>=L4:
+    a=D2-20
+    b=D2+20
+   D2=Z.H9(l,S,a,b)
+   if D2<=a or D2>=b:
     D2=Z.H9(l,S,-J,J)
    if t()<Z.G2:
     H7=Z.G3.get(l.K3)
@@ -326,39 +341,39 @@ class F0:
    W=math.ceil(Z.V/H8)
    R(str(S),str(math.ceil(D2)),str(math.ceil(H8)),str(Z.V),str(W),str(H7))
    yield S,H7,D2
- def H9(Z,l,S,L3,L4,H95=1,H93=1):
+ def H9(Z,l,S,a,b,H95=1,H93=1):
   if t()>Z.G2:
    return l.B6
   Z.V+=1
   if l.B6<=-I:
    return-J
   i=l.A8%2==0
-  L1=(L3!=L4-1)
+  L1=(a!=b-1)
   E01=l.E0(i)
   S=max(0,S)
   if S==0:
-   return Z.H93(l,L3,L4)
+   return Z.H93(l,a,b)
   if not H95 and(l.A0.count(l.K3)>1 or l.M9>=100):
    return 0
-  I1=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
-  if I1['M0']>=S and abs(I1['M1'])<J:
-   if I1['M2']==H or (I1['M2']==L and I1['M1']>=L4)or (I1['M2']==K and I1['M1']<=L3):
-    return I1['M1']
-  L2=L3
-  L5=I1['M1']if I1['M1']<J else l.B6
-  if S<=7 and not L1 and not E01 and L5-(75*S)>=L4:
+  t=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
+  if t['M0']>=S>2 and abs(t['M1'])<J:
+   if t['M2']==H or (t['M2']==L and t['M1']>=b)or (t['M2']==K and t['M1']<=a):
+    return t['M1']
+  L2=a
+  L5=t['M1']if t['M1']<J else l.B6
+  if S<=7 and not L1 and not E01 and L5-(75*S)>=b:
    return L5
   T=-J-1
   D2=-J
   L8='RNBQ' if i else 'rnbq'
-  if not L1 and not E01 and L5>=L4 and S>=4 and L8 in l.K3 and l.A9[0]:
-   D2=-Z.H9(l.C5(),min(1,S-4),-L4,-L4+1,0,0)
-   if D2>=L4:
-    return L4
-  if S>1 and not L1 and not E01 and l.A9[0]and I1['N1']:
-   D2=-Z.H9(l.C4(I1['N1']),S-1,-L4,-L3,0,1)
-   if D2>=L4:
-    return L4
+  if not L1 and not E01 and L5>=b and S>=4 and L8 in l.K3 and l.A9[0]and t['M2']!=K and t['M1']<b:
+   D2=-Z.H9(l.C5(),min(1,S-4),-b,-b+1,0,0)
+   if D2>=b:
+    return b
+  if S>1 and not L1 and not E01 and l.A9[0]and t['N1']:
+   D2=-Z.H9(l.C4(t['N1']),S-1,-b,-a,0,1)
+   if D2>=b:
+    return b
   I92=0
   H7=None
   S+=E01 and not H95
@@ -370,57 +385,57 @@ class F0:
    I92+=1
    M7=I6>160
    if I92==1:
-    D2=-Z.H9(G7,S-1,-L4,-L3,0,M7)
+    D2=-Z.H9(G7,S-1,-b,-a,0,M7)
    else:
     M8=1
     if S>2 and not M7:
      M8=min(3,S)
-    D2=-Z.H9(G7,S-M8,-L3-1,-L3,0,M7)
-    if M8>1 and D2>L3:
-     D2=-Z.H9(G7,S-1,-L3-1,-L3,0,M7)
-    if L3<D2<L4:
-     D2=-Z.H9(G7,S-1,-L4,-L3,0,M7)
+    D2=-Z.H9(G7,S-M8,-a-1,-a,0,M7)
+    if M8>1 and D2>a:
+     D2=-Z.H9(G7,S-1,-a-1,-a,0,M7)
+    if a<D2<b:
+     D2=-Z.H9(G7,S-1,-b,-a,0,M7)
    if D2>T:
     H7=F2
     T=D2
-    if D2>L3:
-     L3=D2
-     if L3>=L4:
+    if D2>a:
+     a=D2
+     if a>=b:
       break
   if I92==0:
    return-J if E01 else 0
-  if t()<Z.G2 and S>=I1['M0']:
-   I1['M1']=T
-   I1['N1']=H7
+  if t()<Z.G2 and S>=t['M0']:
+   t['M1']=T
+   t['N1']=H7
    if T<=L2:
-    I1['M2']=K
-   elif T>=L4:
-    I1['M2']=L
+    t['M2']=K
+   elif T>=b:
+    t['M2']=L
    else:
-    I1['M2']=H
-   Z.G3[l.K3]=I1
+    t['M2']=H
+   Z.G3[l.K3]=t
   return T
- def H93(Z,l,L3,L4):
+ def H93(Z,l,a,b):
   Z.V+=1
   if l.A0.count(l.K3)>1 or l.M9>=100:
    return 0
-  I1=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
-  if I1['M2']==H or (I1['M2']==L and I1['M1']>=L4)or (I1['M2']==K and I1['M1']<=L3):
-   return I1['M1']
+  t=Z.G3.get((l.K3),{'M1':2*J,'M2':K,'M0':0,'N1':None})
+  if t['M2']==H or (t['M2']==L and t['M1']>=b)or (t['M2']==K and t['M1']<=a):
+   return t['M1']
   L0=l.B6
   T=L0
   i=l.A8%2==0
-  L3=max(L3,T)
-  if L3>=L4:
-   return L4
+  a=max(a,T)
+  if a>=b:
+   return b
   for F2 in sorted(l.N7(),key=l.M3,reverse=1):
-   D2=-Z.H93(l.C4(F2),-L4,-L3)
+   D2=-Z.H93(l.C4(F2),-b,-a)
    if D2>T:
     T=D2
-    if D2>L3:
-     L3=D2
-   if L3>L4:
-    return L4
+    if D2>a:
+     a=D2
+   if a>b:
+    return b
   return T
 I7=A6()
 H91=F0()
@@ -449,8 +464,6 @@ while 1:
    for key,arg in enumerate(J3):
     if arg=='wtime' and i or arg=='btime' and not i:
      J6=int(J3[key+1])/1e3
-    elif arg=='depth':
-     H91.S=int(J3[key+1])
    UU=12 if I7.A8<30 else 4
    H91.G2=t()+(J6)-1
    J6=max(3,J6/UU)
@@ -464,8 +477,6 @@ while 1:
     if S>=H91.S or t()>H91.G1:
      break
    Q(f"bestmove {str(F2)}")
-   if len(H91.G3)>2e6:
-    H91.G3.clear()
  except(KeyboardInterrupt,SystemExit):
   sys.exit()
  except Exception as exc:
