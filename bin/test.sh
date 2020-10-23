@@ -9,7 +9,7 @@
         cmd=/home/vagrant/code/pygone/bin/sunfish/sunfish \
         proto=xboard \
     -each \
-        tc=0/50+2 \
+        tc=0/10+1.4 \
         restart=off \
         -openings file=book.pgn \
         -repeat \

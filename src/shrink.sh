@@ -57,7 +57,6 @@ sed -i -e 's/total_pieces/C9/g' pygone-mini.py
 sed -i -e 's/total_pawns/C0/g' pygone-mini.py
 sed -i -e 's/p_offset/D11/g' pygone-mini.py
 sed -i -e 's/offset/D1/g' pygone-mini.py
-sed -i -e 's/local_score/D2/g' pygone-mini.py
 sed -i -e 's/from_score_piece/D3/g' pygone-mini.py
 sed -i -e 's/to_piece/D4/g' pygone-mini.py
 sed -i -e 's/p_piece/D5/g' pygone-mini.py
@@ -130,7 +129,6 @@ sed -i -e 's/black_time/J2/g' pygone-mini.py
 sed -i -e 's/args/J3/g' pygone-mini.py
 sed -i -e 's/result_score/JJ3/g' pygone-mini.py
 sed -i -e 's/moved_piece_count/J4/g' pygone-mini.py
-sed -i -e 's/best_score/J5/g' pygone-mini.py
 sed -i -e 's/move_time/J6/g' pygone-mini.py
 sed -i -e 's/out_string/J8/g' pygone-mini.py
 sed -i -e 's/in_list/J9/g' pygone-mini.py
@@ -177,6 +175,8 @@ sed -i -e 's/king_position/O1/g' pygone-mini.py
 sed -i -e 's/attack_position/O2/g' pygone-mini.py
 sed -i -e 's/count1/O3/g' pygone-mini.py
 sed -i -e 's/count2/O4/g' pygone-mini.py
+sed -i -e 's/to_pawns/O5/g' pygone-mini.py
+sed -i -e 's/from_pawns/O6/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
@@ -189,6 +189,7 @@ sed -i -e 's/Entry/Z8/g' pygone-mini.py
 
 sed -i -e 's/alpha/a/g' pygone-mini.py
 sed -i -e 's/beta/b/g' pygone-mini.py
+sed -i -e 's/local_score/d/g' pygone-mini.py
 sed -i -e 's/tt_entry/e/g' pygone-mini.py
 sed -i -e 's/is_white/i/g' pygone-mini.py
 sed -i -e 's/local_board/l/g' pygone-mini.py

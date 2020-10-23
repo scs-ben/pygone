@@ -69,8 +69,8 @@ LOWER = 3
 MATE_LOWER = PIECEPOINTS['k'] - 10*PIECEPOINTS['q'] #11e3
 MATE_UPPER = PIECEPOINTS['k'] + 10*PIECEPOINTS['q'] #29e3
 
-PROTECTED_PAWN_VALUE = 30
-STACKED_PAWN_VALUE = 40
+PROTECTED_PAWN_VALUE = 20
+STACKED_PAWN_VALUE = 30
 
 TO_MOVES = {
     # (column, row, can_capture)
@@ -637,7 +637,7 @@ class Search:
 
             yield v_depth, best_move, local_score
 
-    def search(self, local_board, v_depth, alpha, beta, root_search=True, q_search=True):
+    def search(self, local_board, v_depth, alpha, beta, root_search=True):
         if t() > self.critical_time:
             return local_board.rolling_score
 
@@ -658,15 +658,20 @@ class Search:
         if not root_search and (local_board.repetitions.count(local_board.board_string) > 1 or local_board.move_counter >= 100):
             return 0
 
+        original_alpha = alpha
+
         tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*MATE_UPPER, 'tt_flag': UPPER, 'tt_depth': 0, 'tt_move': None})
 
-        if tt_entry['tt_depth'] >= v_depth > 2 and abs(tt_entry['tt_value']) < MATE_UPPER:
-            if tt_entry['tt_flag'] == EXACT or \
-            (tt_entry['tt_flag'] == LOWER and tt_entry['tt_value'] >= beta) or \
-            (tt_entry['tt_flag'] == UPPER and tt_entry['tt_value'] <= alpha):
+        if tt_entry['tt_depth'] >= v_depth and abs(tt_entry['tt_value']) < MATE_UPPER:
+            if tt_entry['tt_flag'] == EXACT:
                 return tt_entry['tt_value']
+            elif tt_entry['tt_flag'] == LOWER:
+                alpha = max(alpha, tt_entry['tt_value'])
+            elif tt_entry['tt_flag'] == UPPER:
+                beta = min(beta, tt_entry['tt_value'])
 
-        original_alpha = alpha
+        if alpha >= beta:
+            return tt_entry['tt_value']
 
         current_eval = tt_entry['tt_value'] if tt_entry['tt_value'] < MATE_UPPER else local_board.rolling_score
 
@@ -684,16 +689,16 @@ class Search:
             tt_entry['tt_flag'] != UPPER and \
             tt_entry['tt_value'] < beta:
 
-            local_score = -self.search(local_board.nullmove(), min(1, v_depth - 4), -beta, -beta+1, False, False)
+            local_score = -self.search(local_board.nullmove(), min(1, v_depth - 4), -beta, -beta+1, False)
 
             if local_score >= beta:
-                return beta
+                return local_score
 
         if v_depth > 1 and not pv_node and not is_in_check and local_board.move_list[0] and tt_entry['tt_move']:
-            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha, False, True)
+            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha, False)
 
             if local_score >= beta:
-                return beta
+                return local_score
 
         played_moves = 0
 
@@ -712,23 +717,23 @@ class Search:
 
             played_moves += 1
 
-            is_noisy = current_move_score > 160
+            is_noisy = current_move_score > 80
 
             if played_moves == 1:
                 # full window search for first move
-                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False, is_noisy)
+                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False)
             else:
                 reduce_depth = 1
 
                 if v_depth > 2 and not is_noisy:
                     reduce_depth = min(3, v_depth)
 
-                local_score = -self.search(moved_board, v_depth - reduce_depth, -alpha-1, -alpha, False, is_noisy)
+                local_score = -self.search(moved_board, v_depth - reduce_depth, -alpha-1, -alpha, False)
                 if reduce_depth > 1 and local_score > alpha:
-                    local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha, False, is_noisy)
+                    local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha, False)
 
                 if alpha < local_score < beta:
-                    local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False, is_noisy)
+                    local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False)
 
             if local_score > best_score:
                 best_move = s_move
@@ -744,9 +749,10 @@ class Search:
             return -MATE_UPPER if is_in_check else 0
 
         #update TT only if we are not in time cut
-        if t() < self.critical_time and v_depth >= tt_entry['tt_depth']:
+        if t() < self.critical_time:
             tt_entry['tt_value'] = best_score
             tt_entry['tt_move'] = best_move
+            tt_entry['tt_depth'] = v_depth
             if best_score <= original_alpha:
                 tt_entry['tt_flag'] = UPPER
             elif best_score >= beta:
@@ -778,7 +784,7 @@ class Search:
         alpha = max(alpha, best_score)
 
         if alpha >= beta:
-            return beta
+            return best_score
 
         for s_move in sorted(local_board.generate_valid_captures(), key=local_board.move_sort, reverse=True):
             local_score = -self.q_search(local_board.make_move(s_move), -beta, -alpha)
@@ -790,7 +796,7 @@ class Search:
                     alpha = local_score
 
             if alpha > beta:
-                return beta
+                return best_score
 
         return best_score
 
