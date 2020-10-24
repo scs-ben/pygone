@@ -403,11 +403,10 @@ class F0:
    if d>T:
     H7=F2
     T=d
-    if d>=b:
-     break
-    if d<a-A['q']:
-     return a
-    a=max(a,d)
+    if d>a:
+     a=d
+     if a>=b:
+      break
   if I92==0:
    return-J if E01 else 0
   if t()<Z.G2:
