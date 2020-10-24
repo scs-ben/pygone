@@ -4,7 +4,7 @@ import copy, math, sys, time
 t = time.time
 
 # values are copied from SF
-PIECEPOINTS = {'p': 100, 'n': 285, 'b': 305, 'r': 600, 'q': 1250, 'k': 2e4}
+PIECEPOINTS = {'p': 100, 'n': 300, 'b': 305, 'r': 610, 'q': 1250, 'k': 2e4}
 
 ALLPSQT = {
     'p': [[0]*8,
@@ -18,8 +18,8 @@ ALLPSQT = {
     'n': [[-50, -40, -30, -30, -30, -30, -40, -50],
           [-40, -20, 5, 5, 5, 5, -20, -40],
           [-30, 5, 10, 15, 15, 10, 5, -30],
-          [-30, 5, 15, 25, 25, 15, 5, -30],
-          [-30, 5, 15, 25, 25, 15, 5, -30],
+          [-30, 5, 15, 20, 20, 15, 5, -30],
+          [-30, 5, 15, 20, 20, 15, 5, -30],
           [-30, 10, 10, 10, 10, 10, 10, -30],
           [-40, -20, 0, 5, 5, 0, -20, -40],
           [-50, -40, -30, -30, -30, -30, -40, -50]],
@@ -70,7 +70,7 @@ MATE_LOWER = PIECEPOINTS['k'] - 10*PIECEPOINTS['q'] #11e3
 MATE_UPPER = PIECEPOINTS['k'] + 10*PIECEPOINTS['q'] #29e3
 
 PROTECTED_PAWN_VALUE = 20
-STACKED_PAWN_VALUE = 30
+STACKED_PAWN_VALUE = 40
 
 TO_MOVES = {
     # (column, row, can_capture)
@@ -280,7 +280,7 @@ class Board:
             local_score += ALLPSQT[to_piece][abs(to_number - offset)][to_letter_number]
 
             if sorting:
-                local_score += 5 + PIECEPOINTS[to_piece] / PIECEPOINTS[from_piece]
+                local_score += PIECEPOINTS[to_piece] / 10 #5 + PIECEPOINTS[to_piece] / PIECEPOINTS[from_piece]
                 # maybe pawn captures in the end game aren't the most important thing to do
                 if is_endgame and from_piece == 'p':
                     local_score -= 50
@@ -332,6 +332,8 @@ class Board:
         elif from_piece == 'p':
             if sorting and self.played_move_count < 30:
                 local_score += ALLPSQT[from_piece][abs(to_number - offset)][to_letter_number] / 10
+                if abs(from_number - to_number) == 2:
+                    local_score -= 100
             if uci_coordinate[2:4] == self.en_passant:
                 # add in an extra pawn for EP capture
                 local_score += ALLPSQT[from_piece][abs(to_number - offset)][to_letter_number]
@@ -637,7 +639,7 @@ class Search:
 
             yield v_depth, best_move, local_score
 
-    def search(self, local_board, v_depth, alpha, beta, root_search=True):
+    def search(self, local_board, v_depth, alpha, beta):
         if t() > self.critical_time:
             return local_board.rolling_score
 
@@ -655,7 +657,7 @@ class Search:
         if v_depth == 0:
             return self.q_search(local_board, alpha, beta)
 
-        if not root_search and (local_board.repetitions.count(local_board.board_string) > 1 or local_board.move_counter >= 100):
+        if local_board.repetitions.count(local_board.board_string) > 1 or local_board.move_counter >= 100:
             return 0
 
         original_alpha = alpha
@@ -670,8 +672,8 @@ class Search:
             elif tt_entry['tt_flag'] == UPPER:
                 beta = min(beta, tt_entry['tt_value'])
 
-        if alpha >= beta:
-            return tt_entry['tt_value']
+            if alpha >= beta:
+                return tt_entry['tt_value']
 
         current_eval = tt_entry['tt_value'] if tt_entry['tt_value'] < MATE_UPPER else local_board.rolling_score
 
@@ -689,13 +691,13 @@ class Search:
             tt_entry['tt_flag'] != UPPER and \
             tt_entry['tt_value'] < beta:
 
-            local_score = -self.search(local_board.nullmove(), min(1, v_depth - 4), -beta, -beta+1, False)
+            local_score = -self.search(local_board.nullmove(), min(1, v_depth - 4), -beta, -beta+1)
 
             if local_score >= beta:
                 return local_score
 
-        if v_depth > 1 and not pv_node and not is_in_check and local_board.move_list[0] and tt_entry['tt_move']:
-            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha, False)
+        if not pv_node and not is_in_check and local_board.move_list[0] and tt_entry['tt_move']:
+            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha)
 
             if local_score >= beta:
                 return local_score
@@ -704,7 +706,7 @@ class Search:
 
         best_move = None
 
-        v_depth += is_in_check and not root_search
+        v_depth += is_in_check
 
         for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
             current_move_score = local_board.calculate_score(s_move)
@@ -721,19 +723,19 @@ class Search:
 
             if played_moves == 1:
                 # full window search for first move
-                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False)
+                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha)
             else:
                 reduce_depth = 1
 
                 if v_depth > 2 and not is_noisy:
                     reduce_depth = min(3, v_depth)
 
-                local_score = -self.search(moved_board, v_depth - reduce_depth, -alpha-1, -alpha, False)
+                local_score = -self.search(moved_board, v_depth - reduce_depth, -alpha-1, -alpha)
                 if reduce_depth > 1 and local_score > alpha:
-                    local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha, False)
+                    local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha)
 
                 if alpha < local_score < beta:
-                    local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, False)
+                    local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha)
 
             if local_score > best_score:
                 best_move = s_move
