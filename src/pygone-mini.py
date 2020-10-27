@@ -130,7 +130,7 @@ class A6:
  def C7(Z):
   return 64-J0(Z.K3,'-')
  def C8(Z):
-  return Z.K4<14 or(Z.K4<20 and 'q' not in Z.K3.lower())
+  return Z.K4<=14 
  def M3(Z,A1):
   return Z.A4(A1,1)
  def A4(Z,A1,M4=0):
@@ -341,12 +341,12 @@ class F0:
    if e['M2']==H or (e['M2']==L and e['M1']>=b)or (e['M2']==K and e['M1']<=a):
     return e['M1']
   L5=e['M1']if e['M1']<J else l.B6
-  if S<=7 and not L1 and not E01 and L5-(75*S)>=b:
+  if S<=7 and not L1 and not E01 and L5-(85*S)>=b:
    return L5
   T=-J-1
   d=-J
   L8='RNBQ' if i else 'rnbq'
-  if not L1 and not E01 and L5>=b and S>=4 and L8 in l.K3 and l.A9[0]and e['M2']!=K and e['M1']<b:
+  if not L1 and not E01 and L5>=b and S>=4 and l.A9[0]and e['M2']!=K and e['M1']<b and L8 in l.K3:
    d=-Z.H9(l.C5(),min(1,S-4),-b,-b+1)
    if d>=b and abs(d)<J:
     return b
@@ -366,9 +366,9 @@ class F0:
     d=-Z.H9(G7,S-1,-b,-a)
    else:
     M8=1
-    M7=I6>800 or l.K4!=G7.K4
-    if S>2 and not M7:
-     M8=min(3,S)
+    if S>2:
+     if I6<800 and l.K4==G7.K4:
+      M8=min(3,S)
     d=-Z.H9(G7,S-M8,-a-1,-a)
     if M8>1 and d>a:
      d=-Z.H9(G7,S-1,-a-1,-a)
@@ -377,9 +377,10 @@ class F0:
    if d>T:
     H7=F2
     T=d
-    a=max(a,d)
-    if a>=b:
-     break
+    if d>a:
+     a=d
+     if a>=b:
+      break
   if I92==0:
    return-J if E01 else 0
   if t()<Z.G2:
@@ -409,20 +410,16 @@ class F0:
   d=l.B6 if not E01 else-J
   if d>=b:
    return b
-  i=l.A8%2==0
   T=d
   a=max(a,d)
   for F2 in sorted(l.N7()if not E01 else l.A5(),key=l.M3,reverse=1):
-   G7=l.C4(F2)
-   if G7.E0(i):
-    continue
-   d=-Z.H93(G7,-b,-a)
+   d=-Z.H93(l.C4(F2),-b,-a)
    if d>T:
     T=d
     if d>a:
      a=d
-   if a>=b:
-    return T
+    if a>=b:
+     return T
   return T
 I7=A6()
 H91=F0()

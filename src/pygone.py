@@ -316,7 +316,10 @@ class Board:
             #check for open files
             # credit if we are moving from a closed file to an open one
             if count1 < 7 and count2 == 8:
-                local_score += 10
+                local_score += PROTECTED_PAWN_VALUE
+            # in this case, we are moving from an open file to a non-open file
+            elif count1 == 7 and count2 < 8:
+                local_score -= PROTECTED_PAWN_VALUE
 
         elif from_piece == 'p':
             if uci_coordinate[2:4] == self.en_passant:
@@ -359,7 +362,7 @@ class Board:
         return local_score
 
     def protected_pawn(self, row, column, p_offset, p_piece):
-        if 0 >= (row - p_offset) < 8:
+        if (row - p_offset) in range(8):
             return (column < 7 and self.board_state[row - p_offset][column + 1] == p_piece) or \
                 (column > 0 and self.board_state[row - p_offset][column - 1] == p_piece)
 
@@ -489,7 +492,7 @@ class Board:
                     to_column = column + piece_move[0]
                     to_row = row + (piece_move[1] * offset)
 
-                    while 0 >= to_column < 8 and  0 >= to_row < 8:
+                    while to_column in range(8) and  to_row in range(8):
                         eval_piece = eval_state[to_row][to_column]
 
                         dest = number_to_letter(to_column + 1) + str(abs(to_row - 8))
@@ -767,8 +770,8 @@ class Search:
                 if local_score > alpha:
                     alpha = local_score
 
-                    if alpha >= beta:
-                        return best_score
+                if alpha >= beta:
+                    return best_score
 
         return best_score
 
