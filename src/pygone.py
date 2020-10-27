@@ -492,7 +492,7 @@ class Board:
                     to_column = column + piece_move[0]
                     to_row = row + (piece_move[1] * offset)
 
-                    while to_column in range(8) and  to_row in range(8):
+                    while 0 >= to_column < 8 and  0 >= to_row < 8:
                         eval_piece = eval_state[to_row][to_column]
 
                         dest = number_to_letter(to_column + 1) + str(abs(to_row - 8))
@@ -639,7 +639,7 @@ class Search:
 
         current_eval = tt_entry['tt_value'] if tt_entry['tt_value'] < MATE_UPPER else local_board.rolling_score
 
-        if v_depth <= 7 and not pv_node and not is_in_check and current_eval - (75 * v_depth) >= beta:
+        if v_depth <= 7 and not pv_node and not is_in_check and current_eval - (85 * v_depth) >= beta:
             return current_eval
 
         best_score = -MATE_UPPER - 1
@@ -648,10 +648,11 @@ class Search:
         pieces = 'RNBQ' if is_white else 'rnbq'
 
         if not pv_node and not is_in_check and current_eval >= beta and \
-            v_depth >= 4 and pieces in local_board.board_string and \
+            v_depth >= 4 and \
             local_board.move_list[0] and \
             tt_entry['tt_flag'] != UPPER and \
-            tt_entry['tt_value'] < beta:
+            tt_entry['tt_value'] < beta and \
+            pieces in local_board.board_string:
 
             local_score = -self.search(local_board.nullmove(), min(1, v_depth - 4), -beta, -beta+1)
 
@@ -685,10 +686,9 @@ class Search:
             else:
                 reduce_depth = 1
 
-                is_noisy = current_move_score > 800 or local_board.piece_count != moved_board.piece_count
-
-                if v_depth > 2 and not is_noisy:
-                    reduce_depth = min(3, v_depth)
+                if v_depth > 2:
+                    if current_move_score < 800 and local_board.piece_count == moved_board.piece_count:
+                        reduce_depth = min(3, v_depth)
 
                 local_score = -self.search(moved_board, v_depth - reduce_depth, -alpha-1, -alpha)
                 if reduce_depth > 1 and local_score > alpha:
@@ -701,10 +701,11 @@ class Search:
                 best_move = s_move
                 best_score = local_score
 
-                alpha = max(alpha, local_score)
+                if local_score > alpha:
+                    alpha = local_score
 
-                if alpha >= beta:
-                    break
+                    if alpha >= beta:
+                        break
 
         if played_moves == 0:
             return -MATE_UPPER if is_in_check else 0
@@ -750,20 +751,18 @@ class Search:
         if local_score >= beta:
             return beta
 
-        is_white = local_board.played_move_count % 2 == 0
-
         best_score = local_score
 
         alpha = max(alpha, local_score)
 
         for s_move in sorted(local_board.generate_valid_captures() if not is_in_check else local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
-            moved_board = local_board.make_move(s_move)
+            # moved_board = local_board.make_move(s_move)
 
             # determine legality: if we moved and are in check, it's not legal
-            if moved_board.in_check(is_white):
-                continue
+            # if moved_board.in_check(is_white):
+            #     continue
 
-            local_score = -self.q_search(moved_board, -beta, -alpha)
+            local_score = -self.q_search(local_board.make_move(s_move), -beta, -alpha)
 
             if local_score > best_score:
                 best_score = local_score
@@ -771,8 +770,8 @@ class Search:
                 if local_score > alpha:
                     alpha = local_score
 
-            if alpha >= beta:
-                return best_score
+                    if alpha >= beta:
+                        return best_score
 
         return best_score
 
