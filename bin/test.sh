@@ -5,11 +5,11 @@
         cmd=/home/vagrant/code/pygone/bin/pygone \
         proto=uci \
     -engine \
-        name=sunfish \
-        cmd=/home/vagrant/code/pygone/bin/sunfish/sunfish \
+        name=umax44 \
+        cmd=/home/vagrant/code/pygone/bin/umax/umax44 \
         proto=xboard \
     -each \
-        tc=0/10+1.4 \
+        tc=0/50+2 \
         restart=off \
         -openings file=book.pgn \
         -repeat \
