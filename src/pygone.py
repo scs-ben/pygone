@@ -253,7 +253,7 @@ class Board:
         return 64 - string_count(self.board_string, '-')
 
     def is_endgame(self):
-        return self.piece_count < 14 or (self.piece_count < 20 and 'q' not in self.board_string.lower())
+        return self.piece_count <= 14 # or (self.piece_count < 20 and 'q' not in self.board_string.lower())
 
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
@@ -286,7 +286,7 @@ class Board:
             if sorting:
                 local_score += (PIECEPOINTS[to_piece] - PIECEPOINTS[from_piece])
 
-            # 20cp bonus for breaking up the bishop pair
+            # bonus for breaking up the bishop pair
             if to_piece == 'b' and self.board_string.count(self.board_state[to_number][to_letter_number]) == 2:
                 local_score += PROTECTED_PAWN_VALUE
             elif to_piece == 'p':
@@ -316,10 +316,7 @@ class Board:
             #check for open files
             # credit if we are moving from a closed file to an open one
             if count1 < 7 and count2 == 8:
-                local_score += PROTECTED_PAWN_VALUE
-            # in this case, we are moving from an open file to a non-open file
-            elif count1 == 7 and count2 < 8:
-                local_score -= PROTECTED_PAWN_VALUE
+                local_score += 10
 
         elif from_piece == 'p':
             if uci_coordinate[2:4] == self.en_passant:
@@ -362,7 +359,7 @@ class Board:
         return local_score
 
     def protected_pawn(self, row, column, p_offset, p_piece):
-        if (row - p_offset) in range(8):
+        if 0 >= (row - p_offset) < 8:
             return (column < 7 and self.board_state[row - p_offset][column + 1] == p_piece) or \
                 (column > 0 and self.board_state[row - p_offset][column - 1] == p_piece)
 
