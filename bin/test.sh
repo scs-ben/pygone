@@ -11,7 +11,7 @@
     -each \
         tc=0/20+2 \
         restart=off \
-        -openings file=book2.pgn \
+        -openings file=book.pgn order=random \
         -repeat \
         -pgnout games.pgn min \
         -recover \

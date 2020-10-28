@@ -177,6 +177,10 @@ sed -i -e 's/count1/O3/g' pygone-mini.py
 sed -i -e 's/count2/O4/g' pygone-mini.py
 sed -i -e 's/to_pawns/O5/g' pygone-mini.py
 sed -i -e 's/from_pawns/O6/g' pygone-mini.py
+sed -i -e 's/coordinate_to_position/O7/g' pygone-mini.py
+sed -i -e 's/position_to_coordinate/O8/g' pygone-mini.py
+sed -i -e 's/mutate_board/O9/g' pygone-mini.py
+sed -i -e 's/board_position/O0/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
