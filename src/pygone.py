@@ -1,61 +1,60 @@
 #!/usr/bin/env pypy3
-import copy, math, sys, time
-from multiprocessing import Process
+import copy, math, random, sys, time
 
 t = time.time
 
 # values are copied from SF
-PIECEPOINTS = {'p': 100, 'n': 290, 'b': 300, 'r': 600, 'q': 1250, 'k': 2e4}
+PIECEPOINTS = {'p': 100, 'n': 290, 'b': 300, 'r': 620, 'q': 1250, 'k': 2e4}
 
 ALLPSQT = {
     'p': (0, 0, 0, 0, 0, 0, 0, 0,
-          50, 50, 50, 50, 50, 50, 50, 50,
           20, 20, 20, 20, 20, 20, 20, 20,
-          10, 10, 15, 25, 25, 15, 10, 10,
-          0, 0, 0, 20, 20, 0, 0, 0,
-          5, -5, -5, 5, 5, -5, -5, 5,
-          5, 10, 10, -20, -20, 10, 10, 5,
+          8, 8, 8, 8, 8, 8, 8, 8,
+          4, 4, 6, 10, 10, 6, 4, 4,
+          0, 0, 0, 8, 8, 0, 0, 0,
+          2, -2, -2, 2, 2, -2, -2, 2,
+          2, 4, 4, -8, -8, 4, 4, 2,
           0, 0, 0, 0, 0, 0, 0, 0),
-    'n': (-50, -40, -30, -30, -30, -30, -40, -50,
-          -40, -20, 5, 5, 5, 5, -20, -40,
-          -30, 5, 10, 15, 15, 10, 5, -30,
-          -30, 5, 15, 25, 25, 15, 5, -30,
-          -30, 5, 15, 25, 25, 15, 5, -30,
-          -30, 10, 10, 10, 10, 10, 10, -30,
-          -40, -20, 0, 5, 5, 0, -20, -40,
-          -50, -40, -30, -30, -30, -30, -40, -50),
-    'b': (-20, -10, -10, -10, -10, -10, -10, -20,
-          -10, 0, 0, 0, 0, 0, 0, -10,
-          -10, 0, 5, 10, 10, 5, 0, -10,
-          0, 5, 5, 10, 10, 5, 5, 0,
-          0, 0, 10, 10, 10, 10, 0, 0,
-          -10, 10, 10, 10, 10, 10, 10, -10,
-          -10, 5, 0, 0, 0, 0, 5, -10,
-          -20, -10, -10, -10, -10, -10, -10, -20),
+    'n': (-20, -16, -12, -12, -12, -12, -16, -20,
+          -16, -8, 2, 2, 2, 2, -8, -16,
+          -12, 2, 4, 6, 6, 4, 2, -12,
+          -12, 2, 6, 10, 10, 6, 2, -12,
+          -12, 2, 6, 10, 10, 6, 2, -12,
+          -12, 4, 4, 4, 4, 4, 4, -12,
+          -16, -8, 0, 2, 2, 0, -8, -16,
+          -20, -16, -12, -12, -12, -12, -16, -20),
+    'b': (-8, -4, -4, -4, -4, -4, -4, -8,
+          -4, 0, 0, 0, 0, 0, 0, -4,
+          -4, 0, 2, 4, 4, 2, 0, -4,
+          0, 2, 2, 4, 4, 2, 2, 0,
+          0, 0, 4, 4, 4, 4, 0, 0,
+          -4, 4, 4, 4, 4, 4, 4, -4,
+          -4, 2, 0, 0, 0, 0, 2, -4,
+          -8, -4, -4, -4, -4, -4, -4, -8),
     'r': (0, 0, 0, 0, 0, 0, 0, 0,
-          5, 10, 10, 10, 10, 10, 10, 5,
-          -10, 0, 5, 5, 5, 5, 0, -10,
-          -5, 0, 5, 5, 5, 5, 0, -5,
-          0, 0, 5, 5, 5, 5, 0, -5,
-          -10, 5, 5, 5, 5, 5, 0, -10,
-          -5, 0, 0, 5, 0, 5, 0, -5,
-          0, 0, 0, 5, 5, 0, 0, 0),
-    'q': (-20, -10, -10, -5, -5, -10, -10, -20,
-          -10, 5, 5, 5, 5, 5, 5, -10,
-          -10, 5, 5, 5, 5, 5, 5, -10,
-          -5, 5, 5, 5, 5, 5, 5, -5,
-          -5, 5, 5, 5, 5, 5, 5, -5,
-          -10, 5, 5, 5, 5, 5, 5, -10,
-          -10, 0, 5, 0, 0, 0, 0, -10,
-          -20, -10, -10, -5, -5, -10, -10, -20),
-    'k': (-50, -40, -30, -20, -20, -30, -40, -50,
-          -20, -20, -10, 0, 0, -10, -20, -20,
-          -20, -10, 20, 30, 30, 20, -10, -20,
-          -20, -10, 30, 40, 40, 30, -10, -20,
-          -20, -10, 30, 40, 40, 30, -10, -20,
-          -20, -10, 20, 30, 30, 20, -10, -20,
-          20, 20, -40, -40, -40, -40, 20, 20,
-          0, 10, 30, 0, 0, 10, 30, 0)
+          2, 4, 4, 4, 4, 4, 4, 2,
+          -4, 0, 2, 2, 2, 2, 0, -4,
+          -2, 0, 2, 2, 2, 2, 0, -2,
+          0, 0, 2, 2, 2, 2, 0, -2,
+          -4, 2, 2, 2, 2, 2, 0, -4,
+          -2, 0, 0, 2, 0, 2, 0, -2,
+          0, 0, 0, 2, 2, 0, 0, 0),
+    'q': (-8, -4, -4, -2, -2, -4, -4, -8,
+          -4, 2, 2, 2, 2, 2, 2, -4,
+          -4, 2, 2, 2, 2, 2, 2, -4,
+          -2, 2, 2, 2, 2, 2, 2, -2,
+          -2, 2, 2, 2, 2, 2, 2, -2,
+          -4, 2, 2, 2, 2, 2, 2, -4,
+          -4, 0, 2, 0, 0, 0, 0, -4,
+          -8, -4, -4, -2, -2, -4, -4, -8),
+    'k': (-20, -16, -12, -8, -8, -12, -16, -20,
+          -8, -8, -4, 0, 0, -4, -8, -8,
+          -8, -4, 8, 12, 12, 8, -4, -8,
+          -8, -4, 12, 16, 16, 12, -4, -8,
+          -8, -4, 12, 16, 16, 12, -4, -8,
+          -8, -4, 8, 12, 12, 8, -4, -8,
+          8, 8, -16, -16, -16, -16, 8, 8,
+          0, 4, 12, 0, 0, 4, 12, 0)
 }
 
 for set_piece, board in ALLPSQT.items():
@@ -70,8 +69,8 @@ LOWER = 3
 MATE_LOWER = PIECEPOINTS['k'] - 10*PIECEPOINTS['q']
 MATE_UPPER = PIECEPOINTS['k'] + 10*PIECEPOINTS['q']
 
-PROTECTED_PAWN_VALUE = 30
-STACKED_PAWN_VALUE = 40
+PROTECTED_PAWN_VALUE = 8
+STACKED_PAWN_VALUE = 12
 
 TO_MOVES = {
     # (column, row, can_capture)
@@ -133,6 +132,7 @@ class Board:
     piece_count = 32
     en_passant = ''
     move_counter = 0
+    v_depth = 1
 
     def __init__(self):
         self.board_state = (
@@ -265,12 +265,12 @@ class Board:
         return 64 - string_count(self.board_string, '-')
 
     def is_endgame(self):
-        return self.piece_count < 14 or (self.piece_count < 20 and 'q' not in self.board_string.lower())
+        return self.piece_count < 14 # or (self.piece_count < 20 and 'q' not in self.board_string.lower())
 
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
 
-    def calculate_score(self, uci_coordinate, sorting=False):
+    def calculate_score(self, uci_coordinate, sorting=False, v_depth=1):
         if not uci_coordinate:
             return 0
 
@@ -300,7 +300,7 @@ class Board:
 
             # 20cp bonus for breaking up the bishop pair
             if to_piece == 'b' and self.board_state.count(self.board_state[to_number]) == 2:
-                local_score += PROTECTED_PAWN_VALUE
+                local_score += STACKED_PAWN_VALUE
             elif to_piece == 'p':
                 # if we capture a protected pawn, need to credit bonus for protected pawn
                 if self.protected_pawn(to_number, -p_offset, to_piece):
@@ -321,17 +321,17 @@ class Board:
                 else:
                     local_score += ALLPSQT['r'][abs(to_number - offset) + 1] - \
                                     ALLPSQT['r'][abs(to_number - offset) - 2]
-        # elif from_piece == 'r':
-        #     count1 = self.count_piece(from_number, '-')
-        #     count2 = self.count_piece(to_number, '-')
+        elif from_piece == 'r':
+            count1 = self.count_piece(from_number, '-')
+            count2 = self.count_piece(to_number, '-')
 
-        #     #check for open files
-        #     # credit if we are moving from a closed file to an open one
-        #     if count1 < 7 and count2 == 8:
-        #         local_score += PROTECTED_PAWN_VALUE
-        #     # in this case, we are moving from an open file to a non-open file
-        #     elif count1 == 7 and count2 < 8:
-        #         local_score -= PROTECTED_PAWN_VALUE
+            #check for open files
+            # credit if we are moving from a closed file to an open one
+            if count1 < 7 and count2 == 8:
+                local_score += PROTECTED_PAWN_VALUE
+            # in this case, we are moving from an open file to a non-open file
+            elif count1 == 7 and count2 < 8:
+                local_score -= PROTECTED_PAWN_VALUE
 
         elif from_piece == 'p':
             if uci_coordinate[2:4] == self.en_passant:
@@ -368,8 +368,11 @@ class Board:
 
             if not is_endgame:
                 # if the pawn is in front of the K, penalize a movement
-                if 'k' in self.board_state[(from_number - p_offset - 1):(from_number - p_offset + 1)].lower():
-                    local_score -= PROTECTED_PAWN_VALUE
+                if 'k' in self.board_state[(from_number - p_offset - 1):(from_number - p_offset + 2)].lower():
+                    local_score -= 2*STACKED_PAWN_VALUE
+
+        if sorting:
+            local_score += random.randint(1, min(1, self.v_depth))
 
         return local_score
 
@@ -487,10 +490,7 @@ class Board:
             piece = piece.lower()
 
             for piece_move in TO_MOVES[piece]:
-                if board_position > attack_position and offset * piece_move[1] > 0 or board_position < attack_position and offset * piece_move[1] < 0:
-                    continue
-
-                if piece == 'p' and (not piece_move[0] or abs(board_position - attack_position) > 32):
+                if piece == 'p' and not piece_move[0]:
                     continue
 
                 to_position = board_position + piece_move[0] + offset * piece_move[1]
@@ -509,20 +509,20 @@ class Board:
         return False
 
 
-tt_bucket = {}
 
 class Search:
     v_nodes = 0
     v_depth = 0
     end_time = 0
     critical_time = 0
+    tt_bucket = {}
 
     def reset(self):
         self.v_nodes = 0
         self.v_depth = 0
         self.end_time = 0
         self.critical_time = 0
-        tt_bucket.clear()
+        self.tt_bucket.clear()
 
     # def run_perft(self, local_board, original_depth, v_depth):
     #     if v_depth == 0:
@@ -573,7 +573,7 @@ class Search:
             local_score = self.search(local_board, v_depth, -MATE_UPPER, MATE_UPPER)
 
             if t() < self.critical_time:
-                best_move = tt_bucket.get(local_board.board_string)
+                best_move = self.tt_bucket.get(local_board.board_string)
                 if best_move:
                     best_move = best_move['tt_move']
             else:
@@ -583,24 +583,24 @@ class Search:
 
             v_nps = math.ceil(self.v_nodes / elapsed_time) if elapsed_time > 0 else 1
 
-            # pv = ''
-            # counter = 1
-            # pv_board = local_board.make_move(best_move)
-            # while counter < v_depth:
-            #     counter += 1
+            pv = ''
+            counter = 1
+            pv_board = local_board.make_move(best_move)
+            while counter < min(6, v_depth):
+                counter += 1
 
-            #     pv_entry = tt_bucket.get(pv_board.board_string)
+                pv_entry = self.tt_bucket.get(pv_board.board_string)
 
-            #     if not pv_entry:
-            #         break
+                if not pv_entry:
+                    break
 
-            #     pv_board = pv_board.make_move(pv_entry['tt_move'])
+                pv_board = pv_board.make_move(pv_entry['tt_move'])
 
-            #     pv += ' ' + pv_entry['tt_move']
+                pv += ' ' + pv_entry['tt_move']
 
-            # print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move + pv))
+            print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move + pv))
 
-            print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move))
+            # print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move))
 
             yield v_depth, best_move, local_score
 
@@ -629,7 +629,7 @@ class Search:
 
         original_alpha = alpha
 
-        tt_entry = tt_bucket.get((local_board.board_string), {'tt_value': 2*MATE_UPPER, 'tt_flag': UPPER, 'tt_depth': 0, 'tt_move': None})
+        tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*MATE_UPPER, 'tt_flag': UPPER, 'tt_depth': -1, 'tt_move': None})
 
         if tt_entry['tt_depth'] >= v_depth and not is_in_check:
             if tt_entry['tt_flag'] == EXACT or \
@@ -639,8 +639,11 @@ class Search:
 
         current_eval = tt_entry['tt_value'] if tt_entry['tt_value'] < MATE_UPPER else local_board.rolling_score
 
-        if v_depth <= 7 and not pv_node and not is_in_check and current_eval - (90 * v_depth) >= beta:
+        if not pv_node and not is_in_check and v_depth <= 7 and current_eval - (100 * v_depth) >= beta:
             return current_eval
+
+        # if v_depth <= 2 and current_eval + 300 * v_depth <= alpha:
+        #     return current_eval
 
         best_score = -MATE_UPPER - 1
         local_score = -MATE_UPPER
@@ -669,10 +672,14 @@ class Search:
 
         best_move = None
 
-        for s_move in sorted(local_board.generate_valid_moves(), key=local_board.calculate_score, reverse=True):
-            current_move_score = local_board.calculate_score(s_move)
+        local_board.v_depth = v_depth
+
+        for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
+            # current_move_score = local_board.calculate_score(s_move)
 
             moved_board = local_board.make_move(s_move)
+
+            current_move_score = moved_board.rolling_score - local_board.rolling_score
 
             # determine legality: if we moved and are in check, it's not legal
             if moved_board.in_check(is_white):
@@ -722,7 +729,7 @@ class Search:
             else:
                 tt_entry['tt_flag'] = EXACT
 
-            tt_bucket[local_board.board_string] = tt_entry
+            self.tt_bucket[local_board.board_string] = tt_entry
 
         return best_score
 
@@ -735,7 +742,7 @@ class Search:
         if local_board.repetitions.count(local_board.board_string) >= 2 or local_board.move_counter >= 100:
             return 0
 
-        tt_entry = tt_bucket.get(local_board.board_string)
+        tt_entry = self.tt_bucket.get(local_board.board_string)
 
         if tt_entry:
             if tt_entry['tt_flag'] == EXACT or \
@@ -755,11 +762,16 @@ class Search:
 
         alpha = max(alpha, local_score)
 
-        for s_move in sorted(local_board.generate_valid_captures() if not is_in_check else local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
+        for s_move in sorted(local_board.generate_valid_captures(), key=local_board.move_sort, reverse=True):
+            # current_move_score = local_board.calculate_score(s_move)
             moved_board = local_board.make_move(s_move)
 
+            current_move_score = moved_board.rolling_score - local_board.rolling_score
+
+            is_noisy = current_move_score > 800 or local_board.piece_count != moved_board.piece_count
+
             # determine legality: if we moved and are in check, it's not legal
-            if moved_board.in_check(is_white):
+            if moved_board.in_check(is_white) or not is_noisy:
                 continue
 
             local_score = -self.q_search(moved_board, -beta, -alpha)
@@ -790,63 +802,63 @@ while 1:
             searcher.reset()
         elif line == "isready":
             print_to_terminal("readyok")
-        # elif line.startswith("position fen"):
-        #     fens = line.split(' ')
-        #     position = fens[2].split('/')
+        elif line.startswith("position fen"):
+            fens = line.split(' ')
+            position = fens[2].split('/')
 
-        #     position = 21
-        #     for piece in fens[2]:
-        #         # print(position)
-        #         if piece == '/':
-        #             position += 2
-        #         else:
-        #             if piece.isnumeric():
-        #                 skip_count = int(piece)
-        #                 while skip_count > 0:
-        #                     game_board.mutate_board(position, '-')
-        #                     position += 1
-        #                     skip_count -= 1
-        #             else:
-        #                 game_board.mutate_board(position, piece)
-        #                 if piece.isupper():
-        #                     game_board.rolling_score += ALLPSQT[piece.lower()][position]
-        #                     if piece == 'K':
-        #                         game_board.white_king_position = position_to_coordinate(position)
-        #                 else:
-        #                     game_board.rolling_score -= ALLPSQT[piece.lower()][abs(position - 119)]
-        #                     if piece == 'k':
-        #                         game_board.black_king_position = position_to_coordinate(position)
-        #                 position += 1
+            position = 21
+            for piece in fens[2]:
+                # print(position)
+                if piece == '/':
+                    position += 2
+                else:
+                    if piece.isnumeric():
+                        skip_count = int(piece)
+                        while skip_count > 0:
+                            game_board.mutate_board(position, '-')
+                            position += 1
+                            skip_count -= 1
+                    else:
+                        game_board.mutate_board(position, piece)
+                        if piece.isupper():
+                            game_board.rolling_score += ALLPSQT[piece.lower()][position]
+                            if piece == 'K':
+                                game_board.white_king_position = position_to_coordinate(position)
+                        else:
+                            game_board.rolling_score -= ALLPSQT[piece.lower()][abs(position - 119)]
+                            if piece == 'k':
+                                game_board.black_king_position = position_to_coordinate(position)
+                        position += 1
 
-        #     for castling in fens[4]:
-        #         if castling == '-':
-        #             game_board.white_castling = [False, False]
-        #             game_board.black_castling = [False, False]
-        #         elif castling == 'K':
-        #             game_board.white_castling[1] = True
-        #         elif castling == 'Q':
-        #             game_board.white_castling[0] = True
-        #         elif castling == 'k':
-        #             game_board.black_castling[1] = True
-        #         elif castling == 'q':
-        #             game_board.black_castling[0] = True
+            for castling in fens[4]:
+                if castling == '-':
+                    game_board.white_castling = [False, False]
+                    game_board.black_castling = [False, False]
+                elif castling == 'K':
+                    game_board.white_castling[1] = True
+                elif castling == 'Q':
+                    game_board.white_castling[0] = True
+                elif castling == 'k':
+                    game_board.black_castling[1] = True
+                elif castling == 'q':
+                    game_board.black_castling[0] = True
 
-        #     game_board.en_passant = fens[5]
+            game_board.en_passant = fens[5]
 
-        #     game_board.board_string = game_board.str_board()
-        #     game_board.piece_count = game_board.get_piece_count()
+            game_board.board_string = game_board.str_board()
+            game_board.piece_count = game_board.get_piece_count()
 
-        #     if len(fens) > 6:
-        #         game_board.move_counter = int(fens[6])
-        #         game_board.played_move_count = int(fens[7]) * 2
-        #     if fens[3] == 'b':
-        #         game_board.played_move_count += 1
-        # elif line.startswith("print"):
-        #     for row in range(12):
-        #         position = row * 10
-        #         print(game_board.board_state[position:position+10])
-        #     print(game_board.played_move_count, game_board.in_check(game_board.played_move_count % 2 == 0))
-        elif line.startswith("position"):
+            if len(fens) > 6:
+                game_board.move_counter = int(fens[6])
+                game_board.played_move_count = int(fens[7]) * 2
+            if fens[3] == 'b':
+                game_board.played_move_count += 1
+        elif line.startswith("print"):
+            for row in range(12):
+                position = row * 10
+                print(game_board.board_state[position:position+10])
+            print(game_board.played_move_count, game_board.in_check(game_board.played_move_count % 2 == 0))
+        elif line.startswith("position startpos"):
             moves = line.split()
             game_board = Board()
             for position_move in moves[3:]:
@@ -877,11 +889,12 @@ while 1:
             #     searcher.perft_checks = 0
             #     searcher.perft_captures = 0
             #     searcher.run_perft(game_board, searcher.v_depth, searcher.v_depth)
+            #     print("total time: ", t() - start_time)
             #     continue
 
-            div_time = 12 if game_board.played_move_count < 30 else 4
+            div_time = 20 if move_time > 200 else 11
 
-            searcher.critical_time = t() + (move_time) - 0.2
+            searcher.critical_time = t() + (move_time) - 1
             move_time = max(3, move_time / div_time)
 
             searcher.end_time = t() + move_time
@@ -899,7 +912,7 @@ while 1:
                     break
 
             # ponder_board = game_board.make_move(s_move)
-            # ponder_bucket = searcher.tt_bucket.get(ponder_board.board_string)
+            # ponder_bucket = searcher.self.tt_bucket.get(ponder_board.board_string)
             # ponder = ""
             # if ponder_bucket:
             #     ponder = f" ponder {ponder_bucket['tt_move']}"

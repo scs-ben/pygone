@@ -9,9 +9,9 @@
         cmd=/home/vagrant/code/pygone/bin/sunfish/sunfish \
         proto=xboard \
     -each \
-        tc=0/20+2 \
+        tc=0/300+2 \
         restart=off \
-        -openings file=book.pgn order=random \
+        -openings file=book.pgn \
         -repeat \
         -pgnout games.pgn min \
         -recover \
