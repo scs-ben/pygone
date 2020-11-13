@@ -181,6 +181,10 @@ sed -i -e 's/coordinate_to_position/O7/g' pygone-mini.py
 sed -i -e 's/position_to_coordinate/O8/g' pygone-mini.py
 sed -i -e 's/mutate_board/O9/g' pygone-mini.py
 sed -i -e 's/board_position/O0/g' pygone-mini.py
+sed -i -e 's/board_copy/P1/g' pygone-mini.py
+sed -i -e 's/SEARCHER/P2/g' pygone-mini.py
+sed -i -e 's/to_position/P3/g' pygone-mini.py
+sed -i -e 's/mating_value/P4/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
