@@ -60,12 +60,14 @@ sed -i -e 's/offset/D1/g' pygone-mini.py
 sed -i -e 's/from_score_piece/D3/g' pygone-mini.py
 sed -i -e 's/to_piece/D4/g' pygone-mini.py
 sed -i -e 's/p_piece/D5/g' pygone-mini.py
+sed -i -e 's/original_protected_pawns/D61/g' pygone-mini.py
 sed -i -e 's/protected_pawns/D6/g' pygone-mini.py
 sed -i -e 's/promote/D7/g' pygone-mini.py
 sed -i -e 's/enemy_king_position/D8/g' pygone-mini.py
 sed -i -e 's/score_pieces/D9/g' pygone-mini.py
 sed -i -e 's/pawn_piece/D0/g' pygone-mini.py
 sed -i -e 's/score_pawns/E11/g' pygone-mini.py
+sed -i -e 's/original_stacked_pawns/E12/g' pygone-mini.py
 sed -i -e 's/pawns/E1/g' pygone-mini.py
 sed -i -e 's/pawn_columns/E2/g' pygone-mini.py
 sed -i -e 's/has_pawn/E3/g' pygone-mini.py
@@ -166,6 +168,7 @@ sed -i -e 's/aspiration_window/N2/g' pygone-mini.py
 sed -i -e 's/delta/N3/g' pygone-mini.py
 sed -i -e 's/original_depth/N4/g' pygone-mini.py
 sed -i -e 's/PROTECTED_PAWN_VALUE/N5/g' pygone-mini.py
+sed -i -e 's/protected_pawn_count/N61/g' pygone-mini.py
 sed -i -e 's/protected_pawn/N6/g' pygone-mini.py
 sed -i -e 's/generate_valid_captures/N7/g' pygone-mini.py
 sed -i -e 's/captures_only/N8/g' pygone-mini.py
@@ -185,6 +188,11 @@ sed -i -e 's/board_copy/P1/g' pygone-mini.py
 sed -i -e 's/SEARCHER/P2/g' pygone-mini.py
 sed -i -e 's/to_position/P3/g' pygone-mini.py
 sed -i -e 's/mating_value/P4/g' pygone-mini.py
+sed -i -e 's/KING_SAFETY/P5/g' pygone-mini.py
+sed -i -e 's/king_safety/P6/g' pygone-mini.py
+sed -i -e 's/stacked_pawn_count/P7/g' pygone-mini.py
+sed -i -e 's/c_string/P8/g' pygone-mini.py
+sed -i -e 's/pawn_board/P9/g' pygone-mini.py
 
 sed -i -e 's/self/Z/g' pygone-mini.py
 sed -i -e 's/row/Z1/g' pygone-mini.py
@@ -211,3 +219,4 @@ sed -i -e 's/True/1/g' pygone-mini.py
 sed -i -e 's/False/0/g' pygone-mini.py
 
 sed -i -e 's/# Created by pyminifier (https:\/\/github.com\/liftoff\/pyminifier)//g' pygone-mini.py
+sed -i -e "s/'..........' '..........' '.rnbqkbnr.' '.pppppppp.' '.--------.' '.--------.' '.--------.' '.--------.' '.PPPPPPPP.' '.RNBQKBNR.' '..........' '..........'/'.....................rnbqkbnr..pppppppp..--------..--------..--------..--------..PPPPPPPP..RNBQKBNR.....................'/g" pygone-mini.py

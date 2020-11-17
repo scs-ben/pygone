@@ -3,7 +3,7 @@ import math, sys, time
 
 t = time.time
 
-PIECEPOINTS = {'p': 82, 'n': 426, 'b': 441, 'r': 627, 'q': 1292, 'k': 25000}
+PIECEPOINTS = {'p': 85, 'n': 290, 'b': 320, 'r': 620, 'q': 1250, 'k': 25000}
 
 ALLPSQT = {
     'p': (0, 0, 0, 0, 0, 0, 0, 0,
@@ -16,10 +16,10 @@ ALLPSQT = {
           0, 0, 0, 0, 0, 0, 0, 0),
     'n': (-20, -16, -12, -12, -12, -12, -16, -20,
           -16, -8, 2, 2, 2, 2, -8, -16,
-          -12, 2, 4, 6, 6, 4, 2, -12,
-          -12, 2, 6, 10, 10, 6, 2, -12,
-          -12, 2, 6, 10, 10, 6, 2, -12,
-          -12, 4, 4, 4, 4, 4, 4, -12,
+          -2, 2, 4, 6, 6, 4, 2, -2,
+          0, 2, 6, 10, 10, 6, 2, 0,
+          0, 2, 6, 10, 10, 6, 2, 0,
+          -2, 4, 4, 4, 4, 4, 4, -2,
           -16, -8, 0, 2, 2, 0, -8, -16,
           -20, -16, -12, -12, -12, -12, -16, -20),
     'b': (-8, -4, -4, -4, -4, -4, -4, -8,
@@ -53,7 +53,7 @@ ALLPSQT = {
           -8, -4, 12, 16, 16, 12, -4, -8,
           -8, -4, 8, 12, 12, 8, -4, -8,
           8, 8, -16, -16, -16, -16, 8, 8,
-          0, 4, 18, 0, 0, 4, 18, 0)
+          0, 4, 8, 0, 0, 4, 8, 0)
 }
 
 for set_piece, set_board in ALLPSQT.items():
@@ -271,8 +271,8 @@ class Board:
         return self.calculate_score(uci_coordinate, True)
 
     def calculate_score(self, uci_coordinate, sorting=False):
-        if not uci_coordinate:
-            return 0
+        # if not uci_coordinate:
+        #     return 0
 
         is_white = self.played_move_count % 2 == 0
         offset = 0 if is_white else 119
@@ -298,24 +298,10 @@ class Board:
                 local_score += ALLPSQT[to_piece][abs(to_number - offset)] / ALLPSQT[from_piece][abs(to_number - offset)]
 
             if to_piece == 'p':
-                original_to_piece = self.board_state[to_number]
-
-                local_score += self.score_pawns(uci_coordinate, original_to_piece, -p_offset)
+                local_score -= self.score_pawns(uci_coordinate, self.board_state[to_number], -p_offset)
 
 
-        if from_piece == 'k':
-            if abs(from_number - to_number) == 2:
-                if uci_coordinate[2] == 'g':
-                    local_score += ALLPSQT['r'][abs(to_number - offset) - 1] - \
-                                    ALLPSQT['r'][abs(to_number - offset) + 1]
-                else:
-                    local_score += ALLPSQT['r'][abs(to_number - offset) + 1] - \
-                                    ALLPSQT['r'][abs(to_number - offset) - 2]
-
-                if sorting:
-                    local_score += 50
-
-        elif from_piece == 'p':
+        if from_piece == 'p':
             if uci_coordinate[2:4] == self.en_passant:
                 # add in an extra pawn for EP capture
                 local_score += ALLPSQT[from_piece][abs(to_number - offset)]
@@ -326,11 +312,22 @@ class Board:
                                 ALLPSQT['p'][abs(to_number - offset)]
 
             local_score += self.score_pawns(uci_coordinate, p_piece, p_offset)
+        elif from_piece == 'k':
+            if abs(from_number - to_number) == 2:
+                if uci_coordinate[2] == 'g':
+                    local_score += ALLPSQT['r'][abs(to_number - offset) - 1] - \
+                                    ALLPSQT['r'][abs(to_number - offset) + 1]
+                else:
+                    local_score += ALLPSQT['r'][abs(to_number - offset) + 1] - \
+                                    ALLPSQT['r'][abs(to_number - offset) - 2]
 
-            # if not is_endgame:
-            #     # if the pawn is in front of the K, penalize a movement
-            #     if 'k' in self.board_state[(from_number - p_offset - 1):(from_number - p_offset + 2)].lower():
-            #         local_score -= KING_SAFETY
+                local_score += KING_SAFETY
+
+                if sorting:
+                    local_score += 50
+
+        if not is_endgame:
+            local_score += self.king_safety(uci_coordinate, is_white, p_offset)
 
         return local_score
 
@@ -344,8 +341,8 @@ class Board:
         protected_pawns = pawn_board.protected_pawn_count(p_piece, p_offset)
         stacked_pawns = pawn_board.stacked_pawn_count(p_piece)
 
-        return ((protected_pawns - original_protected_pawns) * PROTECTED_PAWN_VALUE + \
-                (original_stacked_pawns - stacked_pawns) * STACKED_PAWN_VALUE)
+        return (protected_pawns - original_protected_pawns) * PROTECTED_PAWN_VALUE + \
+                (original_stacked_pawns - stacked_pawns) * STACKED_PAWN_VALUE
 
     def protected_pawn_count(self, p_piece, p_offset):
         protected_pawns = 0
@@ -365,7 +362,7 @@ class Board:
             if piece == p_piece:
                 stacked_pawns += self.count_piece(board_position, p_piece) > 1
 
-        return stacked_pawns
+        return stacked_pawns / 2
 
     def count_piece(self, board_position, p_piece):
         piece_count = 0
@@ -374,6 +371,30 @@ class Board:
             piece_count += self.board_state[(row * 10 + column)] == p_piece
 
         return piece_count
+
+    def king_safety(self, uci_coordinate, is_white, p_offset):
+        king_position = coordinate_to_position(self.white_king_position if is_white else self.black_king_position)
+
+        pieces = 'PNB' if is_white else 'pnb'
+
+        original_protected_pawns = 0
+        c_string = self.board_state[(king_position + p_offset - 1):(king_position + p_offset + 2)] + \
+                    self.board_state[(king_position + 2 * p_offset - 1):(king_position + 2 * p_offset + 2)]
+
+        for piece in pieces:
+            original_protected_pawns += c_string.count(piece)
+
+        pawn_board = self.board_copy()
+        pawn_board.apply_move(uci_coordinate)
+
+        protected_pawns = 0
+        c_string = pawn_board.board_state[(king_position + p_offset - 1):(king_position + p_offset + 2)] + \
+                    pawn_board.board_state[(king_position + 2 * p_offset - 1):(king_position + 2 * p_offset + 2)]
+
+        for piece in pieces:
+            protected_pawns += c_string.count(piece)
+
+        return (protected_pawns - original_protected_pawns) * KING_SAFETY / 3
 
     def str_board(self):
         return self.board_state + \
@@ -599,13 +620,13 @@ class Search:
         is_in_check = False
 
         if not is_pv_node:
-            local_board.in_check(local_board.played_move_count % 2 == 0)
+            is_in_check = local_board.in_check(local_board.played_move_count % 2 == 0)
 
         if v_depth == 0:
             if not is_in_check:
                 return self.q_search(local_board, alpha, beta)
-            else:
-                v_depth += 1
+
+            v_depth += 1
 
         if local_board.repetitions.count(local_board.board_string) > 1 or local_board.move_counter >= 100:
             return 0
@@ -665,10 +686,7 @@ class Search:
 
         best_move = None
 
-        sorted_moves = sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True)
-        sorted_moves_length = len(sorted_moves)
-
-        for s_move in sorted_moves:
+        for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
             moved_board = local_board.make_move(s_move)
 
             # determine legality: if we moved and are in check, it's not legal
@@ -687,7 +705,7 @@ class Search:
 
                 r_depth = min(v_depth - 1, max(r_depth, 1))
 
-            if r_depth  != 1:
+            if r_depth != 1:
                 local_score = -self.search(moved_board, v_depth - r_depth, -alpha-1, -alpha)
 
             if (r_depth != 1 and local_score > alpha) or (r_depth == 1 and not(is_pv_node and played_moves == 1)):
@@ -695,9 +713,6 @@ class Search:
 
             if is_pv_node and (played_moves == 1 or local_score > alpha):
                 local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha)
-
-            # if sorted_moves_length < 5:
-            #     local_score += 3 * (5 - sorted_moves_length)
 
             if not best_move:
                 best_move = s_move
@@ -864,9 +879,9 @@ def main():
                     # depth input can be commented out to save space since engine will be run on time
                     elif arg == 'depth':
                         SEARCHER.v_depth = int(args[key + 1])
-                    elif arg == 'perft':
-                        SEARCHER.v_depth = int(args[key + 1])
-                        is_perft = True
+                    # elif arg == 'perft':
+                    #     SEARCHER.v_depth = int(args[key + 1])
+                    #     is_perft = True
 
                 # if is_perft:
                 #     # 1) start pos
