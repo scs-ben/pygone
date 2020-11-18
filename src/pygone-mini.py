@@ -2,7 +2,7 @@
 import math,sys,time
 t=time.time
 A={'p':85,'n':290,'b':320,'r':620,'q':1250,'k':25000}
-B={'p':(0,0,0,0,0,0,0,0,20,20,20,20,20,20,20,20,8,8,8,8,8,8,8,8,4,4,6,10,10,6,4,4,0,0,0,8,8,0,0,0,2,-2,-2,3,3,-2,-2,2,2,4,4,-8,-8,4,4,2,0,0,0,0,0,0,0,0),'n':(-20,-16,-12,-12,-12,-12,-16,-20,-16,-8,2,2,2,2,-8,-16,-2,2,4,6,6,4,2,-2,0,2,6,10,10,6,2,0,0,2,6,10,10,6,2,0,-2,4,4,4,4,4,4,-2,-16,-8,0,2,2,0,-8,-16,-20,-16,-12,-12,-12,-12,-16,-20),'b':(-8,-4,-4,-4,-4,-4,-4,-8,-4,0,0,0,0,0,0,-4,-4,0,2,4,4,2,0,-4,0,2,2,4,4,2,2,0,0,0,4,4,4,4,0,0,-4,4,4,4,4,4,4,-4,-4,2,0,0,0,0,2,-4,-8,-4,-4,-4,-4,-4,-4,-8),'r':(0,0,0,0,0,0,0,0,2,4,4,4,4,4,4,2,-4,0,2,2,2,2,0,-4,-2,0,2,2,2,2,0,-2,0,0,2,2,2,2,0,-2,-4,2,2,2,2,2,0,-4,-2,0,0,2,0,2,0,-2,0,0,0,2,2,0,0,0),'q':(-8,-4,-4,-2,-2,-4,-4,-8,-4,2,2,2,2,2,2,-4,-4,2,2,2,2,2,2,-4,-2,2,2,2,2,2,2,-2,-2,2,2,2,2,2,2,-2,-4,2,2,2,2,2,2,-4,-4,0,2,0,0,0,0,-4,-8,-4,-4,-2,-2,-4,-4,-8),'k':(-20,-16,-12,-8,-8,-12,-16,-20,-8,-8,-4,0,0,-4,-8,-8,-8,-4,8,12,12,8,-4,-8,-8,-4,12,16,16,12,-4,-8,-8,-4,12,16,16,12,-4,-8,-8,-4,8,12,12,8,-4,-8,8,8,-16,-16,-16,-16,8,8,0,4,8,0,0,4,8,0)}
+B={'p':(0,0,0,0,0,0,0,0,20,20,20,20,20,20,20,20,8,8,8,8,8,8,8,8,4,4,6,10,10,6,4,4,0,0,0,8,8,0,0,0,2,-2,-2,3,3,-2,-2,2,2,4,4,-8,-8,4,4,2,0,0,0,0,0,0,0,0),'n':(-20,-16,-12,-12,-12,-12,-16,-20,-16,-8,2,2,2,2,-8,-16,-8,2,4,6,6,4,2,-8,0,2,6,10,10,6,2,0,0,2,6,10,10,6,2,0,-8,4,4,4,4,4,4,-8,-16,-8,0,2,2,0,-8,-16,-20,-16,-12,-12,-12,-12,-16,-20),'b':(-8,-4,-4,-4,-4,-4,-4,-8,-4,0,0,0,0,0,0,-4,-4,0,2,4,4,2,0,-4,0,2,2,4,4,2,2,0,0,0,4,4,4,4,0,0,-4,4,4,4,4,4,4,-4,-4,2,0,0,0,0,2,-4,-8,-4,-4,-4,-4,-4,-4,-8),'r':(0,0,0,0,0,0,0,0,2,4,4,4,4,4,4,2,-4,0,2,2,2,2,0,-4,-2,0,2,2,2,2,0,-2,0,0,2,2,2,2,0,-2,-4,2,2,2,2,2,0,-4,-2,0,0,2,0,2,0,-2,0,0,0,2,2,0,0,0),'q':(-8,-4,-4,-2,-2,-4,-4,-8,-4,6,6,6,6,6,6,-4,-4,4,4,4,4,4,4,-4,-2,2,2,2,2,2,2,-2,-2,2,2,2,2,2,2,-2,-4,2,2,2,2,2,2,-4,-4,0,2,0,0,0,0,-4,-8,-4,-4,-2,-2,-4,-4,-8),'k':(-20,-16,-12,-8,-8,-12,-16,-20,-8,-8,-4,0,0,-4,-8,-8,-8,-4,8,12,12,8,-4,-8,-8,-4,12,16,16,12,-4,-8,-8,-4,12,16,16,12,-4,-8,-8,-4,8,12,12,8,-4,-8,8,8,-16,-16,-16,-16,8,8,0,4,8,0,0,4,8,0)}
 for C,set_u in B.items():
  pZ1=lambda Z1:(0,)+tuple(Z2+A[C]for Z2 in Z1)+(0,)
  B[C]=sum((pZ1(set_u[Z4*8:Z4*8+8])for Z4 in range(8)),())
@@ -11,8 +11,8 @@ H=1
 K=2
 L=3
 J=A['k']
-N5=5
-N0=30
+N5=7
+N0=20
 P5=10
 M={'k':[(0,10),(0,-10),(1,0),(-1,0),(1,10),(1,-10),(-1,10),(-1,-10)],'q':[(0,10),(0,-10),(1,0),(-1,0),(1,10),(1,-10),(-1,10),(-1,-10)],'r':[(0,10),(0,-10),(1,0),(-1,0)],'b':[(1,10),(1,-10),(-1,10),(-1,-10)],'n':[(1,-20),(-1,-20),(2,-10),(-2,-10),(1,20),(-1,20),(2,10),(-2,10)],'p':[(0,-10),(1,-10),(-1,-10)]}
 def N(O):
@@ -174,6 +174,15 @@ class A6:
      d+=50
   if not C8:
    d+=Z.P6(A1,i,D11)
+  if M4 and Z.A8<24:
+   if O in range(40,80):
+    d-=40
+   elif not B0 in range(30,90):
+    d+=40
+  if M4:
+   G7=Z.C4(A1)
+   if G7.E0(not i):
+    d+=100+B[C2][abs(O-D1)]
   return d
  def E11(Z,A1,D5,D11):
   D61=Z.N61(D5,D11)
@@ -207,16 +216,16 @@ class A6:
   O1=O7(Z.B4 if i else Z.B5)
   L8='PNB' if i else 'pnb'
   D61=0
-  P8=Z.A7[(O1+D11-1):(O1+D11+2)]+ Z.A7[(O1+2*D11-1):(O1+2*D11+2)]
+  P8=Z.A7[(O1+D11-1):(O1+D11+2)]
   for Z2 in L8:
    D61+=P8.count(Z2)
   P9=Z.P1()
   P9.B8(A1)
   D6=0
-  P8=P9.A7[(O1+D11-1):(O1+D11+2)]+ P9.A7[(O1+2*D11-1):(O1+2*D11+2)]
+  P8=P9.A7[(O1+D11-1):(O1+D11+2)]
   for Z2 in L8:
    D6+=P8.count(Z2)
-  return(D6-D61)*P5/3
+  return(D6-D61)*P5 
  def C6(Z):
   return Z.A7+ str(Z.A8%2)
  def N7(Z):
@@ -224,38 +233,35 @@ class A6:
  def A5(Z,N8=0):
   i=Z.A8%2==0
   D1=1
-  E7=81
-  E6=31
-  E5='prnbqk-'
-  if not i:
-   E5='PRNBQK-'
-   E7=31
-   E6=81
+  E7=81 if i else 31
+  E6=31 if i else 81
+  E5='prnbqk-' if i else 'PRNBQK-'
   for O0,Z2 in enumerate(Z.A7):
-   if Z2 in "-." or(i and Z2.islower())or(not i and Z2.isupper()):
+   if Z2 in "-." or i==Z2.islower():
     continue
    E9=O8(O0)
    K0=Z2.lower()
    if Z2=='p':
     D1=-1
-   if Z2=='K' and not N8:
-    if Z.B2[1]and Z.A7[96:99]=='--R' and not any(Z.O2(i,Z7)for Z7 in['e1','f1','g1']):
-     yield E9+'g1'
-    if Z.B2[0]and Z.A7[91:95]=='R---' and not any(Z.O2(i,Z7)for Z7 in['e1','d1','c1']):
-     yield E9+'c1'
-   elif Z2=='k' and not N8:
-    if Z.B3[1]and Z.A7[26:29]=='--r' and not any(Z.O2(i,Z7)for Z7 in['e8','f8','g8']):
-     yield E9+'g8'
-    if Z.B3[0]and Z.A7[21:25]=='r---' and not any(Z.O2(i,Z7)for Z7 in['e8','d8','c8']):
-     yield E9+'c8'
-   elif K0=='p' and O0 in range(E7,E7+8)and Z.A7[O0+-10*D1]=='-' and Z.A7[O0+-20*D1]=='-' and not N8:
-    yield E9+O8(O0+-20*D1)
+   if not N8:
+    if Z2=='K':
+     if Z.B2[1]and Z.A7[96:99]=='--R' and not any(Z.O2(i,Z7)for Z7 in['e1','f1','g1']):
+      yield E9+'g1'
+     if Z.B2[0]and Z.A7[91:95]=='R---' and not any(Z.O2(i,Z7)for Z7 in['e1','d1','c1']):
+      yield E9+'c1'
+    elif Z2=='k':
+     if Z.B3[1]and Z.A7[26:29]=='--r' and not any(Z.O2(i,Z7)for Z7 in['e8','f8','g8']):
+      yield E9+'g8'
+     if Z.B3[0]and Z.A7[21:25]=='r---' and not any(Z.O2(i,Z7)for Z7 in['e8','d8','c8']):
+      yield E9+'c8'
+    elif K0=='p' and E7<=O0<E7+8 and Z.A7[O0+-10*D1]=='-' and Z.A7[O0+-20*D1]=='-':
+     yield E9+O8(O0+-20*D1)
    for F3 in M[K0]:
     P3=O0+F3[0]+(F3[1]*D1)
     while 20<P3<99:
      F6=Z.A7[P3]
-     F7=O8(P3)
      if not N8 or(N8 and F6 not in '-.'):
+      F7=O8(P3)
       if K0=='p':
        if(O0 in range(E6,E6+8)and F3[0]==0 and F6=='-')or (O0 in range(E6,E6+8)and F3[0]!=0 and F6!='-' and F6 in E5):
         for G8 in 'qrbn':
@@ -273,12 +279,10 @@ class A6:
   return Z.O2(i,O1)
  def O2(Z,i,Z7):
   D1=1
-  E5='PRNBQK-'
-  if not i:
-   E5='prnbqk-'
+  E5='PRNBQK-' if i else 'prnbqk-'
   O2=O7(Z7)
   for O0,Z2 in enumerate(Z.A7):
-   if Z2 in "-." or(i and Z2.isupper())or(not i and Z2.islower()):
+   if Z2 in "-." or i==Z2.isupper():
     continue
    if Z2=='p':
     D1=-1
@@ -286,7 +290,7 @@ class A6:
    for F3 in M[Z2]:
     if Z2=='p' and not F3[0]:
      continue
-    P3=O0+F3[0]+D1*F3[1]
+    P3=O0+F3[0]+(D1*F3[1])
     while 20<P3<99:
      F6=Z.A7[P3]
      if F6 in E5 and P3==O2:
@@ -326,13 +330,10 @@ class F0:
    return-J
   Z.V+=1
   is_L1=(a!=b-1)
-  E01=0
-  if not is_L1:
-   E01=l.E0(l.A8%2==0)
+  E01=l.E0(l.A8%2==0)
+  S+=E01
   if S==0:
-   if not E01:
-    return Z.H93(l,a,b)
-   S+=1
+   return Z.H93(l,a,b)
   if l.A0.count(l.K3)>1 or l.M9>=100:
    return 0
   P4=J-S
@@ -350,20 +351,20 @@ class F0:
   if e['M0']>=S and not is_L1:
    if e['M2']==H or (e['M2']==L and e['M1']>=b)or (e['M2']==K and e['M1']<=a):
     return e['M1']
-  if not is_L1 and not E01 and S<=7 and l.B6-(80*S)>=b:
+  if not is_L1 and not E01 and S<=7 and l.B6-(85*S)>=b:
    return l.B6
-  if not is_L1 and not E01 and S<=2 and l.B6+350*S<=a:
+  if not is_L1 and not E01 and S<=3 and l.B6+325*S<=a:
    return l.B6
   T=-J-1
   d=-J
   i=l.A8%2==0
   L8='RNBQ' if i else 'rnbq'
   if not is_L1 and not E01 and L8 in l.K3:
-   d=-Z.H9(l.C5(),min(1,S-4),-b,-b+1)
+   d=-Z.H9(l.C5(),S-4,-b,-b+1)
    if d>=b:
     return b
   if not is_L1 and not E01 and abs(e['M1'])<J and e['N1']:
-   d=-Z.H9(l.C4(e['N1']),S-1,-b,-a)
+   d=-Z.H9(l.C4(e['N1']),S-2,-b,-a)
    if d>=b:
     return b
   I92=0
@@ -378,7 +379,7 @@ class F0:
    if abs(I6)<100 and S>2 and I92>1:
     r_depth+=not is_L1
     r_depth+=E01
-    r_depth=min(S-1,max(r_depth,1))
+    r_depth=min(S-1,r_depth)
    if r_depth!=1:
     d=-Z.H9(G7,S-r_depth,-a-1,-a)
    if(r_depth!=1 and d>a)or(r_depth==1 and not(is_L1 and I92==1)):
@@ -394,6 +395,8 @@ class F0:
      break
     if d>a:
      a=d
+  if I92==0:
+   return-J if E01 else 0
   if t()<Z.G2:
    e['M1']=T
    e['N1']=H7
@@ -405,8 +408,6 @@ class F0:
    else:
     e['M2']=H
    Z.G3[l.K3]=e
-  if I92==0:
-   return-J if l.E0(i)else 0
   return T
  def H93(Z,l,a,b):
   if t()>Z.G2:

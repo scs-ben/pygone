@@ -9,7 +9,7 @@
         cmd=/home/vagrant/code/pygone/bin/pygone14 \
         proto=uci \
     -each \
-        tc=0/1+0.5 \
+        tc=0/1+1 \
         timemargin=1000 \
         -openings file=book.pgn order=random \
         -repeat \
