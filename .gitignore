@@ -3,6 +3,7 @@ bin/stockfish*
 bin/ethereal/*
 bin/ethy*
 bin/weiss/*
+bin/pulsar/*
 bin/sunfish/*
 bin/sunfish.log
 src/__pycache__*

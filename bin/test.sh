@@ -9,8 +9,8 @@
         cmd=/home/vagrant/code/pygone/bin/sunfish/sunfish \
         proto=xboard \
     -each \
-        tc=0/180+5 \
-        timemargin=1000 \
+        tc=0/20+2 \
+        timemargin=10000 \
         restart=on \
         -openings file=book.pgn order=random \
         -repeat \
