@@ -478,13 +478,6 @@ class Board:
             min_row = 81
             valid_pieces = 'PRNBQK-'
 
-        # is_white = self.played_move_count % 2 == 0
-
-        # offset = 1
-        # max_row = 81 if is_white else 31
-        # min_row = 31 if is_white else 81
-        # valid_pieces = 'prnbqk-' if is_white else 'PRNBQK-'
-
         for board_position, piece in enumerate(self.board_state):
             if piece in "-." or is_white == piece.islower():
                 continue
@@ -700,6 +693,7 @@ class Search:
         if tt_entry['tt_move'] and (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
             return 0
 
+        # try to reduce path to mate
         mating_value = MATE_UPPER - v_depth
         if mating_value < beta:
             beta = mating_value
