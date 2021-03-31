@@ -364,11 +364,11 @@ class Board:
         if not is_endgame:
             local_score += self.king_safety(uci_coordinate, is_white, p_offset)
 
-        # if sorting and from_piece != 'p':
-        #     # this should resolve mate faster
-        #     moved_board = self.make_move(uci_coordinate)
-        #     if moved_board.in_check(not is_white):
-        #         local_score += 100 + ALLPSQT[from_piece][abs(to_number - offset)]
+        if sorting and is_endgame and from_piece != 'p':
+            # this should resolve mate faster
+            moved_board = self.make_move(uci_coordinate)
+            if moved_board.in_check(not is_white):
+                local_score += 100 + ALLPSQT[from_piece][abs(to_number - offset)]
 
         return local_score
 

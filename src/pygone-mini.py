@@ -155,6 +155,10 @@ class A6:
      d+=P5
   if not C8:
    d+=Z.P6(A1,i,D11)
+  if M4 and C8 and C2!='p':
+   G7=Z.C4(A1)
+   if G7.E0(not i):
+    d+=100+B[C2][abs(O-D1)]
   return d
  def E11(Z,A1,D5,D11):
   D61=Z.N61(D5,D11)
