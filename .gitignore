@@ -18,3 +18,5 @@ bin/umax
 bin/umax.c
 
 src/sunfish.log
+
+src/pypy/*

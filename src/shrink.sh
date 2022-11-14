@@ -1,3 +1,5 @@
+#!/usr/bin/bash
+
 sed -i -e 's/PIECEPOINTS/A/g' pygone-mini.py
 sed -i -e 's/ALLPSQT/B/g' pygone-mini.py
 sed -i -e 's/set_piece/C/g' pygone-mini.py
