@@ -7,113 +7,113 @@ t = time.time
 PIECEPOINTS = {'p': 100, 'n': 320, 'b': 325, 'r': 500, 'q': 975, 'k': 32767}
 
 ALLPSQT = {
-# 'p': (
-#   0,  0,  0,  0,  0,  0,  0,  0,
-#  50, 50, 50, 50, 50, 50, 50, 50,
-#  10, 10, 20, 30, 30, 20, 10, 10,
-#   5,  5, 10, 27, 27, 10,  5,  5,
-#   0,  0,  0, 25, 25,  0,  0,  0,
-#   5, -5,-10,  0,  0,-10, -5,  5,
-#   5, 10, 10,-25,-25, 10, 10,  5,
-#   0,  0,  0,  0,  0,  0,  0,  0
-# ),
-# 'n': (
-#  -50,-40,-30,-30,-30,-30,-40,-50,
-#  -40,-20,  0,  0,  0,  0,-20,-40,
-#  -30,  0, 10, 15, 15, 10,  0,-30,
-#  -30,  5, 15, 20, 20, 15,  5,-30,
-#  -30,  0, 15, 20, 20, 15,  0,-30,
-#  -30,  5, 10, 15, 15, 10,  5,-30,
-#  -40,-20,  0,  5,  5,  0,-20,-40,
-#  -50,-40,-20,-30,-30,-20,-40,-50,
-# ),
-# 'b': (
-#  -20,-10,-10,-10,-10,-10,-10,-20,
-#  -10,  0,  0,  0,  0,  0,  0,-10,
-#  -10,  0,  5, 10, 10,  5,  0,-10,
-#  -10,  5,  5, 10, 10,  5,  5,-10,
-#  -10,  0, 10, 10, 10, 10,  0,-10,
-#  -10, 10, 10, 10, 10, 10, 10,-10,
-#  -10,  5,  0,  0,  0,  0,  5,-10,
-#  -20,-10,-40,-10,-10,-40,-10,-20,
-# ),
-# 'r': (
-#        0,  0,  0,  0,  0,  0,  0,   0 ,
-#       10, 20, 20, 20, 20, 20, 20,  10 ,
-#      -10,  0,  0,  0,  0,  0,  0, -10 ,
-#      -10,  0,  0,  0,  0,  0,  0, -10 ,
-#      -10,  0,  0,  0,  0,  0,  0, -10 ,
-#      -10,  0,  0,  0,  0,  0,  0, -10 ,
-#      -10,  0,  0,  0,  0,  0,  0, -10 ,
-#      -30, 30, 40, 10, 10,  0,  0, -30
-# ),
-# 'q': (
-#      -40, -20, -20, -10, -10, -20, -20, -40 ,
-#      -20,   0,   0,   0,   0,   0,   0, -20 ,
-#      -20,   0,  10,  10,  10,  10,   0, -20 ,
-#      -10,   0,  10,  10,  10,  10,   0, -10 ,
-#        0,   0,  10,  10,  10,  10,   0, -10 ,
-#      -20,  10,  10,  10,  10,  10,   0, -20 ,
-#      -20,   0,  10,   0,   0,   0,   0, -20 ,
-#      -40, -20, -20, -10, -10, -20, -20, -40
-# ),
-# 'k': (
-#  -50,-40,-30,-20,-20,-30,-40,-50,
-#  -30,-20,-10,  0,  0,-10,-20,-30,
-#  -30,-10, 20, 30, 30, 20,-10,-30,
-#  -30,-10, 30, 40, 40, 30,-10,-30,
-#  -30,-10, 30, 40, 40, 30,-10,-30,
-#   -10, -20, -20, -20, -20, -20, -20, -10,
-#   20,  20,   0,   0,   0,   0,  20,  20,
-#   20,  30,  10,   0,   0,  10,  30,  ),
-    'p': (0, 0, 0, 0, 0, 0, 0, 0,
-          20, 20, 20, 20, 20, 20, 20, 20,
-          8, 8, 8, 8, 8, 8, 8, 8,
-          6, 6, 6, 6, 6, 6, 6, 6,
-          0, 0, 0, 4, 4, 0, 0, 0,
-          2, -2, -2, 3, 3, -2, -2, 2,
-          2, 4, 4, -8, -8, 4, 4, 2,
-          0, 0, 0, 0, 0, 0, 0, 0),
-    'n': (-20, -16, -12, -12, -12, -12, -16, -20,
-          -16, -8, 2, 2, 2, 2, -8, -16,
-          -8, 4, 5, 6, 6, 5, 4, -8,
-          0, 4, 6, 8, 8, 6, 4, 0,
-          0, 4, 6, 8, 8, 6, 4, 0,
-          -8, 4, 5, 5, 5, 5, 4, -8,
-          -16, -8, 0, 2, 2, 0, -8, -16,
-          -20, -16, -12, -12, -12, -12, -16, -20),
-    'b': (-8, -4, -4, -4, -4, -4, -4, -8,
-          -4, 0, 0, 0, 0, 0, 0, -4,
-          -4, 0, 2, 4, 4, 2, 0, -4,
-          0, 2, 2, 4, 4, 2, 2, 0,
-          0, 0, 4, 4, 4, 4, 0, 0,
-          -4, 4, 4, 4, 4, 4, 4, -4,
-          -4, 2, 0, 0, 0, 0, 2, -4,
-          -8, -4, -4, -4, -4, -4, -4, -8),
-    'r': (0, 0, 0, 0, 0, 0, 0, 0,
-          2, 4, 4, 4, 4, 4, 4, 2,
-          -4, 0, 2, 2, 2, 2, 0, -4,
-          -2, 0, 2, 2, 2, 2, 0, -2,
-          0, 0, 2, 2, 2, 2, 0, -2,
-          -4, 2, 2, 2, 2, 2, 0, -4,
-          -2, 0, 0, 2, 0, 2, 0, -2,
-          0, 0, 0, 2, 2, 0, 0, 0),
-    'q': (-8, -4, -4, -2, -2, -4, -4, -8,
-          -4, 6, 6, 6, 6, 6, 6, -4,
-          -4, 4, 4, 4, 4, 4, 4, -4,
-          -2, 2, 2, 2, 2, 2, 2, -2,
-          -2, 2, 2, 2, 2, 2, 2, -2,
-          -4, 2, 2, 2, 2, 2, 2, -4,
-          -4, 0, 2, 0, 0, 0, 0, -4,
-          -8, -4, -4, -2, -2, -4, -4, -8),
-    'k': (-20, -16, -12, -8, -8, -12, -16, -20,
-          -4, -4, -2, 0, 0, -2, -4, -4,
-          -4, 0, 8, 12, 12, 8, 0, -4,
-          -4, 0, 12, 16, 16, 12, 0, -4,
-          -4, 0, 12, 16, 16, 12, 0, -4,
-          -4, 0, 8, 12, 12, 8, 0, -4,
-          8, 8, -16, -16, -16, -16, 8, 8,
-          0, 4, 8, 0, 0, 4, 8, 0)
+    'p': (
+        0,  0,  0,  0,  0,  0,  0,  0,
+        30, 30, 30, 30, 30, 30, 30, 30,
+        8, 8, 17, 26, 26, 17, 8, 8,
+        5,  5, 8, 24, 24, 8,  5,  5,
+        0,  0,  0, 22, 22,  0,  0,  0,
+        5, -5,-8,  0,  0,-8, -5,  5,
+        5, 8, 8,-22,-22, 8, 8,  5,
+        0,  0,  0,  0,  0,  0,  0,  0
+    ),
+    'n': (
+        -50,-40,-30,-30,-30,-30,-40,-50,
+        -40,-20,  0,  0,  0,  0,-20,-40,
+        -30,  0, 8, 13, 13, 8,  0,-30,
+        -30,  5, 13, 18, 18, 13,  5,-30,
+        -30,  0, 13, 18, 18, 13,  0,-30,
+        -30,  5, 8, 13, 13, 8,  5,-30,
+        -40,-20,  0,  5,  5,  0,-20,-40,
+        -50,-40,-20,-30,-30,-20,-40,-50,
+    ),
+    'b': (
+        -20,-10,-10,-10,-10,-10,-10,-20,
+        -10,  0,  0,  0,  0,  0,  0,-10,
+        -10,  0,  5, 10, 10,  5,  0,-10,
+        -10,  5,  5, 10, 10,  5,  5,-10,
+        -10,  0, 10, 10, 10, 10,  0,-10,
+        -10, 10, 10, 10, 10, 10, 10,-10,
+        -10,  5,  0,  0,  0,  0,  5,-10,
+        -20,-10,-40,-10,-10,-40,-10,-20,
+    ),
+    'r': (
+        0,  0,  0,  0,  0,  0,  0,   0 ,
+        10, 20, 20, 20, 20, 20, 20,  10 ,
+        -10,  0,  0,  0,  0,  0,  0, -10 ,
+        -10,  0,  0,  0,  0,  0,  0, -10 ,
+        -10,  0,  0,  0,  0,  0,  0, -10 ,
+        -10,  0,  0,  0,  0,  0,  0, -10 ,
+        -10,  0,  0,  0,  0,  0,  0, -10 ,
+        -30,  0,  0, 10, 10,  0,  0, -30
+    ),
+    'q': (
+        -40, -20, -20, -10, -10, -20, -20, -40 ,
+        -20,   0,   0,   0,   0,   0,   0, -20 ,
+        -20,   0,  10,  10,  10,  10,   0, -20 ,
+        -10,   0,  10,  10,  10,  10,   0, -10 ,
+        0,   0,  10,  10,  10,  10,   0, -10 ,
+        -20,  10,  10,  10,  10,  10,   0, -20 ,
+        -20,   0,  10,   0,   0,   0,   0, -20 ,
+        -40, -20, -20, -10, -10, -20, -20, -40
+    ),
+    'k': (
+        -50,-40,-30,-20,-20,-30,-40,-50,
+        -30,-20,-10,  0,  0,-10,-20,-30,
+        -30,-10, 20, 30, 30, 20,-10,-30,
+        -30,-10, 30, 40, 40, 30,-10,-30,
+        -30,-10, 30, 40, 40, 30,-10,-30,
+        -10, -20, -20, -20, -20, -20, -20, -10,
+        20,  20,   0,   0,   0,   0,  20,  20,
+        20,  30,  10,   0,   0,  10,  30,  ),
+    # 'p': (0, 0, 0, 0, 0, 0, 0, 0,
+    #       20, 20, 20, 20, 20, 20, 20, 20,
+    #       8, 8, 8, 8, 8, 8, 8, 8,
+    #       6, 6, 6, 6, 6, 6, 6, 6,
+    #       0, 0, 0, 4, 4, 0, 0, 0,
+    #       2, -2, -2, 3, 3, -2, -2, 2,
+    #       2, 4, 4, -8, -8, 4, 4, 2,
+    #       0, 0, 0, 0, 0, 0, 0, 0),
+    # 'n': (-20, -16, -12, -12, -12, -12, -16, -20,
+    #       -16, -8, 2, 2, 2, 2, -8, -16,
+    #       -8, 4, 5, 6, 6, 5, 4, -8,
+    #       0, 4, 6, 8, 8, 6, 4, 0,
+    #       0, 4, 6, 8, 8, 6, 4, 0,
+    #       -8, 4, 5, 5, 5, 5, 4, -8,
+    #       -16, -8, 0, 2, 2, 0, -8, -16,
+    #       -20, -16, -12, -12, -12, -12, -16, -20),
+    # 'b': (-8, -4, -4, -4, -4, -4, -4, -8,
+    #       -4, 0, 0, 0, 0, 0, 0, -4,
+    #       -4, 0, 2, 4, 4, 2, 0, -4,
+    #       0, 2, 2, 4, 4, 2, 2, 0,
+    #       0, 0, 4, 4, 4, 4, 0, 0,
+    #       -4, 4, 4, 4, 4, 4, 4, -4,
+    #       -4, 2, 0, 0, 0, 0, 2, -4,
+    #       -8, -4, -4, -4, -4, -4, -4, -8),
+    # 'r': (0, 0, 0, 0, 0, 0, 0, 0,
+    #       2, 4, 4, 4, 4, 4, 4, 2,
+    #       -4, 0, 2, 2, 2, 2, 0, -4,
+    #       -2, 0, 2, 2, 2, 2, 0, -2,
+    #       0, 0, 2, 2, 2, 2, 0, -2,
+    #       -4, 2, 2, 2, 2, 2, 0, -4,
+    #       -2, 0, 0, 2, 0, 2, 0, -2,
+    #       0, 0, 0, 2, 2, 0, 0, 0),
+    # 'q': (-8, -4, -4, -2, -2, -4, -4, -8,
+    #       -4, 6, 6, 6, 6, 6, 6, -4,
+    #       -4, 4, 4, 4, 4, 4, 4, -4,
+    #       -2, 2, 2, 2, 2, 2, 2, -2,
+    #       -2, 2, 2, 2, 2, 2, 2, -2,
+    #       -4, 2, 2, 2, 2, 2, 2, -4,
+    #       -4, 0, 2, 0, 0, 0, 0, -4,
+    #       -8, -4, -4, -2, -2, -4, -4, -8),
+    # 'k': (-20, -16, -12, -8, -8, -12, -16, -20,
+    #       -4, -4, -2, 0, 0, -2, -4, -4,
+    #       -4, 0, 8, 12, 12, 8, 0, -4,
+    #       -4, 0, 12, 16, 16, 12, 0, -4,
+    #       -4, 0, 12, 16, 16, 12, 0, -4,
+    #       -4, 0, 8, 12, 12, 8, 0, -4,
+    #       8, 8, -16, -16, -16, -16, 8, 8,
+    #       0, 4, 8, 0, 0, 4, 8, 0)
 }
 
 for set_piece, set_board in ALLPSQT.items():
@@ -373,25 +373,26 @@ class Board:
         return local_score
 
     def score_pawns(self, uci_coordinate, p_piece, p_offset):
-        original_protected_pawns = self.protected_pawn_count(p_piece, p_offset)
-        # original_stacked_pawns = self.stacked_pawn_count(p_piece)
+        return 0
+        # original_protected_pawns = self.protected_pawn_count(p_piece, p_offset)
+        # # original_stacked_pawns = self.stacked_pawn_count(p_piece)
 
-        pawn_board = self.board_copy()
-        pawn_board.apply_move(uci_coordinate)
+        # pawn_board = self.board_copy()
+        # pawn_board.apply_move(uci_coordinate)
 
-        protected_pawns = pawn_board.protected_pawn_count(p_piece, p_offset)
-        # stacked_pawns = pawn_board.stacked_pawn_count(p_piece)
+        # protected_pawns = pawn_board.protected_pawn_count(p_piece, p_offset)
+        # # stacked_pawns = pawn_board.stacked_pawn_count(p_piece)
 
-        return (protected_pawns - original_protected_pawns) * PROTECTED_PAWN_VALUE # + \
-                # (original_stacked_pawns - stacked_pawns) * STACKED_PAWN_VALUE
+        # return (protected_pawns - original_protected_pawns) * PROTECTED_PAWN_VALUE # + \
+        #         # (original_stacked_pawns - stacked_pawns) * STACKED_PAWN_VALUE
 
-    def protected_pawn_count(self, p_piece, p_offset):
-        protected_pawns = 0
-        for board_position, piece in enumerate(self.board_state):
-            if piece == p_piece:
-                protected_pawns += self.protected_pawn(board_position, p_offset, p_piece)
+    # def protected_pawn_count(self, p_piece, p_offset):
+    #     protected_pawns = 0
+    #     for board_position, piece in enumerate(self.board_state):
+    #         if piece == p_piece:
+    #             protected_pawns += self.protected_pawn(board_position, p_offset, p_piece)
 
-        return protected_pawns
+    #     return protected_pawns
 
     # def passer_pawn(self, board_position):
     #     start_position = 20 + board_position % 10
@@ -408,8 +409,9 @@ class Board:
     #     return piece_count == 1
 
     def protected_pawn(self, board_position, p_offset, p_piece):
-        return p_piece in (self.board_state[board_position - p_offset + 1], \
-            self.board_state[board_position - p_offset - 1])
+        return 0
+        # return p_piece in (self.board_state[board_position - p_offset + 1], \
+            # self.board_state[board_position - p_offset - 1])
 
     # def stacked_pawn_count(self, p_piece):
     #     stacked_pawns = 0
@@ -428,31 +430,32 @@ class Board:
     #     return piece_count
 
     def king_safety(self, uci_coordinate, is_white, p_offset):
-        king_position = coordinate_to_position(self.white_king_position if is_white else self.black_king_position)
+        return 0
+        # king_position = coordinate_to_position(self.white_king_position if is_white else self.black_king_position)
 
-        pieces = 'P' if is_white else 'p'
-        # pieces = 'PNB' if is_white else 'pnb'
+        # pieces = 'P' if is_white else 'p'
+        # # pieces = 'PNB' if is_white else 'pnb'
 
-        original_protected_pawns = 0
-        c_string = self.board_state[(king_position + p_offset - 1):(king_position + p_offset + 2)] + \
-                    self.board_state[(king_position + 2 * p_offset - 1):(king_position + 2 * p_offset + 2)]
+        # original_protected_pawns = 0
+        # c_string = self.board_state[(king_position + p_offset - 1):(king_position + p_offset + 2)] + \
+        #             self.board_state[(king_position + 2 * p_offset - 1):(king_position + 2 * p_offset + 2)]
 
-        # for piece in pieces:
-            # original_protected_pawns += c_string.count(piece)
-        original_protected_pawns = c_string.count(pieces)
+        # # for piece in pieces:
+        #     # original_protected_pawns += c_string.count(piece)
+        # original_protected_pawns = c_string.count(pieces)
 
-        pawn_board = self.board_copy()
-        pawn_board.apply_move(uci_coordinate)
+        # pawn_board = self.board_copy()
+        # pawn_board.apply_move(uci_coordinate)
 
-        protected_pawns = 0
-        c_string = pawn_board.board_state[(king_position + p_offset - 1):(king_position + p_offset + 2)] + \
-                    pawn_board.board_state[(king_position + 2 * p_offset - 1):(king_position + 2 * p_offset + 2)]
+        # protected_pawns = 0
+        # c_string = pawn_board.board_state[(king_position + p_offset - 1):(king_position + p_offset + 2)] + \
+        #             pawn_board.board_state[(king_position + 2 * p_offset - 1):(king_position + 2 * p_offset + 2)]
 
-        # for piece in pieces:
-            # protected_pawns += c_string.count(piece)
-        protected_pawns = c_string.count(pieces)
+        # # for piece in pieces:
+        #     # protected_pawns += c_string.count(piece)
+        # protected_pawns = c_string.count(pieces)
 
-        return (protected_pawns - original_protected_pawns) * KING_SAFETY
+        # return (protected_pawns - original_protected_pawns) * KING_SAFETY
 
     def str_board(self):
         return self.board_state + \
@@ -963,7 +966,7 @@ def main():
                 #     continue
 
                 searcher.critical_time = t() + max(0.75, move_time - 1)
-                move_time = max(2.2, move_time / 18)
+                move_time = max(2.2, move_time / 25)
 
                 searcher.end_time = t() + move_time
 

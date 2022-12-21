@@ -20,3 +20,6 @@ bin/umax.c
 src/sunfish.log
 
 src/pypy/*
+src/build/*
+src/dist/*
+src/pygone.spec
