@@ -12,8 +12,8 @@ ALLPSQT = {
         30, 30, 30, 30, 30, 30, 30, 30,
         8, 8, 17, 26, 26, 17, 8, 8,
         5,  5, 8, 24, 24, 8,  5,  5,
-        0,  0,  0, 22, 22,  0,  0,  0,
-        5, -5,-8,  0,  0,-8, -5,  5,
+        0,  0,  0, 24, 24,  0,  0,  0,
+        5, -5,-8,  6,  6,-8, -5,  5,
         5, 8, 8,-22,-22, 8, 8,  5,
         0,  0,  0,  0,  0,  0,  0,  0
     ),
@@ -23,7 +23,7 @@ ALLPSQT = {
         -30,  0, 8, 13, 13, 8,  0,-30,
         -30,  5, 13, 18, 18, 13,  5,-30,
         -30,  0, 13, 18, 18, 13,  0,-30,
-        -30,  5, 8, 13, 13, 8,  5,-30,
+        -30,  5, 7, 13, 13, 7,  5,-30,
         -40,-20,  0,  5,  5,  0,-20,-40,
         -50,-40,-20,-30,-30,-20,-40,-50,
     ),
@@ -121,29 +121,43 @@ for set_piece, set_board in ALLPSQT.items():
     ALLPSQT[set_piece] = sum((prow(set_board[column*8:column*8+8]) for column in range(8)), ())
     ALLPSQT[set_piece] = (0,)*20 + ALLPSQT[set_piece] + (0,)*20
 
-EXACT = 1
-UPPER = 2
-LOWER = 3
+#EXACT = 1
+#UPPER = 2
+#LOWER = 3
 
 # MATE_LOWER = PIECEPOINTS['k'] - 10*PIECEPOINTS['q']
-MATE_UPPER = PIECEPOINTS['k'] # + 10*PIECEPOINTS['q']
+# MATE_UPPER = PIECEPOINTS['k'] # + 10*PIECEPOINTS['q']
 
-PROTECTED_PAWN_VALUE = 4
-STACKED_PAWN_VALUE = 20
-KING_SAFETY = 25
+#PROTECTED_PAWN_VALUE = 4
+#STACKED_PAWN_VALUE = 20
+# KING_SAFETY = 25
 
-TO_MOVES = {
-    # (column, row, can_capture)
-    'k': [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), \
-          (1, -10), (-1, 10), (-1, -10)],
-    'q': [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), \
-          (1, -10), (-1, 10), (-1, -10)],
-    'r': [(0, 10), (0, -10), (1, 0), (-1, 0)],
-    'b': [(1, 10), (1, -10), (-1, 10), (-1, -10)],
-    'n': [(1, -20), (-1, -20), (2, -10), (-2, -10), (1, 20), \
-          (-1, 20), (2, 10), (-2, 10)],
-    'p': [(0, -10), (1, -10), (-1, -10)]
-}
+# TO_MOVES = {
+#     # (column, row, can_capture)
+#     'k': [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), \
+#           (1, -10), (-1, 10), (-1, -10)],
+#     'q': [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), \
+#           (1, -10), (-1, 10), (-1, -10)],
+#     'r': [(0, 10), (0, -10), (1, 0), (-1, 0)],
+#     'b': [(1, 10), (1, -10), (-1, 10), (-1, -10)],
+#     'n': [(1, -20), (-1, -20), (2, -10), (-2, -10), (1, 20), \
+#           (-1, 20), (2, 10), (-2, 10)],
+#     'p': [(0, -10), (1, -10), (-1, -10)]
+# }
+
+def get_moves(piece):
+    if piece == 'k':
+        return [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), (1, -10), (-1, 10), (-1, -10)]
+    elif piece == 'q':
+        return [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), (1, -10), (-1, 10), (-1, -10)]
+    elif piece == 'r':
+        return [(0, 10), (0, -10), (1, 0), (-1, 0)]
+    elif piece == 'b':
+        return [(1, 10), (1, -10), (-1, 10), (-1, -10)]
+    elif piece == 'n':
+        return [(1, -20), (-1, -20), (2, -10), (-2, -10), (1, 20), (-1, 20), (2, 10), (-2, 10)]
+    else:
+        return [(0, -10), (1, -10), (-1, -10)]
 
 def number_to_letter(to_number):
     return chr(to_number + 96)
@@ -194,9 +208,12 @@ class Board:
             )
 
     def mutate_board(self, board_position, piece):
-        self.board_state = self.board_state[:board_position] + piece + self.board_state[board_position + 1:]
+        l_board_state = self.board_state;
+        self.board_state = l_board_state[:board_position] + piece + l_board_state[board_position + 1:]
 
     def apply_move(self, uci_coordinate):
+        l_board_state = self.board_state;
+
         is_white = self.played_move_count % 2 == 0
 
         self.move_counter += 1
@@ -204,12 +221,12 @@ class Board:
         # break uci coordinate into location in board state list
         (from_number, to_number) = unpack_coordinate(uci_coordinate)
 
-        from_piece = self.board_state[from_number].lower()
+        from_piece = l_board_state[from_number].lower()
 
-        if self.board_state[to_number] != '-':
+        if l_board_state[to_number] != '-':
             self.move_counter = 0
 
-        self.mutate_board(to_number, self.board_state[from_number])
+        self.mutate_board(to_number, l_board_state[from_number])
         self.mutate_board(from_number, '-')
 
         set_en_passant = False
@@ -301,8 +318,8 @@ class Board:
     def get_piece_count(self):
         return 64 - self.board_string.count('-')
 
-    def is_endgame(self):
-        return self.piece_count < 14 or (self.piece_count < 20 and 'q' not in self.board_string.lower())
+    # def is_endgame(self):
+    #     return self.piece_count < 14 or (self.piece_count < 20 and 'q' not in self.board_string.lower())
 
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
@@ -312,15 +329,17 @@ class Board:
         offset = 0 if is_white else 119
         p_offset = -10 if is_white else 10
         p_piece = 'P' if is_white else 'p'
-        is_endgame = self.is_endgame()
+        # is_endgame = self.is_endgame()
+
+        l_board_state = self.board_state
 
         (from_number, to_number) = unpack_coordinate(uci_coordinate)
 
         local_score = 0
 
-        from_piece = self.board_state[from_number].lower()
+        from_piece = l_board_state[from_number].lower()
 
-        to_piece = self.board_state[to_number].lower()
+        to_piece = l_board_state[to_number].lower()
 
         local_score += ALLPSQT[from_piece][abs(to_number - offset)] - \
                         ALLPSQT[from_piece][abs(from_number - offset)]
@@ -328,8 +347,8 @@ class Board:
         if to_piece != '-':
             local_score += ALLPSQT[to_piece][abs(to_number - offset)]
 
-            if not is_endgame and to_piece == 'p':
-                local_score += self.score_pawns(uci_coordinate, self.board_state[to_number], -p_offset)
+            # if not is_endgame and to_piece == 'p':
+            #     local_score += self.score_pawns(uci_coordinate, l_board_state[to_number], -p_offset)
 
             if sorting and from_piece == 'q' and to_piece == 'p':
                 local_score -= 100
@@ -345,8 +364,8 @@ class Board:
                 local_score += ALLPSQT[promote][abs(to_number - offset)] - \
                                 ALLPSQT['p'][abs(to_number - offset)]
 
-            if not is_endgame:
-                local_score += self.score_pawns(uci_coordinate, p_piece, p_offset)
+            # if not is_endgame:
+            #     local_score += self.score_pawns(uci_coordinate, p_piece, p_offset)
             # elif is_endgame and self.passer_pawn(from_number):
             #     local_score += 60
         elif from_piece == 'k':
@@ -358,22 +377,23 @@ class Board:
                     local_score += ALLPSQT['r'][abs(to_number - offset) + 1] - \
                                     ALLPSQT['r'][abs(to_number - offset) - 2]
 
+                # put castling higher up
                 if sorting:
-                    local_score += KING_SAFETY
+                    local_score += 25
 
-        if not is_endgame:
-            local_score += self.king_safety(uci_coordinate, is_white, p_offset)
+        # if not is_endgame:
+        #     local_score += self.king_safety(uci_coordinate, is_white, p_offset)
 
-        if sorting and is_endgame and from_piece != 'p':
-            # this should resolve mate faster
-            moved_board = self.make_move(uci_coordinate)
-            if moved_board.in_check(not is_white):
-                local_score += 100 + ALLPSQT[from_piece][abs(to_number - offset)]
+        # if sorting and is_endgame and from_piece != 'p':
+        #     # this should resolve mate faster
+        #     moved_board = self.make_move(uci_coordinate)
+        #     if moved_board.in_check(not is_white):
+        #         local_score += 100 + ALLPSQT[from_piece][abs(to_number - offset)]
 
         return local_score
 
-    def score_pawns(self, uci_coordinate, p_piece, p_offset):
-        return 0
+    # def score_pawns(self, uci_coordinate, p_piece, p_offset):
+    #     return 0
         # original_protected_pawns = self.protected_pawn_count(p_piece, p_offset)
         # # original_stacked_pawns = self.stacked_pawn_count(p_piece)
 
@@ -408,8 +428,8 @@ class Board:
 
     #     return piece_count == 1
 
-    def protected_pawn(self, board_position, p_offset, p_piece):
-        return 0
+    # def protected_pawn(self, board_position, p_offset, p_piece):
+    #     return 0
         # return p_piece in (self.board_state[board_position - p_offset + 1], \
             # self.board_state[board_position - p_offset - 1])
 
@@ -429,8 +449,8 @@ class Board:
 
     #     return piece_count
 
-    def king_safety(self, uci_coordinate, is_white, p_offset):
-        return 0
+    # def king_safety(self, uci_coordinate, is_white, p_offset):
+    #     return 0
         # king_position = coordinate_to_position(self.white_king_position if is_white else self.black_king_position)
 
         # pieces = 'P' if is_white else 'p'
@@ -514,7 +534,7 @@ class Board:
                     self.board_state[board_position + -20*offset] == '-':
                     yield start_coordinate + position_to_coordinate(board_position + -20*offset)
 
-            for piece_move in TO_MOVES[piece_lower]:
+            for piece_move in get_moves(piece_lower):
                 to_position = board_position + piece_move[0] + (piece_move[1] * offset)
 
                 while 20 < to_position < 99:
@@ -562,7 +582,7 @@ class Board:
 
             piece = piece.lower()
 
-            for piece_move in TO_MOVES[piece]:
+            for piece_move in get_moves(piece):
                 if piece == 'p' and not piece_move[0]:
                     continue
 
@@ -587,6 +607,12 @@ class Search:
     end_time = 0
     critical_time = 0
     tt_bucket = {}
+
+    eval_exact = 1
+    eval_upper = 2
+    eval_lower = 3
+
+    eval_mate_upper = PIECEPOINTS['k']
 
     def reset(self):
         self.v_nodes = 0
@@ -642,7 +668,7 @@ class Search:
 
         local_score = local_board.rolling_score
         for v_depth in range(1, 100):
-            local_score = self.search(local_board, v_depth, -MATE_UPPER, MATE_UPPER)
+            local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper)
 
 
             if t() < self.critical_time:
@@ -679,7 +705,7 @@ class Search:
 
     def search(self, local_board, v_depth, alpha, beta):
         if t() > self.critical_time:
-            return -MATE_UPPER
+            return -self.eval_mate_upper
 
         self.v_nodes += 1
 
@@ -691,19 +717,19 @@ class Search:
         if v_depth <= 0:
             return self.q_search(local_board, alpha, beta, 10)
 
-        tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*MATE_UPPER, 'tt_flag': UPPER, 'tt_depth': -1, 'tt_move': None})
+        tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
 
         if tt_entry['tt_move'] and (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
             return 0
 
         # try to reduce path to mate
-        mating_value = MATE_UPPER - v_depth
+        mating_value = self.eval_mate_upper - v_depth
         if mating_value < beta:
             beta = mating_value
             if alpha >= mating_value:
                 return mating_value
 
-        mating_value = -MATE_UPPER + v_depth
+        mating_value = -self.eval_mate_upper + v_depth
         if mating_value > alpha:
             alpha = mating_value
             if beta <= mating_value:
@@ -712,9 +738,9 @@ class Search:
         original_alpha = alpha
 
         if tt_entry['tt_depth'] >= v_depth and tt_entry['tt_move'] and not is_pv_node:
-            if tt_entry['tt_flag'] == EXACT or \
-            (tt_entry['tt_flag'] == LOWER and tt_entry['tt_value'] >= beta) or \
-            (tt_entry['tt_flag'] == UPPER and tt_entry['tt_value'] <= alpha):
+            if tt_entry['tt_flag'] == self.eval_exact or \
+            (tt_entry['tt_flag'] == self.eval_lower and tt_entry['tt_value'] >= beta) or \
+            (tt_entry['tt_flag'] == self.eval_upper and tt_entry['tt_value'] <= alpha):
                 return tt_entry['tt_value']
 
         if not is_pv_node and not is_in_check and v_depth <= 7 and local_board.rolling_score >= beta + (80 * v_depth):
@@ -734,8 +760,8 @@ class Search:
                 if local_score <= cut_boundary:
                     return local_score
 
-        best_score = -MATE_UPPER - 1
-        local_score = -MATE_UPPER
+        best_score = -self.eval_mate_upper - 1
+        local_score = -self.eval_mate_upper
 
         is_white = local_board.played_move_count % 2 == 0
 
@@ -747,7 +773,7 @@ class Search:
             if local_score >= beta:
                 return beta
 
-        if not is_pv_node and not is_in_check and tt_entry['tt_depth'] >= v_depth and abs(tt_entry['tt_value']) < MATE_UPPER and tt_entry['tt_move']:
+        if not is_pv_node and not is_in_check and tt_entry['tt_depth'] >= v_depth and abs(tt_entry['tt_value']) < self.eval_mate_upper and tt_entry['tt_move']:
             local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 2, -beta, -alpha)
 
             if local_score >= beta:
@@ -797,7 +823,7 @@ class Search:
                         break
 
         if not played_moves:
-            return -MATE_UPPER if is_in_check else 0
+            return -self.eval_mate_upper if is_in_check else 0
 
         #update TT only if we are not in time cut
         if t() < self.critical_time:
@@ -806,21 +832,21 @@ class Search:
                 tt_entry['tt_move'] = best_move
             tt_entry['tt_depth'] = v_depth
             if best_score <= original_alpha:
-                tt_entry['tt_flag'] = UPPER
+                tt_entry['tt_flag'] = self.eval_upper
             elif best_score >= beta:
-                tt_entry['tt_flag'] = LOWER
+                tt_entry['tt_flag'] = self.eval_lower
             else:
-                tt_entry['tt_flag'] = EXACT
+                tt_entry['tt_flag'] = self.eval_exact
 
             self.tt_bucket[local_board.board_string] = tt_entry
         else:
-            self.tt_bucket[local_board.board_string] = {'tt_value': 2*MATE_UPPER, 'tt_flag': UPPER, 'tt_depth': -1, 'tt_move': None}
+            self.tt_bucket[local_board.board_string] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
 
         return best_score
 
     def q_search(self, local_board, alpha, beta, v_depth):
         if t() > self.critical_time:
-            return -MATE_UPPER
+            return -self.eval_mate_upper
 
         self.v_nodes += 1
 
@@ -830,9 +856,9 @@ class Search:
         tt_entry = self.tt_bucket.get(local_board.board_string)
 
         if tt_entry:
-            if tt_entry['tt_flag'] == EXACT or \
-            (tt_entry['tt_flag'] == LOWER and tt_entry['tt_value'] >= beta) or \
-            (tt_entry['tt_flag'] == UPPER and tt_entry['tt_value'] <= alpha):
+            if tt_entry['tt_flag'] == self.eval_exact or \
+            (tt_entry['tt_flag'] == self.eval_lower and tt_entry['tt_value'] >= beta) or \
+            (tt_entry['tt_flag'] == self.eval_upper and tt_entry['tt_value'] <= alpha):
                 return tt_entry['tt_value']
 
         local_score = local_board.rolling_score
@@ -966,7 +992,7 @@ def main():
                 #     continue
 
                 searcher.critical_time = t() + max(0.75, move_time - 1)
-                move_time = max(2.2, move_time / 25)
+                move_time = max(2.2, move_time / 32)
 
                 searcher.end_time = t() + move_time
 

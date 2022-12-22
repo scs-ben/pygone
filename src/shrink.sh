@@ -205,6 +205,12 @@ sed -i -e 's/letter/Z6/g' pygone-mini.py
 sed -i -e 's/coordinate/Z7/g' pygone-mini.py
 sed -i -e 's/Entry/Z8/g' pygone-mini.py
 
+sed -i -e 's/get_moves/Z9/g' pygone-mini.py
+sed -i -e 's/eval_exact/ZA/g' pygone-mini.py
+sed -i -e 's/eval_upper/ZB/g' pygone-mini.py
+sed -i -e 's/eval_lower/ZC/g' pygone-mini.py
+sed -i -e 's/eval_mate_upper/ZD/g' pygone-mini.py
+
 sed -i -e 's/alpha/a/g' pygone-mini.py
 sed -i -e 's/beta/b/g' pygone-mini.py
 sed -i -e 's/local_score/d/g' pygone-mini.py
