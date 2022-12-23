@@ -123,6 +123,8 @@ class A6:
   return u
  def C7(Z):
   return 64-Z.K3.count('-')
+ def C8(Z):
+  return Z.K4<14 or(Z.K4<20 and 'q' not in Z.K3.lower())
  def M3(Z,A1):
   return Z.A4(A1,1)
  def A4(Z,A1,M4=0):
@@ -130,12 +132,16 @@ class A6:
   D1=0 if i else 119
   D11=-10 if i else 10
   D5='P' if i else 'p'
+  C8=Z.C8()
   l_A7=Z.A7
   (B0,O)=Y(A1)
   d=0
   C2=l_A7[B0].lower()
   D4=l_A7[O].lower()
-  d+=B[C2][abs(O-D1)]- B[C2][abs(B0-D1)]
+  if C2=='k' and C8:
+   d+=B['n'][abs(O-D1)]- B['n'][abs(B0-D1)]
+  else:
+   d+=B[C2][abs(O-D1)]- B[C2][abs(B0-D1)]
   if D4!='-':
    d+=B[D4][abs(O-D1)]
    if M4 and C2=='q' and D4=='p':
@@ -153,7 +159,7 @@ class A6:
     else:
      d+=B['r'][abs(O-D1)+1]- B['r'][abs(O-D1)-2]
     if M4:
-     d+=25
+     d+=80
   return d
  def C6(Z):
   return Z.A7+ str(Z.A8%2)
@@ -273,7 +279,7 @@ class F0:
   E01=l.E0(l.A8%2==0)
   S+=E01 
   if S<=0:
-   return Z.H93(l,a,b,10)
+   return Z.H93(l,a,b,20)
   e=Z.G3.get((l.K3),{'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None})
   if e['N1']and(l.A0.count(l.K3)>2 or l.M9>=100):
    return 0
@@ -291,14 +297,14 @@ class F0:
   if e['M0']>=S and e['N1']and not is_L1:
    if e['M2']==Z.ZA or (e['M2']==Z.ZC and e['M1']>=b)or (e['M2']==Z.ZB and e['M1']<=a):
     return e['M1']
-  if not is_L1 and not E01 and S<=7 and l.B6>=b+(80*S):
+  if not is_L1 and not E01 and S<=7 and l.B6>=b+(100*S):
    return l.B6
   if not is_L1 and not E01 and S<=5:
-   cut_boundary=a-(340*S)
+   cut_boundary=a-(385*S)
    if l.B6<=cut_boundary:
     if S<=2:
-     return Z.H93(l,a,a+1,6)
-    d=Z.H93(l,cut_boundary,cut_boundary+1,6)
+     return Z.H93(l,a,a+1,20)
+    d=Z.H93(l,cut_boundary,cut_boundary+1,20)
     if d<=cut_boundary:
      return d
   T=-Z.ZD-1

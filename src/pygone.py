@@ -318,8 +318,8 @@ class Board:
     def get_piece_count(self):
         return 64 - self.board_string.count('-')
 
-    # def is_endgame(self):
-    #     return self.piece_count < 14 or (self.piece_count < 20 and 'q' not in self.board_string.lower())
+    def is_endgame(self):
+        return self.piece_count < 14 or (self.piece_count < 20 and 'q' not in self.board_string.lower())
 
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
@@ -329,7 +329,7 @@ class Board:
         offset = 0 if is_white else 119
         p_offset = -10 if is_white else 10
         p_piece = 'P' if is_white else 'p'
-        # is_endgame = self.is_endgame()
+        is_endgame = self.is_endgame()
 
         l_board_state = self.board_state
 
@@ -341,7 +341,11 @@ class Board:
 
         to_piece = l_board_state[to_number].lower()
 
-        local_score += ALLPSQT[from_piece][abs(to_number - offset)] - \
+        if from_piece == 'k' and is_endgame:
+            local_score += ALLPSQT['n'][abs(to_number - offset)] - \
+                        ALLPSQT['n'][abs(from_number - offset)]
+        else:
+            local_score += ALLPSQT[from_piece][abs(to_number - offset)] - \
                         ALLPSQT[from_piece][abs(from_number - offset)]
 
         if to_piece != '-':
@@ -379,7 +383,7 @@ class Board:
 
                 # put castling higher up
                 if sorting:
-                    local_score += 25
+                    local_score += 80
 
         # if not is_endgame:
         #     local_score += self.king_safety(uci_coordinate, is_white, p_offset)
@@ -715,7 +719,7 @@ class Search:
         v_depth += is_in_check # and not is_pv_node
 
         if v_depth <= 0:
-            return self.q_search(local_board, alpha, beta, 10)
+            return self.q_search(local_board, alpha, beta, 20)
 
         tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
 
@@ -743,19 +747,19 @@ class Search:
             (tt_entry['tt_flag'] == self.eval_upper and tt_entry['tt_value'] <= alpha):
                 return tt_entry['tt_value']
 
-        if not is_pv_node and not is_in_check and v_depth <= 7 and local_board.rolling_score >= beta + (80 * v_depth):
+        if not is_pv_node and not is_in_check and v_depth <= 7 and local_board.rolling_score >= beta + (100 * v_depth):
             return local_board.rolling_score
 
         # if not is_pv_node and not is_in_check and v_depth <= 2 and local_board.rolling_score <= alpha - (350 * v_depth):
         #     return local_board.rolling_score
 
         if not is_pv_node and not is_in_check and v_depth <= 5:
-            cut_boundary = alpha - (340 * v_depth)
+            cut_boundary = alpha - (385 * v_depth)
             if local_board.rolling_score <= cut_boundary:
                 if v_depth <= 2:
-                    return self.q_search(local_board, alpha, alpha + 1, 6)
+                    return self.q_search(local_board, alpha, alpha + 1, 20)
 
-                local_score = self.q_search(local_board, cut_boundary, cut_boundary + 1, 6)
+                local_score = self.q_search(local_board, cut_boundary, cut_boundary + 1, 20)
 
                 if local_score <= cut_boundary:
                     return local_score
