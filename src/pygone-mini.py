@@ -3,9 +3,9 @@ import math,sys,time
 t=time.time
 A={'p':100,'n':320,'b':325,'r':500,'q':975,'k':32767}
 B={'p':(0,0,0,0,0,0,0,0,30,30,30,30,30,30,30,30,8,8,17,26,26,17,8,8,5,5,8,24,24,8,5,5,0,0,0,24,24,0,0,0,5,-5,-8,6,6,-8,-5,5,5,8,8,-22,-22,8,8,5,0,0,0,0,0,0,0,0),'n':(-50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,8,13,13,8,0,-30,-30,5,13,18,18,13,5,-30,-30,0,13,18,18,13,0,-30,-30,5,7,13,13,7,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-20,-30,-30,-20,-40,-50,),'b':(-20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,10,10,5,0,-10,-10,5,5,10,10,5,5,-10,-10,0,10,10,10,10,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-40,-10,-10,-40,-10,-20,),'r':(0,0,0,0,0,0,0,0,10,20,20,20,20,20,20,10,-10,0,0,0,0,0,0,-10,-10,0,0,0,0,0,0,-10,-10,0,0,0,0,0,0,-10,-10,0,0,0,0,0,0,-10,-10,0,0,0,0,0,0,-10,-30,0,0,10,10,0,0,-30),'q':(-40,-20,-20,-10,-10,-20,-20,-40,-20,0,0,0,0,0,0,-20,-20,0,10,10,10,10,0,-20,-10,0,10,10,10,10,0,-10,0,0,10,10,10,10,0,-10,-20,10,10,10,10,10,0,-20,-20,0,10,0,0,0,0,-20,-40,-20,-20,-10,-10,-20,-20,-40),'k':(-50,-40,-30,-20,-20,-30,-40,-50,-30,-20,-10,0,0,-10,-20,-30,-30,-10,20,30,30,20,-10,-30,-30,-10,30,40,40,30,-10,-30,-30,-10,30,40,40,30,-10,-30,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,),}
-for C,set_u in B.items():
+for C,ZI in B.items():
  pZ1=lambda Z1:(0,)+tuple(Z2+A[C]for Z2 in Z1)+(0,)
- B[C]=sum((pZ1(set_u[Z4*8:Z4*8+8])for Z4 in range(8)),())
+ B[C]=sum((pZ1(ZI[Z4*8:Z4*8+8])for Z4 in range(8)),())
  B[C]=(0,)*20+B[C]+(0,)*20
 def get_I9(Z2):
  if Z2=='k':
@@ -163,6 +163,14 @@ class A6:
   return d
  def C6(Z):
   return Z.A7+ str(Z.A8%2)
+ def ZG(Z):
+  ZH=0
+  P3=20
+  while 20<P3<99:
+   F6=Z.A7[P3]
+   if F6!='-':
+    ZH^=F6
+  return ZH
  def N7(Z):
   return Z.A5(1)
  def A5(Z,N8=0):
@@ -245,7 +253,8 @@ class F0:
  S=0
  G1=0
  G2=0
- G3={}
+ ZE=2**19-1
+ G3=[[]for _ in range(ZE)]
  ZA=1
  ZB=2
  ZC=3
@@ -262,7 +271,8 @@ class F0:
   for S in range(1,100):
    d=Z.H9(l,S,-Z.ZD,Z.ZD)
    if t()<Z.G2:
-    H7=Z.G3.get(l.K3)
+    ZF=l.ZG()%(Z.ZE-1)
+    H7=Z.G3[ZF]
     if H7:
      H7=H7['N1']
    else:
@@ -275,66 +285,60 @@ class F0:
   if t()>Z.G2:
    return-Z.ZD
   Z.V+=1
-  is_L1=b>a+1
+  L11=b>a+1
   E01=l.E0(l.A8%2==0)
   S+=E01 
   if S<=0:
    return Z.H93(l,a,b,20)
-  e=Z.G3.get((l.K3),{'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None})
+  ZF=l.ZG()%(Z.ZE-1)
+  e=Z.G3[ZF]
+  e={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
   if e['N1']and(l.A0.count(l.K3)>2 or l.M9>=100):
    return 0
-  P4=Z.ZD-S
-  if P4<b:
-   b=P4
-   if a>=P4:
-    return P4
-  P4=-Z.ZD+S
-  if P4>a:
-   a=P4
-   if b<=P4:
-    return P4
   L2=a
-  if e['M0']>=S and e['N1']and not is_L1:
+  if e['M0']>=S and e['N1']and not L11:
    if e['M2']==Z.ZA or (e['M2']==Z.ZC and e['M1']>=b)or (e['M2']==Z.ZB and e['M1']<=a):
     return e['M1']
-  if not is_L1 and not E01 and S<=7 and l.B6>=b+(100*S):
+  if not L11 and not E01 and S<=7 and l.B6>=b+(100*S):
    return l.B6
-  if not is_L1 and not E01 and S<=5:
-   cut_boundary=a-(385*S)
-   if l.B6<=cut_boundary:
+  if not L11 and not E01 and S<=5:
+   ZJ=a-(385*S)
+   if l.B6<=ZJ:
     if S<=2:
      return Z.H93(l,a,a+1,20)
-    d=Z.H93(l,cut_boundary,cut_boundary+1,20)
-    if d<=cut_boundary:
+    d=Z.H93(l,ZJ,ZJ+1,20)
+    if d<=ZJ:
      return d
   T=-Z.ZD-1
   d=-Z.ZD
   i=l.A8%2==0
   L8='RNBQ' if i else 'rnbq'
-  if not is_L1 and not E01 and L8 in l.K3:
+  if not L11 and not E01 and L8 in l.K3:
    d=-Z.H9(l.C5(),S-4,-b,-b+1)
    if d>=b:
     return b
-  if not is_L1 and not E01 and e['M0']>=S and abs(e['M1'])<Z.ZD and e['N1']:
+  if not e['N1']is None:
    d=-Z.H9(l.C4(e['N1']),S-2,-b,-a)
    if d>=b:
     return b
   I92=0
   H7=None
   for F2 in sorted(l.A5(),key=l.M3,reverse=1):
+   if not e['N1']is None and F2==e['N1']:
+    continue
    G7=l.C4(F2)
    if G7.E0(i):
     continue
-   is_quiet=l.K4==G7.K4
+   ZJ=l.K4==G7.K4
    I92+=1
-   r_depth=1
-   if(not is_L1 and is_quiet and S>2 and I92>1):
-    r_depth=max(3,math.ceil(math.sqrt(S-1)+math.sqrt(I92-1)))
-   if r_depth!=1:
-    d=-Z.H9(G7,S-r_depth,-a-1,-a)
-   if(r_depth!=1 and d>a)or(r_depth==1 and not(is_L1 and I92==1)):
+   ZJ=1
+   if(not L11 and ZJ and S>2 and I92>1):
+    ZJ=max(3,math.ceil(math.sqrt(S-1)+math.sqrt(I92-1)))
+   if ZJ!=1:
+    d=-Z.H9(G7,S-ZJ,-a-1,-a)
+   if(ZJ!=1 and d>a)or(ZJ==1 and not(L11 and I92==1)):
     d=-Z.H9(G7,S-1,-a-1,-a)
-   if is_L1 and(I92==1 or d>a):
+   if L11 and(I92==1 or d>a):
     d=-Z.H9(G7,S-1,-b,-a)
    if not H7:
     H7=F2
@@ -346,7 +350,7 @@ class F0:
      if a>=b:
       break
   if not I92:
-   return-Z.ZD if E01 else 0
+   return-Z.ZD+l.A8 if E01 else 0
   if t()<Z.G2:
    e['M1']=T
    if H7:
@@ -358,9 +362,9 @@ class F0:
     e['M2']=Z.ZC
    else:
     e['M2']=Z.ZA
-   Z.G3[l.K3]=e
+   Z.G3[ZF]=e
   else:
-   Z.G3[l.K3]={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
+   Z.G3[ZF]={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
   return T
  def H93(Z,l,a,b,S):
   if t()>Z.G2:
@@ -368,7 +372,8 @@ class F0:
   Z.V+=1
   if l.A0.count(l.K3)>2 or l.M9>=100:
    return 0
-  e=Z.G3.get(l.K3)
+  ZF=l.ZG()%(Z.ZE-1)
+  e=Z.G3[ZF]
   if e:
    if e['M2']==Z.ZA or (e['M2']==Z.ZC and e['M1']>=b)or (e['M2']==Z.ZB and e['M1']<=a):
     return e['M1']

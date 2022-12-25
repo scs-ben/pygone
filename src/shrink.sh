@@ -147,6 +147,7 @@ sed -i -e 's/v_score/K7/g' pygone-mini.py
 sed -i -e 's/s_count/K8/g' pygone-mini.py
 sed -i -e 's/king_piece/K9/g' pygone-mini.py
 sed -i -e 's/piece_lower/K0/g' pygone-mini.py
+sed -i -e 's/is_pv_node/L11/g' pygone-mini.py
 sed -i -e 's/pv_node/L1/g' pygone-mini.py
 sed -i -e 's/original_alpha/L2/g' pygone-mini.py
 sed -i -e 's/current_eval/L5/g' pygone-mini.py
@@ -210,6 +211,16 @@ sed -i -e 's/eval_exact/ZA/g' pygone-mini.py
 sed -i -e 's/eval_upper/ZB/g' pygone-mini.py
 sed -i -e 's/eval_lower/ZC/g' pygone-mini.py
 sed -i -e 's/eval_mate_upper/ZD/g' pygone-mini.py
+
+sed -i -e 's/tt_size/ZE/g' pygone-mini.py
+sed -i -e 's/tt_index/ZF/g' pygone-mini.py
+sed -i -e 's/findhash/ZG/g' pygone-mini.py
+sed -i -e 's/hash/ZH/g' pygone-mini.py
+
+sed -i -e 's/set_board/ZI/g' pygone-mini.py
+sed -i -e 's/cut_boundary/ZJ/g' pygone-mini.py
+sed -i -e 's/is_quiet/ZJ/g' pygone-mini.py
+sed -i -e 's/r_depth/ZJ/g' pygone-mini.py
 
 sed -i -e 's/alpha/a/g' pygone-mini.py
 sed -i -e 's/beta/b/g' pygone-mini.py
