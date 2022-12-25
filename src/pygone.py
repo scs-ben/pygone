@@ -485,18 +485,6 @@ class Board:
         return self.board_state + \
           str(self.played_move_count % 2)
 
-    def findhash(self):
-        hash = 0
-        to_position = 20
-
-        while 20 < to_position < 99:
-            eval_piece = self.board_state[to_position]
-
-            if eval_piece != '-':
-                hash ^= eval_piece
-
-        return hash
-
     def generate_valid_captures(self):
         return self.generate_valid_moves(True)
 
@@ -622,9 +610,7 @@ class Search:
     v_depth = 0
     end_time = 0
     critical_time = 0
-    # tt_bucket = {}
-    tt_size = 2**19-1
-    tt_bucket = [[] for _ in range(tt_size)]
+    tt_bucket = {}
 
     eval_exact = 1
     eval_upper = 2
@@ -690,10 +676,7 @@ class Search:
 
 
             if t() < self.critical_time:
-                tt_index = local_board.findhash() % (self.tt_size - 1)
-
-                best_move = self.tt_bucket[tt_index]
-                # best_move = self.tt_bucket.get(local_board.board_string)
+                best_move = self.tt_bucket.get(local_board.board_string)
                 if best_move:
                     best_move = best_move['tt_move']
             else:
@@ -738,18 +721,7 @@ class Search:
         if v_depth <= 0:
             return self.q_search(local_board, alpha, beta, 20)
 
-        tt_index = local_board.findhash() % (self.tt_size - 1)
-
-        tt_entry = self.tt_bucket[tt_index]
-
-        tt_entry = {
-            'tt_value': 2*self.eval_mate_upper,
-            'tt_flag': self.eval_upper,
-            'tt_depth': -1,
-            'tt_move': None
-        }
-
-        # tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
+        tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
 
         if tt_entry['tt_move'] and (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
             return 0
@@ -805,9 +777,8 @@ class Search:
             if local_score >= beta:
                 return beta
 
-        #if not is_pv_node and not is_in_check and tt_entry['tt_depth'] >= v_depth and abs(tt_entry['tt_value']) < self.eval_mate_upper and tt_entry['tt_move']:
-        if not tt_entry['tt_move'] is None:
-            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 2, -beta, -alpha)
+        if not is_pv_node and not is_in_check and tt_entry['tt_depth'] >= v_depth and abs(tt_entry['tt_value']) < self.eval_mate_upper and tt_entry['tt_move']:
+            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha)
 
             if local_score >= beta:
                 return beta
@@ -817,9 +788,6 @@ class Search:
         best_move = None
 
         for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
-            if not tt_entry['tt_move'] is None and s_move == tt_entry['tt_move']:
-                continue
-
             moved_board = local_board.make_move(s_move)
 
             # determine legality: if we moved and are in check, it's not legal
@@ -874,9 +842,9 @@ class Search:
             else:
                 tt_entry['tt_flag'] = self.eval_exact
 
-            self.tt_bucket[tt_index] = tt_entry
+            self.tt_bucket[local_board.board_string] = tt_entry
         else:
-            self.tt_bucket[tt_index] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
+            self.tt_bucket[local_board.board_string] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
 
         return best_score
 
@@ -889,9 +857,7 @@ class Search:
         if local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100:
             return 0
 
-        tt_index = local_board.findhash() % (self.tt_size - 1)
-
-        tt_entry = self.tt_bucket[tt_index]
+        tt_entry = self.tt_bucket.get(local_board.board_string)
 
         if tt_entry:
             if tt_entry['tt_flag'] == self.eval_exact or \

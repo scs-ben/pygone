@@ -163,14 +163,6 @@ class A6:
   return d
  def C6(Z):
   return Z.A7+ str(Z.A8%2)
- def ZG(Z):
-  ZH=0
-  P3=20
-  while 20<P3<99:
-   F6=Z.A7[P3]
-   if F6!='-':
-    ZH^=F6
-  return ZH
  def N7(Z):
   return Z.A5(1)
  def A5(Z,N8=0):
@@ -253,8 +245,7 @@ class F0:
  S=0
  G1=0
  G2=0
- ZE=2**19-1
- G3=[[]for _ in range(ZE)]
+ G3={}
  ZA=1
  ZB=2
  ZC=3
@@ -271,8 +262,7 @@ class F0:
   for S in range(1,100):
    d=Z.H9(l,S,-Z.ZD,Z.ZD)
    if t()<Z.G2:
-    ZF=l.ZG()%(Z.ZE-1)
-    H7=Z.G3[ZF]
+    H7=Z.G3.get(l.K3)
     if H7:
      H7=H7['N1']
    else:
@@ -290,9 +280,7 @@ class F0:
   S+=E01 
   if S<=0:
    return Z.H93(l,a,b,20)
-  ZF=l.ZG()%(Z.ZE-1)
-  e=Z.G3[ZF]
-  e={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
+  e=Z.G3.get((l.K3),{'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None})
   if e['N1']and(l.A0.count(l.K3)>2 or l.M9>=100):
    return 0
   L2=a
@@ -317,15 +305,13 @@ class F0:
    d=-Z.H9(l.C5(),S-4,-b,-b+1)
    if d>=b:
     return b
-  if not e['N1']is None:
-   d=-Z.H9(l.C4(e['N1']),S-2,-b,-a)
+  if not L11 and not E01 and e['M0']>=S and abs(e['M1'])<Z.ZD and e['N1']:
+   d=-Z.H9(l.C4(e['N1']),S-1,-b,-a)
    if d>=b:
     return b
   I92=0
   H7=None
   for F2 in sorted(l.A5(),key=l.M3,reverse=1):
-   if not e['N1']is None and F2==e['N1']:
-    continue
    G7=l.C4(F2)
    if G7.E0(i):
     continue
@@ -362,9 +348,9 @@ class F0:
     e['M2']=Z.ZC
    else:
     e['M2']=Z.ZA
-   Z.G3[ZF]=e
+   Z.G3[l.K3]=e
   else:
-   Z.G3[ZF]={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
+   Z.G3[l.K3]={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
   return T
  def H93(Z,l,a,b,S):
   if t()>Z.G2:
@@ -372,8 +358,7 @@ class F0:
   Z.V+=1
   if l.A0.count(l.K3)>2 or l.M9>=100:
    return 0
-  ZF=l.ZG()%(Z.ZE-1)
-  e=Z.G3[ZF]
+  e=Z.G3.get(l.K3)
   if e:
    if e['M2']==Z.ZA or (e['M2']==Z.ZC and e['M1']>=b)or (e['M2']==Z.ZB and e['M1']<=a):
     return e['M1']
