@@ -138,10 +138,7 @@ class A6:
   d=0
   C2=l_A7[B0].lower()
   D4=l_A7[O].lower()
-  if C2=='k' and C8:
-   d+=B['n'][abs(O-D1)]- B['n'][abs(B0-D1)]
-  else:
-   d+=B[C2][abs(O-D1)]- B[C2][abs(B0-D1)]
+  d+=B[C2][abs(O-D1)]- B[C2][abs(B0-D1)]
   if D4!='-':
    d+=B[D4][abs(O-D1)]
    if M4 and C2=='q' and D4=='p':

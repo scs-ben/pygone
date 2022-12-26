@@ -341,11 +341,7 @@ class Board:
 
         to_piece = l_board_state[to_number].lower()
 
-        if from_piece == 'k' and is_endgame:
-            local_score += ALLPSQT['n'][abs(to_number - offset)] - \
-                        ALLPSQT['n'][abs(from_number - offset)]
-        else:
-            local_score += ALLPSQT[from_piece][abs(to_number - offset)] - \
+        local_score += ALLPSQT[from_piece][abs(to_number - offset)] - \
                         ALLPSQT[from_piece][abs(from_number - offset)]
 
         if to_piece != '-':
