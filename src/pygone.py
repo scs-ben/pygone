@@ -8,64 +8,64 @@ PIECEPOINTS = {'p': 100, 'n': 320, 'b': 325, 'r': 500, 'q': 975, 'k': 32767}
 
 ALLPSQT = {
     'p': (
-        0,  0,  0,  0,  0,  0,  0,  0,
-        30, 30, 30, 30, 30, 30, 30, 30,
-        8, 8, 17, 26, 26, 17, 8, 8,
-        5,  5, 8, 24, 24, 8,  5,  5,
-        0,  0,  0, 24, 24,  0,  0,  0,
-        5, -5,-8,  6,  6,-8, -5,  5,
-        5, 8, 8,-22,-22, 8, 8,  5,
-        0,  0,  0,  0,  0,  0,  0,  0
+        0,0,0,0,0,0,0,0,
+        30,30,30,30,30,30,30,30,
+        8,8,17,26,26,17,8,8,
+        5, 5,8,24,24,8, 5, 5,
+        0, 0, 0,24,24, 0, 0, 0,
+        5,-5,-8, 6, 6,-8,-5, 5,
+        5,8,8,-22,-22,8,8, 5,
+        0, 0, 0, 0, 0, 0, 0, 0
     ),
     'n': (
         -50,-40,-30,-30,-30,-30,-40,-50,
-        -40,-20,  0,  0,  0,  0,-20,-40,
-        -30,  0, 8, 13, 13, 8,  0,-30,
-        -30,  5, 13, 18, 18, 13,  5,-30,
-        -30,  0, 13, 18, 18, 13,  0,-30,
-        -30,  5, 7, 13, 13, 7,  5,-30,
-        -40,-20,  0,  5,  5,  0,-20,-40,
+        -40,-20, 0, 0, 0, 0,-20,-40,
+        -30, 0,8,13,13,8, 0,-30,
+        -30, 5,13,18,18,13, 5,-30,
+        -30, 0,13,18,18,13, 0,-30,
+        -30, 5,7,13,13,7, 5,-30,
+        -40,-20, 0, 5, 5, 0,-20,-40,
         -50,-40,-20,-30,-30,-20,-40,-50,
     ),
     'b': (
         -20,-10,-10,-10,-10,-10,-10,-20,
-        -10,  0,  0,  0,  0,  0,  0,-10,
-        -10,  0,  5, 10, 10,  5,  0,-10,
-        -10,  5,  5, 10, 10,  5,  5,-10,
-        -10,  0, 10, 10, 10, 10,  0,-10,
-        -10, 10, 10, 10, 10, 10, 10,-10,
-        -10,  5,  0,  0,  0,  0,  5,-10,
+        -10, 0, 0, 0, 0, 0, 0,-10,
+        -10, 0, 5,10,10, 5, 0,-10,
+        -10, 5, 5,10,10, 5, 5,-10,
+        -10, 0,10,10,10,10, 0,-10,
+        -10,10,10,10,10,10,10,-10,
+        -10, 5, 0, 0, 0, 0, 5,-10,
         -20,-10,-40,-10,-10,-40,-10,-20,
     ),
     'r': (
-        0,  0,  0,  0,  0,  0,  0,   0 ,
-        10, 20, 20, 20, 20, 20, 20,  10 ,
-        -10,  0,  0,  0,  0,  0,  0, -10 ,
-        -10,  0,  0,  0,  0,  0,  0, -10 ,
-        -10,  0,  0,  0,  0,  0,  0, -10 ,
-        -10,  0,  0,  0,  0,  0,  0, -10 ,
-        -10,  0,  0,  0,  0,  0,  0, -10 ,
-        -30,  0,  0, 10, 10,  0,  0, -30
+        0, 0, 0, 0, 0, 0, 0,  0 ,
+        10,20,20,20,20,20,20, 10 ,
+        -10, 0, 0, 0, 0, 0, 0,-10 ,
+        -10, 0, 0, 0, 0, 0, 0,-10 ,
+        -10, 0, 0, 0, 0, 0, 0,-10 ,
+        -10, 0, 0, 0, 0, 0, 0,-10 ,
+        -10, 0, 0, 0, 0, 0, 0,-10 ,
+        -30, 0, 0,10,10, 0, 0,-30
     ),
     'q': (
-        -40, -20, -20, -10, -10, -20, -20, -40 ,
-        -20,   0,   0,   0,   0,   0,   0, -20 ,
-        -20,   0,  10,  10,  10,  10,   0, -20 ,
-        -10,   0,  10,  10,  10,  10,   0, -10 ,
-        0,   0,  10,  10,  10,  10,   0, -10 ,
-        -20,  10,  10,  10,  10,  10,   0, -20 ,
-        -20,   0,  10,   0,   0,   0,   0, -20 ,
-        -40, -20, -20, -10, -10, -20, -20, -40
+        -40,-20,-20,-10,-10,-20,-20,-40 ,
+        -20, 0, 0, 0, 0, 0, 0,-20 ,
+        -20, 0,10,10,10,10, 0,-20 ,
+        -10, 0,10,10,10,10, 0,-10 ,
+        0, 0,10,10,10,10, 0,-10 ,
+        -20,10,10,10,10,10, 0,-20 ,
+        -20, 0,10, 0, 0, 0, 0,-20 ,
+        -40,-20,-20,-10,-10,-20,-20,-40
     ),
     'k': (
         -50,-40,-30,-20,-20,-30,-40,-50,
-        -30,-20,-10,  0,  0,-10,-20,-30,
-        -30,-10, 20, 30, 30, 20,-10,-30,
-        -30,-10, 30, 40, 40, 30,-10,-30,
-        -30,-10, 30, 40, 40, 30,-10,-30,
-        -10, -20, -20, -20, -20, -20, -20, -10,
-        20,  20,   0,   0,   0,   0,  20,  20,
-        20,  30,  10,   0,   0,  10,  30,  ),
+        -30,-20,-10, 0, 0,-10,-20,-30,
+        -30,-10,20,30,30,20,-10,-30,
+        -30,-10,30,40,40,30,-10,-30,
+        -30,-10,30,40,40,30,-10,-30,
+        -10,-20,-20,-20,-20,-20,-20,-10,
+        20,20,0,0,0,0,20,20,
+        20,30,10,0,0,10,30,20),
     # 'p': (0, 0, 0, 0, 0, 0, 0, 0,
     #       20, 20, 20, 20, 20, 20, 20, 20,
     #       8, 8, 8, 8, 8, 8, 8, 8,
@@ -686,24 +686,24 @@ class Search:
 
             v_nps = math.ceil(self.v_nodes / elapsed_time) if elapsed_time > 0 else 1
 
-            # pv = ''
-            # counter = 1
-            # pv_board = local_board.make_move(best_move)
-            # while counter < min(6, v_depth):
-            #     counter += 1
+            pv = ''
+            counter = 1
+            pv_board = local_board.make_move(best_move)
+            while counter < min(6, v_depth):
+                counter += 1
 
-            #     pv_entry = self.tt_bucket.get(pv_board.board_string)
+                pv_entry = self.tt_bucket.get(pv_board.board_string)
 
-            #     if not pv_entry or not pv_entry['tt_move']:
-            #         break
+                if not pv_entry or not pv_entry['tt_move']:
+                    break
 
-            #     pv_board = pv_board.make_move(pv_entry['tt_move'])
+                pv_board = pv_board.make_move(pv_entry['tt_move'])
 
-            #     pv += ' ' + pv_entry['tt_move']
+                pv += ' ' + pv_entry['tt_move']
 
-            # print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move + pv))
+            print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.v_nodes), str(v_nps), str(best_move + pv))
 
-            print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time)), str(self.v_nodes), str(v_nps), str(best_move))
+            # print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.v_nodes), str(v_nps), str(best_move))
 
             yield v_depth, best_move, local_score
 
@@ -900,7 +900,7 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print_to_terminal("pygone 1.5\nuciok")
+                print_to_terminal("pygone 1.5.1\nuciok")
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
@@ -926,6 +926,8 @@ def main():
             #                 if piece.isupper():
             #                     game_board.rolling_score += ALLPSQT[piece.lower()][position]
             #                     if piece == 'K':
+            #                         for row in range(12):
+            #                             position = row * 10
             #                         game_board.white_king_position = position_to_coordinate(position)
             #                 else:
             #                     game_board.rolling_score -= ALLPSQT[piece.lower()][abs(position - 119)]
