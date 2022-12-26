@@ -407,7 +407,7 @@ def main():
     for I0 in I9[3:]:
      I7=I7.C4(I0)
    elif Z3.startswith("go"):
-    H91.S=3
+    H91.S=30
     J6=1e8
     i=I7.A8%2==0
     J3=Z3.split()
