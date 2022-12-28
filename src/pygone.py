@@ -45,7 +45,7 @@ ALLPSQT = {
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
-        -30, 0, 0,10,10, 0, 0,-30
+        -10, 0, 0,10,10, 0, 0,-10
     ),
     'q': (
         -40,-20,-20,-10,-10,-20,-20,-40 ,
@@ -65,7 +65,7 @@ ALLPSQT = {
         -30,-10,30,40,40,30,-10,-30,
         -10,-20,-20,-20,-20,-20,-20,-10,
         20,20,0,0,0,0,20,20,
-        20,30,10,0,0,10,30,20),
+        20,20,30,0,0,10,30,20),
     # 'p': (0, 0, 0, 0, 0, 0, 0, 0,
     #       20, 20, 20, 20, 20, 20, 20, 20,
     #       8, 8, 8, 8, 8, 8, 8, 8,
@@ -670,7 +670,6 @@ class Search:
         for v_depth in range(1, 100):
             local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper)
 
-
             if t() < self.critical_time:
                 best_move = self.tt_bucket.get(local_board.board_string)
                 if best_move:
@@ -896,7 +895,7 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print_to_terminal("pygone 1.5.2\nuciok")
+                print_to_terminal("pygone 1.5.3\nuciok")
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
