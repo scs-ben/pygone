@@ -1,9 +1,7 @@
-sed -i '1,48d' ./pygone
-sed -i '1s/^/#!\/bin\/bash\n/' ./pygone
-sed -i '2s/^/E=\/tmp\/$$\n/' ./pygone
-sed -i '3s/^/tail -n +7 $0 | gunzip -c -q > $E\n/' ./pygone
-sed -i '4s/^/chmod +x $E\n/' ./pygone
-sed -i '5s/^/(sleep 5;rm $E)\&\n/' ./pygone
-sed -i '6s/^/exec $E\n/' ./pygone
-sed -i -e '$a\' ./pygone
+sed -i '1s/^/#!\/bin\/sh\n/' ./pygone.xz
+sed -i '2s/^/T=`mktemp`\n/' ./pygone.xz
+sed -i '3s/^/tail -n +6 $0|xz -d>$T 2>\/dev\/null\n/' ./pygone.xz
+sed -i '4s/^/chmod +x $T\n/' ./pygone.xz
+sed -i '5s/^/(sleep 3;rm $T)\&exec $T\n/' ./pygone.xz
+mv ./pygone.xz ./pygone
 echo >> ./pygone

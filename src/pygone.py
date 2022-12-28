@@ -350,8 +350,8 @@ class Board:
             # if not is_endgame and to_piece == 'p':
             #     local_score += self.score_pawns(uci_coordinate, l_board_state[to_number], -p_offset)
 
-            if sorting and from_piece == 'q' and to_piece == 'p':
-                local_score -= 100
+            # if sorting and from_piece == 'q' and to_piece == 'p':
+            #     local_score -= 100
 
 
         if from_piece == 'p':
@@ -379,7 +379,7 @@ class Board:
 
                 # put castling higher up
                 if sorting:
-                    local_score += 80
+                    local_score += 60
 
         # if not is_endgame:
         #     local_score += self.king_safety(uci_coordinate, is_white, p_offset)

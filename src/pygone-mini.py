@@ -141,8 +141,6 @@ class A6:
   d+=B[C2][abs(O-D1)]- B[C2][abs(B0-D1)]
   if D4!='-':
    d+=B[D4][abs(O-D1)]
-   if M4 and C2=='q' and D4=='p':
-    d-=100
   if C2=='p':
    if A1[2:4]==Z.B7:
     d+=B[C2][abs(O-D1)]
@@ -156,7 +154,7 @@ class A6:
     else:
      d+=B['r'][abs(O-D1)+1]- B['r'][abs(O-D1)-2]
     if M4:
-     d+=80
+     d+=60
   return d
  def C6(Z):
   return Z.A7+ str(Z.A8%2)
