@@ -212,15 +212,25 @@ sed -i -e 's/eval_upper/ZB/g' pygone-mini.py
 sed -i -e 's/eval_lower/ZC/g' pygone-mini.py
 sed -i -e 's/eval_mate_upper/ZD/g' pygone-mini.py
 
-sed -i -e 's/tt_size/ZE/g' pygone-mini.py
+sed -i -e 's/TT_SIZE/ZE/g' pygone-mini.py
 sed -i -e 's/tt_index/ZF/g' pygone-mini.py
-sed -i -e 's/findhash/ZG/g' pygone-mini.py
-sed -i -e 's/hash/ZH/g' pygone-mini.py
+sed -i -e 's/random_move/ZG/g' pygone-mini.py
+sed -i -e 's/passer_pawn/ZH/g' pygone-mini.py
 
 sed -i -e 's/set_board/ZI/g' pygone-mini.py
 sed -i -e 's/cut_boundary/ZJ/g' pygone-mini.py
-sed -i -e 's/is_quiet/ZJ/g' pygone-mini.py
-sed -i -e 's/r_depth/ZJ/g' pygone-mini.py
+sed -i -e 's/is_quiet/ZK/g' pygone-mini.py
+sed -i -e 's/r_depth/ZL/g' pygone-mini.py
+
+sed -i -e 's/stacked_pawn/ZM/g' pygone-mini.py
+sed -i -e 's/start_position/ZN/g' pygone-mini.py
+sed -i -e 's/t_depth/ZO/g' pygone-mini.py
+sed -i -e 's/counter/ZP/g' pygone-mini.py
+sed -i -e 's/pv_entry/ZQ/g' pygone-mini.py
+sed -i -e 's/sort_by/ZR/g' pygone-mini.py
+sed -i -e 's/scramble/ZS/g' pygone-mini.py
+sed -i -e 's/random_move/ZT/g' pygone-mini.py
+
 
 sed -i -e 's/alpha/a/g' pygone-mini.py
 sed -i -e 's/beta/b/g' pygone-mini.py
@@ -228,6 +238,7 @@ sed -i -e 's/local_score/d/g' pygone-mini.py
 sed -i -e 's/tt_entry/e/g' pygone-mini.py
 sed -i -e 's/is_white/i/g' pygone-mini.py
 sed -i -e 's/local_board/l/g' pygone-mini.py
+sed -i -e 's/pv_board/u1/g' pygone-mini.py
 sed -i -e 's/board/u/g' pygone-mini.py
 sed -i -e 's/string_join/v/g' pygone-mini.py
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env pypy3
-import math,sys,time
+import math,random,sys,time
+ZE=2**19-1
 t=time.time
 A={'p':100,'n':320,'b':325,'r':500,'q':975,'k':32767}
 B={'p':(0,0,0,0,0,0,0,0,30,30,30,30,30,30,30,30,8,8,17,26,26,17,8,8,5,5,8,24,24,8,5,5,0,0,0,24,24,0,0,0,5,-5,-8,6,6,-8,-5,5,5,8,8,-22,-22,8,8,5,0,0,0,0,0,0,0,0),'n':(-50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,8,13,13,8,0,-30,-30,5,13,18,18,13,5,-30,-30,0,13,18,18,13,0,-30,-30,5,7,13,13,7,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-20,-30,-30,-20,-40,-50,),'b':(-20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,10,10,5,0,-10,-10,5,5,10,10,5,5,-10,-10,0,10,10,10,10,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-40,-10,-10,-40,-10,-20,),'r':(0,0,0,0,0,0,0,0,10,20,20,20,20,20,20,10,-10,0,0,0,0,0,0,-10,-10,0,0,0,0,0,0,-10,-10,0,0,0,0,0,0,-10,-10,0,0,0,0,0,0,-10,-10,0,0,0,0,0,0,-10,-10,0,0,10,10,0,0,-10),'q':(-40,-20,-20,-10,-10,-20,-20,-40,-20,0,0,0,0,0,0,-20,-20,0,10,10,10,10,0,-20,-10,0,10,10,10,10,0,-10,0,0,10,10,10,10,0,-10,-20,10,10,10,10,10,0,-20,-20,0,10,0,0,0,0,-20,-40,-20,-20,-10,-10,-20,-20,-40),'k':(-50,-40,-30,-20,-20,-30,-40,-50,-30,-20,-10,0,0,-10,-20,-30,-30,-10,20,30,30,20,-10,-30,-30,-10,30,40,40,30,-10,-30,-30,-10,30,40,40,30,-10,-30,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,20,30,0,0,10,30,20),}
@@ -127,6 +128,8 @@ class A6:
   return Z.K4<14 or(Z.K4<20 and 'q' not in Z.K3.lower())
  def M3(Z,A1):
   return Z.A4(A1,1)
+ def ZG(Z,A1):
+  return random.randrange(-50,50)
  def A4(Z,A1,M4=0):
   i=Z.A8%2==0
   D1=0 if i else 119
@@ -147,6 +150,10 @@ class A6:
    elif len(A1)>4:
     D7=A1[4:5]
     d+=B[D7][abs(O-D1)]- B['p'][abs(O-D1)]
+   if Z.ZH(B0):
+    d+=20
+   if Z.ZM(B0):
+    d-=30
   elif C2=='k':
    if abs(O-B0)==2:
     if O>B0:
@@ -156,6 +163,26 @@ class A6:
     if M4:
      d+=60
   return d
+ def ZH(Z,O0):
+  i=Z.A8%2==0
+  D11=-10 if i else 10
+  ZN=O0+D11
+  K4=1
+  while 20<=ZN<=100:
+   if not Z.A7[ZN]in '-.':
+    return 0
+   ZN+=D11
+  return 1
+ def ZM(Z,O0):
+  i=Z.A8%2==0
+  D11=-10 if i else 10
+  D5='P' if i else 'p'
+  ZN=O0+D11
+  while 20<=ZN<=100:
+   if Z.A7[ZN]==D5:
+    return 1
+   ZN+=D11
+  return 0
  def C6(Z):
   return Z.A7+ str(Z.A8%2)
  def N7(Z):
@@ -240,7 +267,7 @@ class F0:
  S=0
  G1=0
  G2=0
- G3={}
+ G3=[[]for _ in range(ZE)]
  ZA=1
  ZB=2
  ZC=3
@@ -250,14 +277,19 @@ class F0:
   Z.S=0
   Z.G1=0
   Z.G2=0
-  Z.G3.clear()
+  Z.G3=[[]for _ in range(ZE)]
  def H1(Z,l):
   H2=t()
   d=l.B6
   for S in range(1,100):
-   d=Z.H9(l,S,-Z.ZD,Z.ZD)
+   ZO=S
+   while ZO>1:
+    Z.H9(l,S-ZO,-Z.ZD,Z.ZD,1)
+    ZO-=1
+   d=Z.H9(l,S,-Z.ZD,Z.ZD,0)
    if t()<Z.G2:
-    H7=Z.G3.get(l.K3)
+    ZF=hash(l.K3)%(ZE-1)
+    H7=Z.G3[ZF]
     if H7:
      H7=H7['N1']
    else:
@@ -265,18 +297,19 @@ class F0:
    H8=t()-H2
    W=math.ceil(Z.V/H8)if H8>0 else 1
    pv=''
-   counter=1
-   pv_u=l.C4(H7)
-   while counter<min(6,S):
-    counter+=1
-    pv_entry=Z.G3.get(pv_u.K3)
-    if not pv_entry or not pv_entry['N1']:
+   ZP=1
+   u1=l.C4(H7)
+   while ZP<min(6,S):
+    ZP+=1
+    ZF=hash(u1.K3)%(ZE-1)
+    ZQ=Z.G3[ZF]
+    if not ZQ or not ZQ['N1']:
      break
-    pv_u=pv_u.C4(pv_entry['N1'])
-    pv+=' '+pv_entry['N1']
+    u1=u1.C4(ZQ['N1'])
+    pv+=' '+ZQ['N1']
    R(str(S),str(math.ceil(d)),str(math.ceil(H8*1000)),str(Z.V),str(W),str(H7+pv))
    yield S,H7,d
- def H9(Z,l,S,a,b):
+ def H9(Z,l,S,a,b,ZS):
   if t()>Z.G2:
    return-Z.ZD
   Z.V+=1
@@ -285,7 +318,9 @@ class F0:
   S+=E01 
   if S<=0:
    return Z.H93(l,a,b,20)
-  e=Z.G3.get((l.K3),{'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None})
+  ZF=hash(l.K3)%(ZE-1)
+  Z.G3[ZF]={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
+  e=Z.G3[ZF]
   if e['N1']and(l.A0.count(l.K3)>2 or l.M9>=100):
    return 0
   L2=a
@@ -307,30 +342,33 @@ class F0:
   i=l.A8%2==0
   L8='RNBQ' if i else 'rnbq'
   if not L11 and not E01 and L8 in l.K3:
-   d=-Z.H9(l.C5(),S-4,-b,-b+1)
+   d=-Z.H9(l.C5(),S-4,-b,-b+1,ZS)
    if d>=b:
     return b
   if not L11 and not E01 and e['M0']>=S and abs(e['M1'])<Z.ZD and e['N1']:
-   d=-Z.H9(l.C4(e['N1']),S-1,-b,-a)
+   d=-Z.H9(l.C4(e['N1']),S-1,-b,-a,ZS)
    if d>=b:
     return b
   I92=0
   H7=None
-  for F2 in sorted(l.A5(),key=l.M3,reverse=1):
+  ZR=l.M3
+  if ZS:
+   ZR=l.ZG
+  for F2 in sorted(l.A5(),key=ZR,reverse=1):
    G7=l.C4(F2)
    if G7.E0(i):
     continue
-   ZJ=l.K4==G7.K4
+   ZK=l.K4==G7.K4
    I92+=1
-   ZJ=1
-   if(not L11 and ZJ and S>2 and I92>1):
-    ZJ=max(3,math.ceil(math.sqrt(S-1)+math.sqrt(I92-1)))
-   if ZJ!=1:
-    d=-Z.H9(G7,S-ZJ,-a-1,-a)
-   if(ZJ!=1 and d>a)or(ZJ==1 and not(L11 and I92==1)):
-    d=-Z.H9(G7,S-1,-a-1,-a)
+   ZL=1
+   if(not L11 and ZK and S>2 and I92>1):
+    ZL=max(3,math.ceil(math.sqrt(S-1)+math.sqrt(I92-1)))
+   if ZL!=1:
+    d=-Z.H9(G7,S-ZL,-a-1,-a,ZS)
+   if(ZL!=1 and d>a)or(ZL==1 and not(L11 and I92==1)):
+    d=-Z.H9(G7,S-1,-a-1,-a,ZS)
    if L11 and(I92==1 or d>a):
-    d=-Z.H9(G7,S-1,-b,-a)
+    d=-Z.H9(G7,S-1,-b,-a,ZS)
    if not H7:
     H7=F2
    if d>T:
@@ -353,9 +391,11 @@ class F0:
     e['M2']=Z.ZC
    else:
     e['M2']=Z.ZA
-   Z.G3[l.K3]=e
+   ZF=hash(l.K3)%(ZE-1)
+   Z.G3[ZF]=e
   else:
-   Z.G3[l.K3]={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
+   ZF=hash(l.K3)%(ZE-1)
+   Z.G3[ZF]={'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None}
   return T
  def H93(Z,l,a,b,S):
   if t()>Z.G2:
@@ -363,7 +403,8 @@ class F0:
   Z.V+=1
   if l.A0.count(l.K3)>2 or l.M9>=100:
    return 0
-  e=Z.G3.get(l.K3)
+  ZF=hash(l.K3)%(ZE-1)
+  e=Z.G3[ZF]
   if e:
    if e['M2']==Z.ZA or (e['M2']==Z.ZC and e['M1']>=b)or (e['M2']==Z.ZB and e['M1']<=a):
     return e['M1']
@@ -390,7 +431,7 @@ def main():
    if Z3=="quit":
     sys.exit()
    elif Z3=="uci":
-    Q("pygone 1.5.3\nuciok")
+    Q("pygone 1.5.4\nuciok")
    elif Z3=="ucinewgame":
     I7=A6()
     H91.G9()
