@@ -10,10 +10,10 @@
         proto=uci \
     -each \
         tc=0/1+1 \
-        timemargin=1000 \
+        timemargin=1500 \
         -openings file=book.pgn \
         -repeat \
-        -pgnout games.pgn min \
+        -pgnout games.pgn \
         -recover \
         -wait 1000 \
         -games 2 -rounds 200 > debug.log

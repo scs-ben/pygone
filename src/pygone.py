@@ -1,8 +1,6 @@
 #!/usr/bin/env pypy3
 import math, random, sys, time
 
-TT_SIZE = 2**19-1
-
 t = time.time
 
 # PIECEPOINTS = {'p': 85, 'n': 290, 'b': 320, 'r': 620, 'q': 1250, 'k': 25000}
@@ -47,7 +45,7 @@ ALLPSQT = {
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
-        -10, 0, 0,10,10, 0, 0,-10
+        -10, 0, 0,10,10, 10, 0,-10
     ),
     'q': (
         -40,-20,-20,-10,-10,-20,-20,-40 ,
@@ -67,7 +65,7 @@ ALLPSQT = {
         -30,-10,30,40,40,30,-10,-30,
         -10,-20,-20,-20,-20,-20,-20,-10,
         20,20,0,0,0,0,20,20,
-        20,20,30,0,0,10,30,20),
+        20,20,35,0,0,10,35,20),
     # 'p': (0, 0, 0, 0, 0, 0, 0, 0,
     #       20, 20, 20, 20, 20, 20, 20, 20,
     #       8, 8, 8, 8, 8, 8, 8, 8,
@@ -628,7 +626,7 @@ class Search:
     v_depth = 0
     end_time = 0
     critical_time = 0
-    tt_bucket = [[] for _ in range(TT_SIZE)]
+    tt_bucket = {}
 
     eval_exact = 1
     eval_upper = 2
@@ -641,7 +639,7 @@ class Search:
         self.v_depth = 0
         self.end_time = 0
         self.critical_time = 0
-        self.tt_bucket = [[] for _ in range(TT_SIZE)]
+        self.tt_bucket.clear()
 
     # def run_perft(self, local_board, original_depth, v_depth):
     #     if v_depth == 0:
@@ -690,18 +688,16 @@ class Search:
 
         local_score = local_board.rolling_score
         for v_depth in range(1, 100):
-            t_depth = v_depth
+            # t_depth = v_depth
 
-            while t_depth > 1:
-                self.search(local_board, v_depth - t_depth, -self.eval_mate_upper, self.eval_mate_upper, True)
-                t_depth -= 1
+            # while t_depth > 1:
+            #     self.search(local_board, v_depth - t_depth, -self.eval_mate_upper, self.eval_mate_upper, True)
+            #     t_depth -= 1
 
             local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper, False)
 
             if t() < self.critical_time:
-                tt_index = hash(local_board.board_string) % (TT_SIZE - 1)
-
-                best_move = self.tt_bucket[tt_index]
+                best_move = self.tt_bucket.get(local_board.board_string)
                 if best_move:
                     best_move = best_move['tt_move']
             else:
@@ -717,8 +713,7 @@ class Search:
             while counter < min(6, v_depth):
                 counter += 1
 
-                tt_index = hash(pv_board.board_string) % (TT_SIZE - 1)
-                pv_entry = self.tt_bucket[tt_index]
+                pv_entry = self.tt_bucket.get(pv_board.board_string)
 
                 if not pv_entry or not pv_entry['tt_move']:
                     break
@@ -747,9 +742,7 @@ class Search:
         if v_depth <= 0:
             return self.q_search(local_board, alpha, beta, 20)
 
-        tt_index = hash(local_board.board_string) % (TT_SIZE - 1)
-        self.tt_bucket[tt_index] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
-        tt_entry = self.tt_bucket[tt_index]
+        tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
 
         if tt_entry['tt_move'] and (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
             return 0
@@ -874,11 +867,9 @@ class Search:
             else:
                 tt_entry['tt_flag'] = self.eval_exact
 
-            tt_index = hash(local_board.board_string) % (TT_SIZE - 1)
-            self.tt_bucket[tt_index] = tt_entry
+            self.tt_bucket[local_board.board_string] = tt_entry
         else:
-            tt_index = hash(local_board.board_string) % (TT_SIZE - 1)
-            self.tt_bucket[tt_index] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
+            self.tt_bucket[local_board.board_string] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
 
         return best_score
 
@@ -891,8 +882,7 @@ class Search:
         if local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100:
             return 0
 
-        tt_index = hash(local_board.board_string) % (TT_SIZE - 1)
-        tt_entry = self.tt_bucket[tt_index]
+        tt_entry = self.tt_bucket.get(local_board.board_string)
 
         if tt_entry:
             if tt_entry['tt_flag'] == self.eval_exact or \
