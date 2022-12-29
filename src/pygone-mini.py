@@ -150,9 +150,9 @@ class A6:
     D7=A1[4:5]
     d+=B[D7][abs(O-D1)]- B['p'][abs(O-D1)]
    if Z.ZH(B0):
-    d+=20
+    d+=10
    if Z.ZM(B0):
-    d-=30
+    d-=15
   elif C2=='k':
    if abs(O-B0)==2:
     if O>B0:

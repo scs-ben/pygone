@@ -372,9 +372,9 @@ class Board:
             # elif is_endgame and self.passer_pawn(from_number):
             #     local_score += 60
             if self.passer_pawn(from_number):
-                local_score += 20
+                local_score += 10
             if self.stacked_pawn(from_number):
-                local_score -= 30
+                local_score -= 15
         elif from_piece == 'k':
             if abs(to_number - from_number) == 2:
                 if to_number > from_number:
