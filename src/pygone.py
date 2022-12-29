@@ -1,6 +1,9 @@
 #!/usr/bin/env pypy3
 import math, multiprocessing, random, time, sys
 
+TT_SIZE = 2**19-1
+TT_BUCKET = [[] for _ in range(TT_SIZE)]
+
 t = time.time
 
 # PIECEPOINTS = {'p': 85, 'n': 290, 'b': 320, 'r': 620, 'q': 1250, 'k': 25000}
@@ -609,7 +612,7 @@ class Search:
     v_depth = 0
     end_time = 0
     critical_time = 0
-    tt_bucket = {}
+    # tt_bucket = {}
 
     eval_exact = 1
     eval_upper = 2
@@ -622,7 +625,7 @@ class Search:
         self.v_depth = 0
         self.end_time = 0
         self.critical_time = 0
-        self.tt_bucket.clear()
+        TT_BUCKET = [[] for _ in range(TT_SIZE)]
 
     # def run_perft(self, local_board, original_depth, v_depth):
     #     if v_depth == 0:
@@ -687,7 +690,9 @@ class Search:
             local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper, False)
 
             if t() < self.critical_time:
-                best_move = self.tt_bucket.get(local_board.board_string)
+                index = hash(local_board.board_string) % (TT_SIZE - 1)
+
+                best_move = TT_BUCKET[index]
                 if best_move:
                     best_move = best_move['tt_move']
             else:
@@ -697,25 +702,25 @@ class Search:
 
             v_nps = math.ceil(self.v_nodes / elapsed_time) if elapsed_time > 0 else 1
 
-            pv = ''
-            counter = 1
-            pv_board = local_board.make_move(best_move)
-            while counter < min(6, v_depth):
-                counter += 1
+            # pv = ''
+            # counter = 1
+            # pv_board = local_board.make_move(best_move)
+            # while counter < min(6, v_depth):
+            #     counter += 1
 
-                pv_entry = self.tt_bucket.get(pv_board.board_string)
+            #     index = hash(local_board.board_string) % (TT_SIZE - 1)
+            #     pv_entry = TT_BUCKET[index]
 
-                if not pv_entry or not pv_entry['tt_move']:
-                    break
+            #     if not pv_entry or not pv_entry['tt_move']:
+            #         break
 
-                pv_board = pv_board.make_move(pv_entry['tt_move'])
+            #     pv_board = pv_board.make_move(pv_entry['tt_move'])
 
-                pv += ' ' + pv_entry['tt_move']
+            #     pv += ' ' + pv_entry['tt_move']
 
-            print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.v_nodes), str(v_nps), str(best_move + pv))
-            print(len(self.tt_bucket))
+            # print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.v_nodes), str(v_nps), str(best_move + pv))
 
-            # print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.v_nodes), str(v_nps), str(best_move))
+            print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.v_nodes), str(v_nps), str(best_move))
 
             yield v_depth, best_move, local_score
 
@@ -733,7 +738,11 @@ class Search:
         if v_depth <= 0:
             return self.q_search(local_board, alpha, beta, 20)
 
-        tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
+        index = hash(local_board.board_string) % (TT_SIZE - 1)
+
+        TT_BUCKET[index] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
+
+        tt_entry = TT_BUCKET[index]
 
         if tt_entry['tt_move'] and (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
             return 0
@@ -858,9 +867,11 @@ class Search:
             else:
                 tt_entry['tt_flag'] = self.eval_exact
 
-            self.tt_bucket[local_board.board_string] = tt_entry
+            index = hash(local_board.board_string) % (TT_SIZE - 1)
+            TT_BUCKET[index] = tt_entry
         else:
-            self.tt_bucket[local_board.board_string] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
+            index = hash(local_board.board_string) % (TT_SIZE - 1)
+            TT_BUCKET[index] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
 
         return best_score
 
@@ -873,7 +884,8 @@ class Search:
         if local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100:
             return 0
 
-        tt_entry = self.tt_bucket.get(local_board.board_string)
+        index = hash(local_board.board_string) % (TT_SIZE - 1)
+        tt_entry = TT_BUCKET[index]
 
         if tt_entry:
             if tt_entry['tt_flag'] == self.eval_exact or \
@@ -909,8 +921,6 @@ class Search:
 def main():
     game_board = Board()
     searcher = Search()
-    manager = multiprocessing.Manager()
-    searcher.tt_bucket = manager.dict()
 
     while 1:
         try:
@@ -922,7 +932,6 @@ def main():
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
-                searcher.tt_bucket = manager.dict()
             elif line == "isready":
                 print_to_terminal("readyok")
             elif line.startswith("position fen"):
