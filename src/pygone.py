@@ -1,5 +1,5 @@
 #!/usr/bin/env pypy3
-import math, sys, time
+import math, multiprocessing, random, time, sys
 
 t = time.time
 
@@ -323,6 +323,9 @@ class Board:
 
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
+
+    def random_move(self, uci_coordinate):
+        return self.calculate_score(uci_coordinate, True) + random.randrange(-5, 5)
 
     def calculate_score(self, uci_coordinate, sorting=False):
         is_white = self.played_move_count % 2 == 0
@@ -668,7 +671,20 @@ class Search:
 
         local_score = local_board.rolling_score
         for v_depth in range(1, 100):
-            local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper)
+            processes = []
+
+            for _ in range(4):
+                proc = multiprocessing.Process(target=self.search, args=(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper, True,))
+                processes.append(proc)
+                proc.start()
+
+            while len(processes) > 0 and t() < self.critical_time:
+                for proc in processes:
+                    proc.join(timeout=0)
+                    if not proc.is_alive():
+                        processes.remove(proc)
+
+            local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper, False)
 
             if t() < self.critical_time:
                 best_move = self.tt_bucket.get(local_board.board_string)
@@ -697,12 +713,13 @@ class Search:
                 pv += ' ' + pv_entry['tt_move']
 
             print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.v_nodes), str(v_nps), str(best_move + pv))
+            print(len(self.tt_bucket))
 
             # print_stats(str(v_depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.v_nodes), str(v_nps), str(best_move))
 
             yield v_depth, best_move, local_score
 
-    def search(self, local_board, v_depth, alpha, beta):
+    def search(self, local_board, v_depth, alpha, beta, scramble):
         if t() > self.critical_time:
             return -self.eval_mate_upper
 
@@ -767,13 +784,13 @@ class Search:
         pieces = 'RNBQ' if is_white else 'rnbq'
 
         if not is_pv_node and not is_in_check and pieces in local_board.board_string:
-            local_score = -self.search(local_board.nullmove(), v_depth - 4, -beta, -beta+1)
+            local_score = -self.search(local_board.nullmove(), v_depth - 4, -beta, -beta+1, scramble)
 
             if local_score >= beta:
                 return beta
 
         if not is_pv_node and not is_in_check and tt_entry['tt_depth'] >= v_depth and abs(tt_entry['tt_value']) < self.eval_mate_upper and tt_entry['tt_move']:
-            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha)
+            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha, scramble)
 
             if local_score >= beta:
                 return beta
@@ -782,7 +799,11 @@ class Search:
 
         best_move = None
 
-        for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
+        sort_by = local_board.move_sort
+        if scramble:
+            sort_by = local_board.random_move
+
+        for s_move in sorted(local_board.generate_valid_moves(), key=sort_by, reverse=True):
             moved_board = local_board.make_move(s_move)
 
             # determine legality: if we moved and are in check, it's not legal
@@ -800,13 +821,13 @@ class Search:
                 r_depth = max(3, math.ceil(math.sqrt(v_depth-1) + math.sqrt(played_moves-1)))
 
             if r_depth != 1:
-                local_score = -self.search(moved_board, v_depth - r_depth, -alpha-1, -alpha)
+                local_score = -self.search(moved_board, v_depth - r_depth, -alpha-1, -alpha, scramble)
 
             if (r_depth != 1 and local_score > alpha) or (r_depth == 1 and not(is_pv_node and played_moves == 1)):
-                local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha)
+                local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha, scramble)
 
             if is_pv_node and (played_moves == 1 or local_score > alpha):
-                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha)
+                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, scramble)
 
             if not best_move:
                 best_move = s_move
@@ -888,6 +909,8 @@ class Search:
 def main():
     game_board = Board()
     searcher = Search()
+    manager = multiprocessing.Manager()
+    searcher.tt_bucket = manager.dict()
 
     while 1:
         try:
@@ -899,60 +922,61 @@ def main():
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
+                searcher.tt_bucket = manager.dict()
             elif line == "isready":
                 print_to_terminal("readyok")
-            # elif line.startswith("position fen"):
-            #     fens = line.split(' ')
-            #     position = fens[2].split('/')
+            elif line.startswith("position fen"):
+                fens = line.split(' ')
+                position = fens[2].split('/')
 
-            #     position = 21
-            #     for piece in fens[2]:
-            #         if piece == '/':
-            #             position += 2
-            #         else:
-            #             if piece.isnumeric():
-            #                 skip_count = int(piece)
-            #                 while skip_count > 0:
-            #                     game_board.mutate_board(position, '-')
-            #                     position += 1
-            #                     skip_count -= 1
-            #             else:
-            #                 game_board.mutate_board(position, piece)
-            #                 if piece.isupper():
-            #                     game_board.rolling_score += ALLPSQT[piece.lower()][position]
-            #                     if piece == 'K':
-            #                         for row in range(12):
-            #                             position = row * 10
-            #                         game_board.white_king_position = position_to_coordinate(position)
-            #                 else:
-            #                     game_board.rolling_score -= ALLPSQT[piece.lower()][abs(position - 119)]
-            #                     if piece == 'k':
-            #                         game_board.black_king_position = position_to_coordinate(position)
-            #                 position += 1
+                position = 21
+                for piece in fens[2]:
+                    if piece == '/':
+                        position += 2
+                    else:
+                        if piece.isnumeric():
+                            skip_count = int(piece)
+                            while skip_count > 0:
+                                game_board.mutate_board(position, '-')
+                                position += 1
+                                skip_count -= 1
+                        else:
+                            game_board.mutate_board(position, piece)
+                            if piece.isupper():
+                                game_board.rolling_score += ALLPSQT[piece.lower()][position]
+                                if piece == 'K':
+                                    for row in range(12):
+                                        position = row * 10
+                                    game_board.white_king_position = position_to_coordinate(position)
+                            else:
+                                game_board.rolling_score -= ALLPSQT[piece.lower()][abs(position - 119)]
+                                if piece == 'k':
+                                    game_board.black_king_position = position_to_coordinate(position)
+                            position += 1
 
-            #     for castling in fens[4]:
-            #         if castling == '-':
-            #             game_board.white_castling = [False, False]
-            #             game_board.black_castling = [False, False]
-            #         elif castling == 'K':
-            #             game_board.white_castling[1] = True
-            #         elif castling == 'Q':
-            #             game_board.white_castling[0] = True
-            #         elif castling == 'k':
-            #             game_board.black_castling[1] = True
-            #         elif castling == 'q':
-            #             game_board.black_castling[0] = True
+                for castling in fens[4]:
+                    if castling == '-':
+                        game_board.white_castling = [False, False]
+                        game_board.black_castling = [False, False]
+                    elif castling == 'K':
+                        game_board.white_castling[1] = True
+                    elif castling == 'Q':
+                        game_board.white_castling[0] = True
+                    elif castling == 'k':
+                        game_board.black_castling[1] = True
+                    elif castling == 'q':
+                        game_board.black_castling[0] = True
 
-            #     game_board.en_passant = fens[5]
+                game_board.en_passant = fens[5]
 
-            #     game_board.board_string = game_board.str_board()
-            #     game_board.piece_count = game_board.get_piece_count()
+                game_board.board_string = game_board.str_board()
+                game_board.piece_count = game_board.get_piece_count()
 
-            #     if len(fens) > 6:
-            #         game_board.move_counter = int(fens[6])
-            #         game_board.played_move_count = int(fens[7]) * 2
-            #     if fens[3] == 'b':
-            #         game_board.played_move_count += 1
+                if len(fens) > 6:
+                    game_board.move_counter = int(fens[6])
+                    game_board.played_move_count = int(fens[7]) * 2
+                if fens[3] == 'b':
+                    game_board.played_move_count += 1
             # elif line.startswith("print"):
             #     for row in range(12):
             #         position = row * 10
@@ -1006,7 +1030,7 @@ def main():
                         break
 
                 # ponder_board = game_board.make_move(s_move)
-                # ponder_bucket = searcher.self.tt_bucket.get(ponder_board.board_string)
+                # ponder_bucket = searcher.tt_bucket.get(ponder_board.board_string)
                 # ponder = ""
                 # if ponder_bucket:
                 #     ponder = f" ponder {ponder_bucket['tt_move']}"
