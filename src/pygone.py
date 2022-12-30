@@ -1,5 +1,5 @@
 #!/usr/bin/env pypy3
-import math, random, sys, time
+import math, sys, time
 
 t = time.time
 
@@ -323,9 +323,6 @@ class Board:
 
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
-
-    def random_move(self, uci_coordinate):
-        return random.randrange(-50, 50)
 
     def calculate_score(self, uci_coordinate, sorting=False):
         is_white = self.played_move_count % 2 == 0
@@ -688,13 +685,7 @@ class Search:
 
         local_score = local_board.rolling_score
         for v_depth in range(1, 100):
-            # t_depth = v_depth
-
-            # while t_depth > 1:
-            #     self.search(local_board, v_depth - t_depth, -self.eval_mate_upper, self.eval_mate_upper, True)
-            #     t_depth -= 1
-
-            local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper, False)
+            local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper)
 
             if t() < self.critical_time:
                 best_move = self.tt_bucket.get(local_board.board_string)
@@ -728,7 +719,7 @@ class Search:
 
             yield v_depth, best_move, local_score
 
-    def search(self, local_board, v_depth, alpha, beta, scramble):
+    def search(self, local_board, v_depth, alpha, beta):
         if t() > self.critical_time:
             return -self.eval_mate_upper
 
@@ -740,7 +731,7 @@ class Search:
         v_depth += is_in_check # and not is_pv_node
 
         if v_depth <= 0:
-            return self.q_search(local_board, alpha, beta, 20)
+            return self.q_search(local_board, alpha, beta, 200)
 
         tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
 
@@ -778,9 +769,9 @@ class Search:
             cut_boundary = alpha - (385 * v_depth)
             if local_board.rolling_score <= cut_boundary:
                 if v_depth <= 2:
-                    return self.q_search(local_board, alpha, alpha + 1, 20)
+                    return self.q_search(local_board, alpha, alpha + 1, 200)
 
-                local_score = self.q_search(local_board, cut_boundary, cut_boundary + 1, 20)
+                local_score = self.q_search(local_board, cut_boundary, cut_boundary + 1, 200)
 
                 if local_score <= cut_boundary:
                     return local_score
@@ -793,13 +784,13 @@ class Search:
         pieces = 'RNBQ' if is_white else 'rnbq'
 
         if not is_pv_node and not is_in_check and pieces in local_board.board_string:
-            local_score = -self.search(local_board.nullmove(), v_depth - 4, -beta, -beta+1, scramble)
+            local_score = -self.search(local_board.nullmove(), v_depth - 4, -beta, -beta+1)
 
             if local_score >= beta:
                 return beta
 
         if not is_pv_node and not is_in_check and tt_entry['tt_depth'] >= v_depth and abs(tt_entry['tt_value']) < self.eval_mate_upper and tt_entry['tt_move']:
-            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha, scramble)
+            local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha)
 
             if local_score >= beta:
                 return beta
@@ -808,11 +799,7 @@ class Search:
 
         best_move = None
 
-        sort_by = local_board.move_sort
-        if scramble:
-            sort_by = local_board.random_move
-
-        for s_move in sorted(local_board.generate_valid_moves(), key=sort_by, reverse=True):
+        for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
             moved_board = local_board.make_move(s_move)
 
             # determine legality: if we moved and are in check, it's not legal
@@ -830,13 +817,13 @@ class Search:
                 r_depth = max(3, math.ceil(math.sqrt(v_depth-1) + math.sqrt(played_moves-1)))
 
             if r_depth != 1:
-                local_score = -self.search(moved_board, v_depth - r_depth, -alpha-1, -alpha, scramble)
+                local_score = -self.search(moved_board, v_depth - r_depth, -alpha-1, -alpha)
 
             if (r_depth != 1 and local_score > alpha) or (r_depth == 1 and not(is_pv_node and played_moves == 1)):
-                local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha, scramble)
+                local_score = -self.search(moved_board, v_depth - 1, -alpha-1, -alpha)
 
             if is_pv_node and (played_moves == 1 or local_score > alpha):
-                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha, scramble)
+                local_score = -self.search(moved_board, v_depth - 1, -beta, -alpha)
 
             if not best_move:
                 best_move = s_move

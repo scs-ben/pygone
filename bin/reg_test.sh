@@ -11,7 +11,9 @@
     -each \
         tc=0/1+1 \
         timemargin=1500 \
-        -openings file=book.pgn \
+        -concurrency 8 \
+        -resign movecount=4 score=3000 \
+        -openings file=book3.pgn \
         -repeat \
         -pgnout games.pgn \
         -recover \

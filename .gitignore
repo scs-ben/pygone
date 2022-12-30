@@ -1,5 +1,6 @@
 bin/cutechess*
 bin/engines.json
+bin/book3.pgn
 bin/stockfish*
 bin/ethereal/*
 bin/ethy*
