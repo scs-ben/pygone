@@ -1055,6 +1055,9 @@ int main() {
         } else if (line == "isready") {
             cout << "readyok\n";
         } else if (line.rfind("position", 0) == 0) {
+            if (line == "position startpos") {
+                continue;
+            }
             string moves = line.erase(0, 24) + " ";
 
             string move = "";
