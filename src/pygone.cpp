@@ -110,12 +110,8 @@ char number_to_letter(int to_number) {
     return 96 + to_number;
 }
 
-void print_to_terminal(string print_string) {
-    cout << print_string << endl;
-}
-
 void print_stats(string v_depth, string v_score, string v_time, string v_nodes, string v_nps, string v_pv) {
-    print_to_terminal("info depth " + v_depth + " score cp " + v_score + " time " + v_time + " nodes " + v_nodes + " nps " + v_nps + " pv " + v_pv);
+    cout << "info depth " << v_depth << " score cp " << v_score << " time " << v_time << " nodes " << v_nodes << " nps " << v_nps << " pv " << v_pv << endl;
 }
 
 int coordinate_to_position(string coordinate) {
@@ -146,7 +142,7 @@ struct [[nodiscard]] Move {
     int score;
     string coordinate;
 
-    bool operator() (Move i,Move j) { return (i.score > j.score); };
+    bool operator() (Move i,Move j) { return (i.score < j.score); };
 } struct_move;
 
 class Board {
@@ -166,6 +162,7 @@ public:
 
     Board() {
         board_state = ".....................rnbqkbnr..pppppppp..--------..--------..--------..--------..PPPPPPPP..RNBQKBNR.....................";
+        board_string = str_board();
             // '..........'   0 -  9
             // '..........'  10 - 19
             // '.rnbqkbnr.'  20 - 29
@@ -660,7 +657,7 @@ public:
     int eval_mate_upper = PIECEPOINTS['k'];
 
     void reset();
-    Node iterative_search(Board local_board, int depth);
+    string iterative_search(Board local_board, int depth);
     int search(Board local_board, int v_depth, int alpha, int beta);
     int q_search(Board local_board, int alpha, int beta, int v_depth);
 
@@ -676,7 +673,7 @@ void Search::reset() {
     memset(tt_bucket.data(), 0, sizeof(Node) * tt_bucket.size());
 }
 
-Node Search::iterative_search(Board local_board, int depth) {
+string Search::iterative_search(Board local_board, int depth) {
         int start_time = get_time();
 
         int local_score = local_board.rolling_score;
@@ -712,6 +709,8 @@ Node Search::iterative_search(Board local_board, int depth) {
             while (counter < min(12, v_depth)) {
                 counter += 1;
 
+                search(pv_board, 1, -eval_mate_upper, eval_mate_upper);
+
                 Node pv_entry = tt_bucket[pv_board.hash_board() % tt_size];
 
                 if (pv_entry.coordinate.empty()) {
@@ -730,9 +729,9 @@ Node Search::iterative_search(Board local_board, int depth) {
             v_depth++;
         }
 
-        tt_entry = tt_bucket[local_board.hash_board() % tt_size];
+        // tt_entry = tt_bucket[local_board.hash_board() % tt_size];
 
-        return tt_entry;
+        return best_move;
 }
 
 int Search::search(Board local_board, int v_depth, int alpha, int beta) {
@@ -765,7 +764,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     int original_alpha = alpha;
 
-    if (tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
+    if (tt_entry.depth > v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
         if (tt_entry.flag == eval_exact ||
         (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
         (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
@@ -863,7 +862,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
         }
 
         if (is_pv_node && (played_moves == 1 || local_score > alpha || (r_depth == 1 && played_moves > 1))) {
-            local_score = -search(moved_board, v_depth - 1, -beta, -alpha);
+            local_score = -search(moved_board, (v_depth - 1), -beta, -alpha);
         }
 
         if (best_move.empty()) {
@@ -889,14 +888,14 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
     }
 
     // update TT only if we are not in time cut
-    if (get_time() < critical_time && v_depth >= tt_entry.depth) {
+    if (get_time() < critical_time) {
         tt_entry.score = best_score;
         if (!best_move.empty()) {
             tt_entry.coordinate = best_move;
         }
         tt_entry.depth = v_depth;
 
-        if (best_score <= original_alpha) {
+        if (best_score <= alpha) {
             tt_entry.flag = eval_upper;
         } else if (best_score >= beta) {
             tt_entry.flag = eval_lower;
@@ -905,6 +904,8 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
         }
 
         tt_bucket[local_board.hash_board() % tt_size] = tt_entry;
+    } else {
+        tt_bucket[local_board.hash_board() % tt_size] = Node{2 * eval_mate_upper, eval_upper, -1};
     }
 
     return best_score;
@@ -923,10 +924,12 @@ int Search::q_search(Board local_board, int alpha, int beta, int v_depth) {
 
     Node &tt_entry = tt_bucket[local_board.hash_board() % tt_size];
 
-    if (!tt_entry.coordinate.empty() && (tt_entry.flag == eval_exact ||
-            (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
-            (tt_entry.flag == eval_upper && tt_entry.score <= alpha))) {
-        return tt_entry.score;
+    if (!tt_entry.coordinate.empty()) {
+        if (tt_entry.flag == eval_exact ||
+                (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
+                (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
+            return tt_entry.score;
+        }
     }
 
     int local_score = local_board.rolling_score;
@@ -945,8 +948,10 @@ int Search::q_search(Board local_board, int alpha, int beta, int v_depth) {
 
     sort(moves.begin(), moves.end(), struct_move);
 
+    Board moved_board;
+
     for (Move move : moves) {
-        Board moved_board = local_board.make_move(move.coordinate);
+        moved_board = local_board.make_move(move.coordinate);
 
         // determine legality: if we moved and are in check, it's not legal
         if (moved_board.in_check(local_board.played_move_count % 2 == 0)) {
@@ -976,13 +981,15 @@ int run_perft(Board local_board, int original_depth, int v_depth) {
         return 1;
     }
 
+    Board moved_board;
+
     if (v_depth != original_depth) {
         int total = 0;
 
         vector<struct Move> moves = local_board.generate_valid_moves();
 
         for (Move move : moves) {
-            Board moved_board = local_board.make_move(move.coordinate);
+            moved_board = local_board.make_move(move.coordinate);
 
             if (moved_board.in_check(local_board.played_move_count % 2 == 0)) {
                 continue;
@@ -1004,7 +1011,7 @@ int run_perft(Board local_board, int original_depth, int v_depth) {
     vector<struct Move> moves = local_board.generate_valid_moves();
 
     for (Move move : moves) {
-        Board moved_board = local_board.make_move(move.coordinate);
+        moved_board = local_board.make_move(move.coordinate);
 
         if (moved_board.in_check(local_board.played_move_count % 2 == 0)) {
             continue;
@@ -1055,6 +1062,7 @@ int main() {
         } else if (line == "isready") {
             cout << "readyok\n";
         } else if (line.rfind("position", 0) == 0) {
+            game_board = Board();
             if (line == "position startpos") {
                 continue;
             }
@@ -1082,11 +1090,11 @@ int main() {
             searcher.critical_time = get_time() + 100000000;
             searcher.end_time = get_time() + 100000000;
 
-            Node best_move;
+            string best_move;
 
             best_move = searcher.iterative_search(game_board, depth);
 
-            cout << "bestmove " << best_move.coordinate << endl;
+            cout << "bestmove " << best_move << endl;
         } else if (line.rfind("go nodes", 0) == 0) {
 
         } else if (line.rfind("go", 0) == 0) {
@@ -1119,11 +1127,11 @@ int main() {
 
             searcher.v_nodes = 0;
 
-            Node best_move;
+            string best_move;
 
             best_move = searcher.iterative_search(game_board, 100);
 
-            cout << "bestmove " << best_move.coordinate << endl;
+            cout << "bestmove " << best_move << endl;
 
         }
     }
