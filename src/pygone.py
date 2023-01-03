@@ -347,13 +347,6 @@ class Board:
         if to_piece != '-':
             local_score += ALLPSQT[to_piece][abs(to_number - offset)]
 
-            # if not is_endgame and to_piece == 'p':
-            #     local_score += self.score_pawns(uci_coordinate, l_board_state[to_number], -p_offset)
-
-            # if sorting and from_piece == 'q' and to_piece == 'p':
-            #     local_score -= 100
-
-
         if from_piece == 'p':
             if uci_coordinate[2:4] == self.en_passant:
                 # add in an extra pawn for EP capture
@@ -364,10 +357,6 @@ class Board:
                 local_score += ALLPSQT[promote][abs(to_number - offset)] - \
                                 ALLPSQT['p'][abs(to_number - offset)]
 
-            # if not is_endgame:
-            #     local_score += self.score_pawns(uci_coordinate, p_piece, p_offset)
-            # elif is_endgame and self.passer_pawn(from_number):
-            #     local_score += 60
             if self.passer_pawn(from_number):
                 local_score += 10
             if self.stacked_pawn(from_number):
@@ -385,38 +374,7 @@ class Board:
                 if sorting:
                     local_score += 60
 
-        # if not is_endgame:
-        #     local_score += self.king_safety(uci_coordinate, is_white, p_offset)
-
-        # if sorting and is_endgame and from_piece != 'p':
-        #     # this should resolve mate faster
-        #     moved_board = self.make_move(uci_coordinate)
-        #     if moved_board.in_check(not is_white):
-        #         local_score += 100 + ALLPSQT[from_piece][abs(to_number - offset)]
-
         return local_score
-
-    # def score_pawns(self, uci_coordinate, p_piece, p_offset):
-    #     return 0
-        # original_protected_pawns = self.protected_pawn_count(p_piece, p_offset)
-        # # original_stacked_pawns = self.stacked_pawn_count(p_piece)
-
-        # pawn_board = self.board_copy()
-        # pawn_board.apply_move(uci_coordinate)
-
-        # protected_pawns = pawn_board.protected_pawn_count(p_piece, p_offset)
-        # # stacked_pawns = pawn_board.stacked_pawn_count(p_piece)
-
-        # return (protected_pawns - original_protected_pawns) * PROTECTED_PAWN_VALUE # + \
-        #         # (original_stacked_pawns - stacked_pawns) * STACKED_PAWN_VALUE
-
-    # def protected_pawn_count(self, p_piece, p_offset):
-    #     protected_pawns = 0
-    #     for board_position, piece in enumerate(self.board_state):
-    #         if piece == p_piece:
-    #             protected_pawns += self.protected_pawn(board_position, p_offset, p_piece)
-
-    #     return protected_pawns
 
     def passer_pawn(self, board_position):
         is_white = self.played_move_count % 2 == 0
@@ -444,55 +402,6 @@ class Board:
             start_position += p_offset
 
         return False
-
-    # def protected_pawn(self, board_position, p_offset, p_piece):
-    #     return 0
-        # return p_piece in (self.board_state[board_position - p_offset + 1], \
-            # self.board_state[board_position - p_offset - 1])
-
-    # def stacked_pawn_count(self, p_piece):
-    #     stacked_pawns = 0
-    #     for board_position, piece in enumerate(self.board_state):
-    #         if piece == p_piece:
-    #             stacked_pawns += self.count_piece(board_position, p_piece) > 1
-
-    #     return stacked_pawns
-
-    # def count_piece(self, board_position, p_piece):
-    #     piece_count = 0
-    #     column = board_position % 10
-    #     for row in range(1, 9):
-    #         piece_count += self.board_state[(row * 10 + column)] == p_piece
-
-    #     return piece_count
-
-    # def king_safety(self, uci_coordinate, is_white, p_offset):
-    #     return 0
-        # king_position = coordinate_to_position(self.white_king_position if is_white else self.black_king_position)
-
-        # pieces = 'P' if is_white else 'p'
-        # # pieces = 'PNB' if is_white else 'pnb'
-
-        # original_protected_pawns = 0
-        # c_string = self.board_state[(king_position + p_offset - 1):(king_position + p_offset + 2)] + \
-        #             self.board_state[(king_position + 2 * p_offset - 1):(king_position + 2 * p_offset + 2)]
-
-        # # for piece in pieces:
-        #     # original_protected_pawns += c_string.count(piece)
-        # original_protected_pawns = c_string.count(pieces)
-
-        # pawn_board = self.board_copy()
-        # pawn_board.apply_move(uci_coordinate)
-
-        # protected_pawns = 0
-        # c_string = pawn_board.board_state[(king_position + p_offset - 1):(king_position + p_offset + 2)] + \
-        #             pawn_board.board_state[(king_position + 2 * p_offset - 1):(king_position + 2 * p_offset + 2)]
-
-        # # for piece in pieces:
-        #     # protected_pawns += c_string.count(piece)
-        # protected_pawns = c_string.count(pieces)
-
-        # return (protected_pawns - original_protected_pawns) * KING_SAFETY
 
     def str_board(self):
         return self.board_state + \
@@ -638,47 +547,47 @@ class Search:
         self.critical_time = 0
         self.tt_bucket.clear()
 
-    # def run_perft(self, local_board, original_depth, v_depth):
-    #     if v_depth == 0:
-    #         return 1
+    def run_perft(self, local_board, original_depth, v_depth):
+        if v_depth == 0:
+            return 1
 
-    #     if v_depth != original_depth:
-    #         total = 0
-    #         for s_move in local_board.generate_valid_moves():
-    #             moved_board = local_board.make_move(s_move)
+        if v_depth != original_depth:
+            total = 0
+            for s_move in local_board.generate_valid_moves():
+                moved_board = local_board.make_move(s_move)
 
-    #             if moved_board.in_check(local_board.played_move_count % 2 == 0):
-    #                 continue
+                if moved_board.in_check(local_board.played_move_count % 2 == 0):
+                    continue
 
-    #             if local_board.piece_count != moved_board.piece_count:
-    #                 self.perft_captures += 1
+                if local_board.piece_count != moved_board.piece_count:
+                    self.perft_captures += 1
 
-    #             if moved_board.in_check(local_board.played_move_count % 2 != 0):
-    #                 self.perft_checks += 1
+                if moved_board.in_check(local_board.played_move_count % 2 != 0):
+                    self.perft_checks += 1
 
-    #             total += self.run_perft(moved_board, original_depth, v_depth-1)
-    #         return total
+                total += self.run_perft(moved_board, original_depth, v_depth-1)
+            return total
 
-    #     per_moves = []
-    #     for s_move in local_board.generate_valid_moves():
-    #         moved_board = local_board.make_move(s_move)
+        per_moves = []
+        for s_move in local_board.generate_valid_moves():
+            moved_board = local_board.make_move(s_move)
 
-    #         if moved_board.in_check(local_board.played_move_count % 2 == 0):
-    #             continue
+            if moved_board.in_check(local_board.played_move_count % 2 == 0):
+                continue
 
-    #         if local_board.piece_count != moved_board.piece_count:
-    #             self.perft_captures += 1
+            if local_board.piece_count != moved_board.piece_count:
+                self.perft_captures += 1
 
-    #         if moved_board.in_check(local_board.played_move_count % 2 != 0):
-    #             self.perft_checks += 1
+            if moved_board.in_check(local_board.played_move_count % 2 != 0):
+                self.perft_checks += 1
 
-    #         print (f"{s_move}:", end=" ")
-    #         x = self.run_perft(moved_board, original_depth, v_depth-1)
-    #         print(x)
-    #         per_moves.append(x)
+            print (f"{s_move}:", end=" ")
+            x = self.run_perft(moved_board, original_depth, v_depth-1)
+            print(x)
+            per_moves.append(x)
 
-    #     print(f"Nodes searched: {sum(per_moves)}")
-    #     print(f"Captures: {self.perft_captures} Checks: {self.perft_checks}")
+        print(f"Nodes searched: {sum(per_moves)}")
+        print(f"Captures: {self.perft_captures} Checks: {self.perft_checks}")
 
     def iterative_search(self, local_board):
         start_time = t()
@@ -738,19 +647,6 @@ class Search:
         if tt_entry['tt_move'] and (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
             return 0
 
-        # try to reduce path to mate
-        # mating_value = self.eval_mate_upper - v_depth
-        # if mating_value < beta:
-        #     beta = mating_value
-        #     if alpha >= mating_value:
-        #         return mating_value
-
-        # mating_value = -self.eval_mate_upper + v_depth
-        # if mating_value > alpha:
-        #     alpha = mating_value
-        #     if beta <= mating_value:
-        #         return mating_value
-
         original_alpha = alpha
 
         if tt_entry['tt_depth'] >= v_depth and tt_entry['tt_move'] and not is_pv_node:
@@ -806,8 +702,6 @@ class Search:
             if moved_board.in_check(is_white):
                 continue
 
-            # is_quiet = abs(moved_board.rolling_score - local_board.rolling_score) < 800 \
-            #             and local_board.piece_count == moved_board.piece_count
             is_quiet = local_board.piece_count == moved_board.piece_count
 
             played_moves += 1
@@ -985,7 +879,7 @@ def main():
                 move_time = 1e8
                 is_white = game_board.played_move_count % 2 == 0
 
-                # is_perft = False
+                is_perft = False
 
                 args = line.split()
                 for key, arg in enumerate(args):
@@ -994,20 +888,20 @@ def main():
                     # depth input can be commented out to save space since engine will be run on time
                     elif arg == 'depth':
                         searcher.v_depth = int(args[key + 1])
-                #     elif arg == 'perft':
-                #         searcher.v_depth = int(args[key + 1])
-                #         is_perft = True
+                    elif arg == 'perft':
+                        searcher.v_depth = int(args[key + 1])
+                        is_perft = True
 
-                # if is_perft:
-                #     # 1) start pos
-                #     # 2) Kiwipete: position startpos moves b1c3 b7b5 d2d4 e7e6 e2e4 c8a6 c1d2 h7h5 d1f3 g7g6 f1e2 h5h4 g1h3 f8g7 h3f4 g8e7 f4d3 e7d5 d3e5 d5f6 d4d5 d8e7 d2e3 b5b4 e3d2 b8c6 d2e3 c6a5 e3d2 a5c4 d2e3 c4b6 e3d2 h4h3
-                #     # 3) Tricky Steve: position startpos moves d2d3 c7c6 e2e4 e7e5 d3d4 f8e7 d4e5 d7d6 e5d6 g8f6 f1c4 f6e4 d6d7 e8f8 g1e2 e4f2
-                #     start_time = t()
-                #     searcher.perft_checks = 0
-                #     searcher.perft_captures = 0
-                #     searcher.run_perft(game_board, searcher.v_depth, searcher.v_depth)
-                #     print("total time: ", t() - start_time)
-                #     continue
+                if is_perft:
+                    # 1) start pos
+                    # 2) Kiwipete: position startpos moves b1c3 b7b5 d2d4 e7e6 e2e4 c8a6 c1d2 h7h5 d1f3 g7g6 f1e2 h5h4 g1h3 f8g7 h3f4 g8e7 f4d3 e7d5 d3e5 d5f6 d4d5 d8e7 d2e3 b5b4 e3d2 b8c6 d2e3 c6a5 e3d2 a5c4 d2e3 c4b6 e3d2 h4h3
+                    # 3) Tricky Steve: position startpos moves d2d3 c7c6 e2e4 e7e5 d3d4 f8e7 d4e5 d7d6 e5d6 g8f6 f1c4 f6e4 d6d7 e8f8 g1e2 e4f2
+                    start_time = t()
+                    searcher.perft_checks = 0
+                    searcher.perft_captures = 0
+                    searcher.run_perft(game_board, searcher.v_depth, searcher.v_depth)
+                    print("total time: ", t() - start_time)
+                    continue
 
                 searcher.critical_time = t() + max(0.75, move_time - 1)
                 move_time = max(2.2, move_time / 32)
