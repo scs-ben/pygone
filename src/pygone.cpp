@@ -699,7 +699,7 @@ Node Search::iterative_search(Board local_board, int depth) {
 
             elapsed_time = get_time() - start_time;
 
-            v_nps = (elapsed_time > 0) ? ceil(v_nodes / elapsed_time) : 1;
+            v_nps = (elapsed_time > 1000) ? ceil(v_nodes / (elapsed_time / 1000)) : v_nodes;
 
             string pv = "";
             int counter = 1;
@@ -858,7 +858,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
             local_score = -search(moved_board, v_depth - 1, -alpha-1, -alpha);
         }
 
-        if (is_pv_node && (played_moves == 1 || local_score > alpha)) {
+        if (is_pv_node && (played_moves == 1 || local_score > alpha || (r_depth == 1 && played_moves > 1))) {
             local_score = -search(moved_board, v_depth - 1, -beta, -alpha);
         }
 
@@ -1054,7 +1054,7 @@ int main() {
         } else if (line == "isready") {
             cout << "readyok\n";
         } else if (line.rfind("position", 0) == 0) {
-            string moves = line.erase(0, 24);
+            string moves = line.erase(0, 24) + " ";
 
             string move = "";
 
@@ -1065,10 +1065,6 @@ int main() {
                     game_board = game_board.make_move(move);
                     move = "";
                 }
-            }
-
-            if (move.length() > 0) {
-                game_board = game_board.make_move(move);
             }
         } else if (line.rfind("go perft", 0) == 0) {
             int depth = stoi(line.erase(0, 9));
