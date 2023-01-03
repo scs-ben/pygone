@@ -670,6 +670,10 @@ void Search::reset() {
     v_nodes = 0;
     end_time = 0;
     critical_time = 0;
+
+    tt_bucket.clear();
+    tt_bucket.resize(tt_size);
+    memset(tt_bucket.data(), 0, sizeof(Node) * tt_bucket.size());
 }
 
 Node Search::iterative_search(Board local_board, int depth) {
@@ -1032,12 +1036,9 @@ int main() {
         }
     }
 
-    tt_bucket.clear();
-    tt_bucket.resize(tt_size);
-    memset(tt_bucket.data(), 0, sizeof(Node) * tt_bucket.size());
-
     Board game_board;
     Search searcher;
+    searcher.reset();
 
     string line;
 
@@ -1050,7 +1051,7 @@ int main() {
             cout << "pygone 1.5.4\nuciok\n";
         } else if (line == "ucinewgame") {
             game_board = Board();
-            //     searcher.reset()
+            searcher.reset();
         } else if (line == "isready") {
             cout << "readyok\n";
         } else if (line.rfind("position", 0) == 0) {
