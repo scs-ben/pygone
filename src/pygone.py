@@ -44,8 +44,8 @@ ALLPSQT = {
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
-        -10, 0, 0, 0, 0, 0, 0,-10 ,
-        -10, 0, 0,10,10, 10, 0,-10
+        -10, 0, 0,10,10, 10, 0,-10,
+        0, 0, 0, 0, 0, 0, 0,  0
     ),
     'q': (
         -40,-20,-20,-10,-10,-20,-20,-40 ,
@@ -758,8 +758,6 @@ class Search:
         if t() > self.critical_time:
             return -self.eval_mate_upper
 
-        self.v_nodes += 1
-
         if local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100:
             return 0
 
@@ -778,12 +776,20 @@ class Search:
 
         alpha = max(alpha, local_score)
 
+        played_moves = 0
+
         for s_move in sorted(local_board.generate_valid_captures(), key=local_board.move_sort, reverse=True):
             moved_board = local_board.make_move(s_move)
 
             # determine legality: if we moved and are in check, it's not legal
             if moved_board.in_check(local_board.played_move_count % 2 == 0):
                 continue
+
+            # only count a node once we have a legal move
+            if played_moves == 0:
+                ++self.v_nodes
+
+            ++played_moves
 
             local_score = -self.q_search(moved_board, -beta, -alpha, v_depth - 1)
 
