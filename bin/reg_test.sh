@@ -11,11 +11,11 @@
     -each \
         tc=0/1+1 \
         timemargin=1500 \
-        -concurrency 1 \
+        -concurrency 6 \
         -resign movecount=4 score=3000 \
         -openings file=book3.pgn \
         -repeat \
         -pgnout games.pgn \
         -recover \
         -wait 1000 \
-        -games 2 -rounds 1 > debug.log
+        -games 2 -rounds 100 > debug.log

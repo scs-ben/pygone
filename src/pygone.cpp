@@ -5,7 +5,9 @@
 #include <ctime>
 #include <chrono>
 #include <functional>
+#include <limits>
 #include <map>
+#include <random>
 #include <string>
 #include <iostream>
 #include <vector>
@@ -23,6 +25,59 @@ map<char, int> PIECEPOINTS
     {'q', 975},
     {'k', 32767}
 };
+
+uint64_t ZobristTable[8][8][12];
+random_device rd;
+mt19937_64 eng(rd());
+
+uint64_t random_uint64()
+{
+    uniform_int_distribution<uint64_t> distr;
+    return distr(eng);
+}
+
+uint64_t black_to_move = random_uint64();
+
+void init_table()
+{
+    for (int i = 0; i<8; i++) {
+        for (int j = 0; j<8; j++) {
+            for (int k = 0; k<12; k++) {
+                ZobristTable[i][j][k] = random_uint64();
+            }
+        }
+    }
+}
+
+int index_of(char piece)
+{
+    if (piece=='P')
+        return 0;
+    if (piece=='N')
+        return 1;
+    if (piece=='B')
+        return 2;
+    if (piece=='R')
+        return 3;
+    if (piece=='Q')
+        return 4;
+    if (piece=='K')
+        return 5;
+    if (piece=='p')
+        return 6;
+    if (piece=='n')
+        return 7;
+    if (piece=='b')
+        return 8;
+    if (piece=='r')
+        return 9;
+    if (piece=='q')
+        return 10;
+    if (piece=='k')
+        return 11;
+    else
+        return -1;
+}
 
 map<char, array<int, 120>> ALLPSQT
 {
@@ -457,8 +512,33 @@ string Board::str_board() {
     return board_state + to_string(played_move_count % 2);
 }
 
-uint64_t Board::hash_board() {
-    return hasher(board_string);
+uint64_t Board::hash_board()
+{
+    uint64_t h = 0;
+
+    if (played_move_count % 2 != 0) {
+        h ^= black_to_move;
+    }
+
+    int start_position = 20;
+    int row = 0;
+    int column = 0;
+
+    while (start_position < 99) {
+        if (board_state[start_position] != '.' && board_state[start_position] != '-') {
+            row = (start_position - 20) / 10;
+            column = (start_position % 10) - 1;
+
+            int piece = index_of(board_state[start_position]);
+
+            h ^= ZobristTable[column][row][piece];
+        }
+        start_position++;
+    }
+
+
+
+    return h;
 }
 
 vector<struct Move> Board::generate_valid_captures() {
@@ -723,22 +803,22 @@ string Search::iterative_search(Board local_board, int depth) {
             v_nps = (elapsed_time > 1000) ? ceil(v_nodes / (elapsed_time / 1000)) : v_nodes;
 
             string pv = "";
-            int counter = 1;
-            Board pv_board = local_board.make_move(best_move);
+            // int counter = 1;
+            // Board pv_board = local_board.make_move(best_move);
 
-            while (counter < min(12, v_depth)) {
-                counter += 1;
+            // while (counter < min(12, v_depth)) {
+            //     counter += 1;
 
-                Node pv_entry = tt_bucket[pv_board.hash_board() % tt_size];
+            //     Node pv_entry = tt_bucket[pv_board.hash_board() % tt_size];
 
-                if (pv_entry.coordinate.empty()) {
-                    break;
-                }
+            //     if (pv_entry.coordinate.empty()) {
+            //         break;
+            //     }
 
-                pv_board = pv_board.make_move(pv_entry.coordinate);
+            //     pv_board = pv_board.make_move(pv_entry.coordinate);
 
-                pv += ' ' + pv_entry.coordinate;
-            }
+            //     pv += ' ' + pv_entry.coordinate;
+            // }
 
             print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), (best_move + pv));
 
@@ -746,8 +826,6 @@ string Search::iterative_search(Board local_board, int depth) {
 
             v_depth++;
         }
-
-        // tt_entry = tt_bucket[local_board.hash_board() % tt_size];
 
         return best_move;
 }
@@ -774,19 +852,22 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     Node tt_entry;
 
-    if ((local_board.hash_board() % tt_size) >= tt_bucket.size()) {
+    uint64_t index = local_board.hash_board() % tt_size;
+
+    if ((index) >= tt_bucket.size()) {
         tt_entry = Node{2 * eval_mate_upper, eval_upper, -1};
     } else {
-        tt_entry = tt_bucket[local_board.hash_board() % tt_size];
+        tt_entry = tt_bucket[index];
     }
 
-    if (tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
-        if (tt_entry.flag == eval_exact ||
-        (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
-        (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
-            return tt_entry.score;
-        }
-    }
+
+    // if (tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
+    //     if (tt_entry.flag == eval_exact ||
+    //     (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
+    //     (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
+    //         return tt_entry.score;
+    //     }
+    // }
 
     if (!is_pv_node && !is_in_check && v_depth <= 7 && local_board.rolling_score >= beta + (100 * v_depth)) {
         return local_board.rolling_score;
@@ -827,13 +908,13 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
         }
     }
 
-    if (!is_pv_node && !is_in_check && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
-        local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha);
+    // if (!is_pv_node && !is_in_check && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
+    //     local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha);
 
-        if (local_score >= beta) {
-            return beta;
-        }
-    }
+    //     if (local_score >= beta) {
+    //         return beta;
+    //     }
+    // }
 
     Board moved_board;
     string best_move = "";
@@ -935,9 +1016,9 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
         tt_entry.depth = v_depth;
         tt_entry.flag = (best_score >= beta) ? eval_lower : (best_score > original_alpha) ? eval_exact : eval_upper;
 
-        tt_bucket[local_board.hash_board() % tt_size] = tt_entry;
+        tt_bucket[index] = tt_entry;
     } else {
-        tt_bucket[local_board.hash_board() % tt_size] = Node{2 * eval_mate_upper, eval_upper, -1};
+        tt_bucket[index] = Node{2 * eval_mate_upper, eval_upper, -1};
     }
 
     return best_score;
@@ -953,25 +1034,23 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
     }
 
 
-    Node tt_entry = tt_bucket[local_board.hash_board() % tt_size];
+    // Node tt_entry = tt_bucket[local_board.hash_board() % tt_size];
 
-    if (!tt_entry.coordinate.empty()) {
-        if (tt_entry.flag == eval_exact ||
-        (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
-        (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
-            return tt_entry.score;
-        }
-    }
+    // if (!tt_entry.coordinate.empty()) {
+    //     if (tt_entry.flag == eval_exact ||
+    //     (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
+    //     (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
+    //         return tt_entry.score;
+    //     }
+    // }
 
-    int stand_pat = local_board.rolling_score;
+    int local_score = local_board.rolling_score;
 
-    if (stand_pat >= beta) {
+    if (local_score >= beta) {
         return beta;
     }
 
-    if (alpha < stand_pat) {
-        alpha = stand_pat;
-    }
+    alpha = max(alpha, local_score);
 
     vector<struct Move> moves = local_board.generate_valid_moves(true);
 
@@ -983,7 +1062,6 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
 
     Board moved_board;
 
-    int local_score = 0;
     int played_moves = 0;
 
     for (Move move : moves) {
@@ -1003,194 +1081,17 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
 
         local_score = -quiesce(moved_board, -beta, -alpha);
 
-        if (local_score >= beta) {
-            return beta;
-        }
-
         if (local_score > alpha) {
             alpha = local_score;
+
+            if (alpha >= beta) {
+                return alpha;
+            }
         }
     }
 
     return alpha;
 }
-
-// int Search::search(Board local_board, int v_depth, int alpha, int beta) {
-//     if (get_time() > critical_time) {
-//         return -eval_mate_upper;
-//     }
-
-//     v_nodes += 1;
-
-//     bool is_pv_node = beta > alpha + 1;
-//     bool is_in_check = local_board.in_check(local_board.played_move_count % 2 == 0);
-
-//     v_depth += is_in_check;
-
-//     if (v_depth <= 0) {
-//         return q_search(local_board, alpha, beta, 200);
-//     }
-
-//     Node tt_entry;
-
-//     if ((local_board.hash_board() % tt_size) >= tt_bucket.size()) {
-//         tt_entry = Node{2 * eval_mate_upper, eval_upper, -1};
-//     } else {
-//         tt_entry = tt_bucket[local_board.hash_board() % tt_size];
-//     }
-
-//     if (!tt_entry.coordinate.empty() && count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) > 2 || local_board.move_counter >= 100) {
-//         return 0;
-//     }
-
-//     int original_alpha = alpha;
-
-//     if (tt_entry.depth > v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
-//         if (tt_entry.flag == eval_exact ||
-//         (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
-//         (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
-//             return tt_entry.score;
-//         }
-//     }
-
-//     if (!is_pv_node and !is_in_check && v_depth <= 7 && local_board.rolling_score >= beta + (100 * v_depth)) {
-//         return local_board.rolling_score;
-//     }
-
-//     // if not is_pv_node and not is_in_check and v_depth <= 2 and local_board.rolling_score <= alpha - (350 * v_depth):
-//     //     return local_board.rolling_score
-
-//     int local_score = -eval_mate_upper;
-
-//     if (!is_pv_node && !is_in_check && v_depth <= 5) {
-//         int cut_boundary = alpha - (385 * v_depth);
-//         if (local_board.rolling_score <= cut_boundary) {
-//             if (v_depth <= 2) {
-//                 return q_search(local_board, alpha, alpha + 1, 200);
-//             }
-
-//             local_score = q_search(local_board, cut_boundary, cut_boundary + 1, 200);
-
-//             if (local_score <= cut_boundary) {
-//                 return local_score;
-//             }
-//         }
-//     }
-
-//     int best_score = -eval_mate_upper - 1;
-
-//     bool is_white = local_board.played_move_count % 2 == 0;
-
-//     string pieces = is_white ? "RNBQ" : "rnbq";
-
-//     if (!is_pv_node && !is_in_check && local_board.board_string.find(pieces[0]) < 10 && local_board.board_string.find(pieces[1]) < 10
-//             && local_board.board_string.find(pieces[2]) < 10 && local_board.board_string.find(pieces[3]) < 10) {
-
-//         local_score = -search(local_board.nullmove(), max(0, v_depth - 4), -beta, -beta+1);
-
-//         if (local_score >= beta) {
-//             return beta;
-//         }
-//     }
-
-//     if (!is_pv_node && !is_in_check && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
-//         local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha);
-
-//         if (local_score >= beta) {
-//             return beta;
-//         }
-//     }
-
-//     int played_moves = 0;
-
-//     string best_move;
-
-//     vector<struct Move> moves = local_board.generate_valid_moves();
-
-//     for (int i = 0; i < moves.size(); i++) {
-//         moves[i].score = local_board.calculate_score(moves[i].coordinate, true);
-//     }
-
-//     sort(moves.begin(), moves.end(), struct_move);
-
-//     Board moved_board;
-//     bool is_quiet = false;
-//     int r_depth = 1;
-
-//     for (Move move : moves) {
-//         moved_board = local_board.make_move(move.coordinate);
-
-//         // determine legality: if we moved and are in check, it's not legal
-//         if (moved_board.in_check(is_white)) {
-//             continue;
-//         }
-
-//         is_quiet = local_board.piece_count == moved_board.piece_count;
-
-//         played_moves += 1;
-
-//         r_depth = 1;
-//         if (!is_pv_node && is_quiet && v_depth > 2 && played_moves > 1) {
-//             r_depth = max(3, (int) ceil(sqrt(v_depth-1) + sqrt(played_moves-1)));
-//         }
-
-//         if (r_depth != 1) {
-//             local_score = -search(moved_board, v_depth - r_depth, -alpha-1, -alpha);
-//         }
-
-//         if ((r_depth != 1 && local_score > alpha) || (r_depth == 1 && !is_pv_node && played_moves == 1)) {
-//             local_score = -search(moved_board, v_depth - 1, -alpha-1, -alpha);
-//         }
-
-//         if (is_pv_node && (played_moves == 1 || local_score > alpha || (r_depth == 1 && played_moves > 1))) {
-//             local_score = -search(moved_board, (v_depth - 1), -beta, -alpha);
-//         }
-
-//         if (best_move.empty()) {
-//             best_move = move.coordinate;
-//         }
-
-//         if (local_score > best_score) {
-//             best_move = move.coordinate;
-//             best_score = local_score;
-
-//             if (local_score > alpha) {
-//                 alpha = local_score;
-
-//                 if (alpha >= beta) {
-//                     break;
-//                 }
-//             }
-//         }
-//     }
-
-//     if (played_moves == 0) {
-//         return is_in_check ? -eval_mate_upper + local_board.played_move_count : 0;
-//     }
-
-//     // update TT only if we are not in time cut
-//     if (get_time() < critical_time) {
-//         tt_entry.score = best_score;
-//         if (!best_move.empty()) {
-//             tt_entry.coordinate = best_move;
-//         }
-//         tt_entry.depth = v_depth;
-
-//         if (best_score <= alpha) {
-//             tt_entry.flag = eval_upper;
-//         } else if (best_score >= beta) {
-//             tt_entry.flag = eval_lower;
-//         } else {
-//             tt_entry.flag = eval_exact;
-//         }
-
-//         tt_bucket[local_board.hash_board() % tt_size] = tt_entry;
-//     } else {
-//         tt_bucket[local_board.hash_board() % tt_size] = Node{2 * eval_mate_upper, eval_upper, -1};
-//     }
-
-//     return best_score;
-// }
 
 int perft_captures = 0;
 int perft_checks = 0;
@@ -1266,6 +1167,8 @@ int main() {
         }
     }
 
+    init_table();
+
     Board game_board;
     Search searcher;
     searcher.reset();
@@ -1278,7 +1181,7 @@ int main() {
         if (line == "quit") {
             abort();
         } else if (line == "uci") {
-            cout << "pygone 1.5.4\nuciok\n";
+            cout << "pygone 1.6.0\nuciok\n";
         } else if (line == "ucinewgame") {
             game_board = Board();
             searcher.reset();
