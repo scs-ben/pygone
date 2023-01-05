@@ -375,11 +375,11 @@ void Board::apply_move(string uci_coordinate) {
         set_en_passant = abs(from_number - to_number) == 20;
         int en_passant_offset = is_white ? -1 : 1;
         if (set_en_passant) {
-            en_passant = uci_coordinate[1] + uci_coordinate[4] + en_passant_offset;
+            en_passant = uci_coordinate[0] + to_string(uci_coordinate[3] - '0' + en_passant_offset);
         } else if (uci_coordinate.substr(2,2) == en_passant) {
             mutate_board(to_number - 10 * en_passant_offset, '-');
         } else if (uci_coordinate.length() > 4) {
-            mutate_board(to_number, is_white ? toupper(uci_coordinate[5]) : uci_coordinate[5]);
+            mutate_board(to_number, is_white ? toupper(uci_coordinate[4]) : uci_coordinate[4]);
         }
     } else if (from_piece == 'k') {
         if (is_white) {
@@ -446,7 +446,7 @@ int Board::calculate_score(string uci_coordinate, bool sorting) {
             // add in an extra pawn for EP capture
             local_score += ALLPSQT[from_piece][abs(to_number - offset)];
         } else if (uci_coordinate.length() > 4) {
-            char promote = uci_coordinate[5];
+            char promote = uci_coordinate[4];
             // adjust value for promoting from pawn to queen
             local_score += ALLPSQT[promote][abs(to_number - offset)] - ALLPSQT['p'][abs(to_number - offset)];
         }
@@ -743,7 +743,7 @@ struct [[nodiscard]] Node {
     string coordinate;
 };
 
-int64_t tt_size = 16 * 2^30 - 1;
+uint64_t tt_size = pow(2, 24) - 1;
 vector<Node> tt_bucket;
 
 class Search {
@@ -790,7 +790,7 @@ string Search::iterative_search(Board local_board, int depth) {
             local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper);
 
             if (get_time() < critical_time) {
-                tt_entry = tt_bucket[local_board.hash_board() % tt_size];
+                tt_entry = tt_bucket[local_board.hash_board() % (tt_size - 1)];
                 if (!tt_entry.coordinate.empty()) {
                     best_move = tt_entry.coordinate;
                 }
@@ -803,22 +803,24 @@ string Search::iterative_search(Board local_board, int depth) {
             v_nps = (elapsed_time > 1000) ? ceil(v_nodes / (elapsed_time / 1000)) : v_nodes;
 
             string pv = "";
-            // int counter = 1;
-            // Board pv_board = local_board.make_move(best_move);
+            int counter = 1;
+            Board pv_board = local_board.make_move(best_move);
 
-            // while (counter < min(12, v_depth)) {
-            //     counter += 1;
+            while (counter < min(12, v_depth)) {
+                counter += 1;
 
-            //     Node pv_entry = tt_bucket[pv_board.hash_board() % tt_size];
+                search(local_board, 1, -eval_mate_upper, eval_mate_upper);
 
-            //     if (pv_entry.coordinate.empty()) {
-            //         break;
-            //     }
+                Node pv_entry = tt_bucket[pv_board.hash_board() % (tt_size - 1)];
 
-            //     pv_board = pv_board.make_move(pv_entry.coordinate);
+                if (pv_entry.coordinate.empty()) {
+                    break;
+                }
 
-            //     pv += ' ' + pv_entry.coordinate;
-            // }
+                pv_board = pv_board.make_move(pv_entry.coordinate);
+
+                pv += ' ' + pv_entry.coordinate;
+            }
 
             print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), (best_move + pv));
 
@@ -852,14 +854,13 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     Node tt_entry;
 
-    uint64_t index = local_board.hash_board() % tt_size;
+    uint64_t index = local_board.hash_board() % (tt_size - 1);
 
-    if ((index) >= tt_bucket.size()) {
+    tt_entry = tt_bucket[index];
+
+    if (tt_entry.coordinate.empty()) {
         tt_entry = Node{2 * eval_mate_upper, eval_upper, -1};
-    } else {
-        tt_entry = tt_bucket[index];
     }
-
 
     // if (tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
     //     if (tt_entry.flag == eval_exact ||
@@ -1017,8 +1018,6 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
         tt_entry.flag = (best_score >= beta) ? eval_lower : (best_score > original_alpha) ? eval_exact : eval_upper;
 
         tt_bucket[index] = tt_entry;
-    } else {
-        tt_bucket[index] = Node{2 * eval_mate_upper, eval_upper, -1};
     }
 
     return best_score;
@@ -1033,8 +1032,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         return 0;
     }
 
-
-    // Node tt_entry = tt_bucket[local_board.hash_board() % tt_size];
+    // Node tt_entry = tt_bucket[local_board.hash_board() % (tt_size - 1)];
 
     // if (!tt_entry.coordinate.empty()) {
     //     if (tt_entry.flag == eval_exact ||
