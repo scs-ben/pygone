@@ -205,7 +205,7 @@ int coordinate_to_position(string coordinate) {
     return 10 * (abs(number - 8) + 2) + position + 1;
 }
 
-tuple<int, int> unpack_coordinate(string uci_coordinate) {
+array<int, 2> unpack_coordinate(string uci_coordinate) {
     return {coordinate_to_position(uci_coordinate.substr(0, 2)),
             coordinate_to_position(uci_coordinate.substr(2, 4))};
 }
@@ -354,11 +354,11 @@ void Board::apply_move(string uci_coordinate) {
     move_counter += 1;
 
     // break uci coordinate into location in board state list
-    tuple<int, int> unpack;
+    array<int, 2> unpack;
     unpack = unpack_coordinate(uci_coordinate);
 
-    int from_number = get<0>(unpack);
-    int to_number = get<1>(unpack);
+    int from_number = unpack[0];
+    int to_number = unpack[1];
 
     char from_piece = tolower(board_state[from_number]);
 
@@ -424,11 +424,11 @@ int Board::calculate_score(string uci_coordinate, bool sorting) {
     char p_piece = is_white ? 'P' : 'p';
     bool is_endgame = check_is_endgame();
 
-    tuple<int, int> unpack;
+    array<int, 2> unpack;
     unpack = unpack_coordinate(uci_coordinate);
 
-    int from_number = get<0>(unpack);
-    int to_number = get<1>(unpack);
+    int from_number = unpack[0];
+    int to_number = unpack[1];
 
     int local_score = 0;
 
@@ -791,11 +791,12 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
         // Node tt_entry;
 
         while (v_depth <= depth) {
-            auto window = 40;
-            auto research = 0;
+            // auto window = 40;
+            // auto research = 0;
 
-            research:
-            local_score = search(local_board, v_depth, local_score - window, local_score + window);
+            // research:
+            local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper);
+            // local_score = search(local_board, v_depth, local_score - window, local_score + window);
 
             if (get_time() < critical_time) {
                 const uint64_t tt_key = local_board.hash_board();
@@ -838,11 +839,11 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
                 // print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), best_move);
             }
 
-            if (local_score >= best_score + window || local_score <= best_score - window) {
-                window <<= ++research;
-                best_score = local_score;
-                goto research;
-            }
+            // if (local_score >= best_score + window || local_score <= best_score - window) {
+            //     window <<= ++research;
+            //     best_score = local_score;
+            //     goto research;
+            // }
 
             best_score = local_score;
             v_depth++;
@@ -1190,7 +1191,7 @@ int main() {
     string line;
 
     int depth = 40;
-    int thread_count = 4;
+    int thread_count = 1;
     bool should_search = false;
 
     while (1) {
@@ -1275,30 +1276,30 @@ int main() {
             string best_move;
 
             // Lazy SMP
-            vector<thread> threads;
+            // vector<thread> threads;
             vector<int> stops(thread_count, false);
 
-            for (int i = 1; i < thread_count; ++i) {
-                Search t_search;
-                t_search.end_time = searcher.end_time;
-                t_search.critical_time = searcher.critical_time;
+            // for (int i = 1; i < thread_count; ++i) {
+            //     Search t_search;
+            //     t_search.end_time = searcher.end_time;
+            //     t_search.critical_time = searcher.critical_time;
 
-                Board t_board = game_board.board_copy();
+            //     Board t_board = game_board.board_copy();
 
 
-                threads.emplace_back([=, &stops]() mutable {
-                    t_search.iterative_search(game_board, depth, i, stops[i]);
-                });
-            }
+            //     threads.emplace_back([=, &stops]() mutable {
+            //         t_search.iterative_search(game_board, depth, i, stops[i]);
+            //     });
+            // }
 
             best_move = searcher.iterative_search(game_board, depth, 0, stops[0]);
 
-            for (int i = 1; i < thread_count; ++i) {
-                stops[i] = true;
-            }
-            for (int i = 1; i < thread_count; ++i) {
-                threads[i - 1].join();
-            }
+            // for (int i = 1; i < thread_count; ++i) {
+            //     stops[i] = true;
+            // }
+            // for (int i = 1; i < thread_count; ++i) {
+            //     threads[i - 1].join();
+            // }
 
             // best_move = searcher.iterative_search(game_board, depth);
 
