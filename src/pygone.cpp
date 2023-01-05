@@ -750,6 +750,7 @@ class Search {
 public:
     int v_nodes = 0;
     uint64_t critical_time = 0;
+    uint64_t end_time = 0;
 
     int eval_exact = 1;
     int eval_upper = 2;
@@ -767,6 +768,7 @@ public:
 void Search::reset() {
     v_nodes = 0;
     critical_time = 0;
+    end_time = 0;
 
     tt_bucket.clear();
     tt_bucket.resize(tt_size);
@@ -827,6 +829,10 @@ string Search::iterative_search(Board local_board, int depth) {
             // print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), best_move);
 
             v_depth++;
+
+            if (get_time() >= end_time) {
+                break;
+            }
         }
 
         return best_move;
@@ -858,17 +864,17 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     tt_entry = tt_bucket[index];
 
-    if (tt_entry.coordinate.empty()) {
-        tt_entry = Node{2 * eval_mate_upper, eval_upper, -1};
-    }
-
-    // if (tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
-    //     if (tt_entry.flag == eval_exact ||
-    //     (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
-    //     (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
-    //         return tt_entry.score;
-    //     }
+    // if (tt_entry.coordinate.empty()) {
+    //     tt_entry = Node{2 * eval_mate_upper, eval_upper, -1};
     // }
+
+    if (tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
+        if (tt_entry.flag == eval_exact ||
+        (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
+        (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
+            return tt_entry.score;
+        }
+    }
 
     if (!is_pv_node && !is_in_check && v_depth <= 7 && local_board.rolling_score >= beta + (100 * v_depth)) {
         return local_board.rolling_score;
@@ -909,13 +915,13 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
         }
     }
 
-    // if (!is_pv_node && !is_in_check && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
-    //     local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha);
+    if (!is_pv_node && !is_in_check && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
+        local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha);
 
-    //     if (local_score >= beta) {
-    //         return beta;
-    //     }
-    // }
+        if (local_score >= beta) {
+            return beta;
+        }
+    }
 
     Board moved_board;
     string best_move = "";
@@ -1018,6 +1024,9 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
         tt_entry.flag = (best_score >= beta) ? eval_lower : (best_score > original_alpha) ? eval_exact : eval_upper;
 
         tt_bucket[index] = tt_entry;
+    } else {
+        Node empty;
+        tt_entry = empty;
     }
 
     return best_score;
@@ -1032,15 +1041,15 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         return 0;
     }
 
-    // Node tt_entry = tt_bucket[local_board.hash_board() % (tt_size - 1)];
+    Node tt_entry = tt_bucket[local_board.hash_board() % (tt_size - 1)];
 
-    // if (!tt_entry.coordinate.empty()) {
-    //     if (tt_entry.flag == eval_exact ||
-    //     (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
-    //     (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
-    //         return tt_entry.score;
-    //     }
-    // }
+    if (!tt_entry.coordinate.empty()) {
+        if (tt_entry.flag == eval_exact ||
+        (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
+        (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
+            return tt_entry.score;
+        }
+    }
 
     int local_score = local_board.rolling_score;
 
@@ -1233,18 +1242,21 @@ int main() {
 
             for (int i = 0; i < line.length(); i++) {
                 if (line[i] != ' ') {
-                    current_word = line[i];
+                    current_word += line[i];
                 } else {
                     if (!last_word.empty()) {
                         if ((last_word == "wtime" && is_white) || (last_word == "btime" && !is_white)) {
                             move_time = stoi(current_word);
                         }
                     }
+
+                    last_word = current_word;
+                    current_word.clear();
                 }
             }
 
-            searcher.critical_time = get_time() + max(750, move_time - 2);
-            move_time = max(2200, move_time / 32);
+            searcher.end_time = get_time() + max(2200, move_time / 32);
+            searcher.critical_time = min(searcher.end_time + 5000, get_time() + move_time - 1500);
 
             searcher.v_nodes = 0;
 
