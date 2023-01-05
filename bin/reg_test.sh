@@ -9,7 +9,7 @@
         cmd=/home/vagrant/code/pygone/bin/pygone154 \
         proto=uci \
     -each \
-        tc=0/60+2 \
+        tc=0/1+2 \
         timemargin=1500 \
         -concurrency 6 \
         -resign movecount=4 score=3000 \

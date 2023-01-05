@@ -946,6 +946,8 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
     //         continue;
     //     }
 
+    //     played_moves += 1;
+
     //     local_score = -search(moved_board, v_depth - 1, -beta, -alpha);
 
     //     if (local_score >= beta) {
@@ -962,9 +964,6 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
     //     }
     // }
 
-    // for (Move move : moves) {
-    //     cout << move.coordinate << " " << move.score << endl;
-    // }
     for (Move move : moves) {
         moved_board = local_board.make_move(move.coordinate);
 
@@ -1220,7 +1219,7 @@ int main() {
         } else if (line.rfind("go depth", 0) == 0) {
             int depth = stoi(line.erase(0, 9));
 
-            searcher.critical_time = get_time() + 10000000000;
+            searcher.end_time = searcher.critical_time = get_time() + 10000000000;
 
             string best_move;
 
