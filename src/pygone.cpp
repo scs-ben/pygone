@@ -743,7 +743,7 @@ struct [[nodiscard]] Node {
     string coordinate;
 };
 
-uint64_t tt_size = pow(2, 24) - 1;
+uint64_t tt_size = pow(2, 24);
 vector<Node> tt_bucket;
 
 class Search {
@@ -792,7 +792,7 @@ string Search::iterative_search(Board local_board, int depth) {
             local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper);
 
             if (get_time() < critical_time) {
-                tt_entry = tt_bucket[local_board.hash_board() % (tt_size - 1)];
+                tt_entry = tt_bucket[local_board.hash_board() % tt_size];
                 if (!tt_entry.coordinate.empty()) {
                     best_move = tt_entry.coordinate;
                 }
@@ -813,7 +813,7 @@ string Search::iterative_search(Board local_board, int depth) {
 
                 search(local_board, 1, -eval_mate_upper, eval_mate_upper);
 
-                Node pv_entry = tt_bucket[pv_board.hash_board() % (tt_size - 1)];
+                Node pv_entry = tt_bucket[pv_board.hash_board() % tt_size];
 
                 if (pv_entry.coordinate.empty()) {
                     break;
@@ -860,7 +860,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     Node tt_entry;
 
-    uint64_t index = local_board.hash_board() % (tt_size - 1);
+    uint64_t index = local_board.hash_board() % tt_size;
 
     tt_entry = tt_bucket[index];
 
@@ -1040,7 +1040,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         return 0;
     }
 
-    Node tt_entry = tt_bucket[local_board.hash_board() % (tt_size - 1)];
+    Node tt_entry = tt_bucket[local_board.hash_board() % tt_size];
 
     if (!tt_entry.coordinate.empty()) {
         if (tt_entry.flag == eval_exact ||

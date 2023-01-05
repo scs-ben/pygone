@@ -237,7 +237,6 @@ class Board:
             en_passant_offset = -1 if is_white else 1
             if set_en_passant:
                 self.en_passant = uci_coordinate[0:1] + str(int(uci_coordinate[3:4]) + en_passant_offset)
-                print(self.en_passant)
             elif uci_coordinate[2:4] == self.en_passant:
                 self.mutate_board(to_number - 10 * en_passant_offset, '-')
             elif len(uci_coordinate) > 4:
