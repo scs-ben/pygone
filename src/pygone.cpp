@@ -4,12 +4,13 @@
 #include <cctype>
 #include <ctime>
 #include <chrono>
+#include <iostream>
 #include <functional>
 #include <limits>
 #include <map>
 #include <random>
 #include <string>
-#include <iostream>
+#include <thread>
 #include <vector>
 
 using namespace std;
@@ -759,7 +760,7 @@ public:
     int eval_mate_upper = PIECEPOINTS['k'];
 
     void reset();
-    string iterative_search(Board local_board, int depth);
+    string iterative_search(Board local_board, int depth, int thread_id, int &stop);
     int search(Board local_board, int v_depth, int alpha, int beta);
     int quiesce(Board local_board, int alpha, int beta);
 
@@ -775,9 +776,10 @@ void Search::reset() {
     memset(tt_bucket.data(), 0, sizeof(Node) * tt_bucket.size());
 }
 
-string Search::iterative_search(Board local_board, int depth) {
+string Search::iterative_search(Board local_board, int depth, int thread_id, int &stop) {
         uint64_t start_time = get_time();
 
+        int best_score = -eval_mate_upper;
         int local_score = local_board.rolling_score;
 
         string best_move;
@@ -786,13 +788,18 @@ string Search::iterative_search(Board local_board, int depth) {
 
         int v_depth = 1;
 
-        Node tt_entry;
+        // Node tt_entry;
 
         while (v_depth <= depth) {
-            local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper);
+            auto window = 40;
+            auto research = 0;
+
+            research:
+            local_score = search(local_board, v_depth, local_score - window, local_score + window);
 
             if (get_time() < critical_time) {
-                tt_entry = tt_bucket[local_board.hash_board() % tt_size];
+                const uint64_t tt_key = local_board.hash_board();
+                Node &tt_entry = tt_bucket[tt_key % tt_size];
                 if (!tt_entry.coordinate.empty()) {
                     best_move = tt_entry.coordinate;
                 }
@@ -800,37 +807,47 @@ string Search::iterative_search(Board local_board, int depth) {
                 break;
             }
 
-            elapsed_time = get_time() - start_time;
+            if (thread_id == 0) {
+                elapsed_time = get_time() - start_time;
 
-            v_nps = (elapsed_time > 1000) ? ceil(v_nodes / (elapsed_time / 1000)) : v_nodes;
+                v_nps = (elapsed_time > 1000) ? ceil(v_nodes / (elapsed_time / 1000)) : v_nodes;
 
-            string pv = "";
-            int counter = 1;
-            Board pv_board = local_board.make_move(best_move);
+                string pv = "";
+                int counter = 1;
+                Board pv_board = local_board.make_move(best_move);
 
-            while (counter < min(12, v_depth)) {
-                counter += 1;
+                while (counter < min(12, v_depth)) {
+                    counter += 1;
 
-                search(local_board, 1, -eval_mate_upper, eval_mate_upper);
+                    search(local_board, 1, -eval_mate_upper, eval_mate_upper);
 
-                Node pv_entry = tt_bucket[pv_board.hash_board() % tt_size];
+                    const uint64_t tt_key = pv_board.hash_board();
+                    Node &pv_entry = tt_bucket[tt_key % tt_size];
 
-                if (pv_entry.coordinate.empty()) {
-                    break;
+                    if (pv_entry.coordinate.empty()) {
+                        break;
+                    }
+
+                    pv_board = pv_board.make_move(pv_entry.coordinate);
+
+                    pv += ' ' + pv_entry.coordinate;
                 }
 
-                pv_board = pv_board.make_move(pv_entry.coordinate);
+                print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), (best_move + pv));
 
-                pv += ' ' + pv_entry.coordinate;
+                // print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), best_move);
             }
 
-            print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), (best_move + pv));
+            if (local_score >= best_score + window || local_score <= best_score - window) {
+                window <<= ++research;
+                best_score = local_score;
+                goto research;
+            }
 
-            // print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), best_move);
-
+            best_score = local_score;
             v_depth++;
 
-            if (get_time() >= end_time) {
+            if (get_time() >= end_time || stop) {
                 break;
             }
         }
@@ -858,15 +875,8 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     ++v_nodes;
 
-    Node tt_entry;
-
-    uint64_t index = local_board.hash_board() % tt_size;
-
-    tt_entry = tt_bucket[index];
-
-    // if (tt_entry.coordinate.empty()) {
-    //     tt_entry = Node{2 * eval_mate_upper, eval_upper, -1};
-    // }
+    const uint64_t tt_key = local_board.hash_board();
+    Node &tt_entry = tt_bucket[tt_key % tt_size];
 
     if (tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
         if (tt_entry.flag == eval_exact ||
@@ -1017,15 +1027,12 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     // update TT only if we are not in time cut
     if (get_time() < critical_time) {
-        tt_entry.score = best_score;
-        tt_entry.coordinate = best_move;
-        tt_entry.depth = v_depth;
-        tt_entry.flag = (best_score >= beta) ? eval_lower : (best_score > original_alpha) ? eval_exact : eval_upper;
-
-        tt_bucket[index] = tt_entry;
-    } else {
-        Node empty;
-        tt_entry = empty;
+        if (v_depth >= tt_entry.depth) {
+            tt_entry.score = best_score;
+            tt_entry.coordinate = best_move;
+            tt_entry.depth = v_depth;
+            tt_entry.flag = (best_score >= beta) ? eval_lower : (best_score > original_alpha) ? eval_exact : eval_upper;
+        }
     }
 
     return best_score;
@@ -1040,7 +1047,8 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         return 0;
     }
 
-    Node tt_entry = tt_bucket[local_board.hash_board() % tt_size];
+    const uint64_t tt_key = local_board.hash_board();
+    Node &tt_entry = tt_bucket[tt_key % tt_size];
 
     if (!tt_entry.coordinate.empty()) {
         if (tt_entry.flag == eval_exact ||
@@ -1181,6 +1189,10 @@ int main() {
 
     string line;
 
+    int depth = 40;
+    int thread_count = 4;
+    bool should_search = false;
+
     while (1) {
         getline(cin, line);
 
@@ -1217,15 +1229,12 @@ int main() {
             run_perft(game_board, depth, depth);
             cout << "total time: " << (get_time() - start_time) << endl;
         } else if (line.rfind("go depth", 0) == 0) {
-            int depth = stoi(line.erase(0, 9));
+            depth = stoi(line.erase(0, 9));
 
             searcher.end_time = searcher.critical_time = get_time() + 10000000000;
+            searcher.v_nodes = 0;
 
-            string best_move;
-
-            best_move = searcher.iterative_search(game_board, depth);
-
-            cout << "bestmove " << best_move << endl;
+            should_search = true;
         } else if (line.rfind("go nodes", 0) == 0) {
 
         } else if (line.rfind("go", 0) == 0) {
@@ -1259,12 +1268,41 @@ int main() {
 
             searcher.v_nodes = 0;
 
+            should_search = true;
+        }
+
+        if (should_search) {
             string best_move;
 
-            best_move = searcher.iterative_search(game_board, 100);
+            // Lazy SMP
+            vector<thread> threads;
+            vector<int> stops(thread_count, false);
+
+            for (int i = 1; i < thread_count; ++i) {
+                Search t_search;
+                t_search.end_time = searcher.end_time;
+                t_search.critical_time = searcher.critical_time;
+
+                Board t_board = game_board.board_copy();
+
+
+                threads.emplace_back([=, &stops]() mutable {
+                    t_search.iterative_search(game_board, depth, i, stops[i]);
+                });
+            }
+
+            best_move = searcher.iterative_search(game_board, depth, 0, stops[0]);
+
+            for (int i = 1; i < thread_count; ++i) {
+                stops[i] = true;
+            }
+            for (int i = 1; i < thread_count; ++i) {
+                threads[i - 1].join();
+            }
+
+            // best_move = searcher.iterative_search(game_board, depth);
 
             cout << "bestmove " << best_move << endl;
-
         }
     }
 }
