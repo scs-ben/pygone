@@ -1197,6 +1197,8 @@ int main() {
     while (1) {
         getline(cin, line);
 
+        should_search = false;
+
         if (line == "quit") {
             abort();
         } else if (line == "uci") {
