@@ -632,20 +632,20 @@ class Search:
         if t() > self.critical_time:
             return -self.eval_mate_upper
 
-        self.v_nodes += 1
-
         is_pv_node = beta > alpha + 1
         is_in_check = local_board.in_check(local_board.played_move_count % 2 == 0)
 
         v_depth += is_in_check # and not is_pv_node
+
+        if (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
+            return 0
 
         if v_depth <= 0:
             return self.q_search(local_board, alpha, beta, 200)
 
         tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
 
-        if tt_entry['tt_move'] and (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
-            return 0
+        self.v_nodes += 1
 
         original_alpha = alpha
 
