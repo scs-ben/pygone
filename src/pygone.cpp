@@ -416,7 +416,7 @@ bool Board::check_is_endgame() {
 
 int Board::calculate_score(string uci_coordinate, bool sorting) {
     bool is_white = played_move_count % 2 == 0;
-    int offset = is_white ? 0 : 119;
+    // int offset = is_white ? 0 : 119;
     int p_offset = is_white ? -10 : 10;
     char p_piece = is_white ? 'P' : 'p';
     bool is_endgame = check_is_endgame();
@@ -427,26 +427,29 @@ int Board::calculate_score(string uci_coordinate, bool sorting) {
     int from_number = unpack[0];
     int to_number = unpack[1];
 
+    int to_offset = is_white ? 0 : abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10));
+    int from_offset = is_white ? 0 : abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10);
+
     int local_score = 0;
 
     char from_piece = tolower(board_state[from_number]);
 
     char to_piece = tolower(board_state[to_number]);
 
-    local_score += ALLPSQT[from_piece][abs(to_number - offset)] - ALLPSQT[from_piece][abs(from_number - offset)];
+    local_score += ALLPSQT[from_piece][to_offset] - ALLPSQT[from_piece][from_offset];
 
     if (to_piece != '-') {
-        local_score += ALLPSQT[to_piece][abs(to_number - offset)];
+        local_score += ALLPSQT[to_piece][to_offset];
     }
 
     if (from_piece == 'p') {
         if (uci_coordinate.substr(2, 2) == en_passant) {
             // add in an extra pawn for EP capture
-            local_score += ALLPSQT[from_piece][abs(to_number - offset)];
+            local_score += ALLPSQT[from_piece][to_offset];
         } else if (uci_coordinate.length() > 4) {
             char promote = uci_coordinate[4];
             // adjust value for promoting from pawn to queen
-            local_score += ALLPSQT[promote][abs(to_number - offset)] - ALLPSQT['p'][abs(to_number - offset)];
+            local_score += ALLPSQT[promote][to_offset] - ALLPSQT['p'][to_offset];
         }
 
         if (passer_pawn(from_number)) {
@@ -458,9 +461,9 @@ int Board::calculate_score(string uci_coordinate, bool sorting) {
     } else if (from_piece == 'k') {
         if (abs(to_number - from_number) == 2) {
             if (to_number > from_number) {
-                local_score += ALLPSQT['r'][abs(to_number - offset) - 1] - ALLPSQT['r'][abs(to_number - offset) + 1];
+                local_score += ALLPSQT['r'][to_offset - 1] - ALLPSQT['r'][to_offset + 1];
             } else {
-                local_score += ALLPSQT['r'][abs(to_number - offset) + 1] - ALLPSQT['r'][abs(to_number - offset) - 2];
+                local_score += ALLPSQT['r'][to_offset + 1] - ALLPSQT['r'][to_offset - 2];
             }
 
             // put castling higher up
@@ -853,6 +856,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
     }
 
     if (count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) > 2 || local_board.move_counter >= 100) {
+        cout << count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) << endl;
         return 0;
     }
 
@@ -969,6 +973,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     for (Move move : moves) {
         moved_board = local_board.make_move(move.coordinate);
+        // cout << move.coordinate << " " << moved_board.rolling_score << endl;
 
         // determine legality: if we moved and are in check, it's not legal
         if (moved_board.in_check(is_white)) {
@@ -1037,6 +1042,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
     }
 
     if (count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) > 2 || local_board.move_counter >= 100) {
+        cout << count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) << endl;
         return 0;
     }
 

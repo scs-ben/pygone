@@ -698,6 +698,8 @@ class Search:
         for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
             moved_board = local_board.make_move(s_move)
 
+            # print(f"{s_move} {moved_board.rolling_score}")
+
             # determine legality: if we moved and are in check, it's not legal
             if moved_board.in_check(is_white):
                 continue
