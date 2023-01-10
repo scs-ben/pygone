@@ -326,7 +326,7 @@ class Board:
 
     def calculate_score(self, uci_coordinate, sorting=False):
         is_white = self.played_move_count % 2 == 0
-        offset = 0 if is_white else 119
+        # offset = 0 if is_white else 119
         p_offset = -10 if is_white else 10
         p_piece = 'P' if is_white else 'p'
         is_endgame = self.is_endgame()
@@ -335,27 +335,30 @@ class Board:
 
         (from_number, to_number) = unpack_coordinate(uci_coordinate)
 
+        to_offset = to_number if is_white else abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10))
+        from_offset = from_number if is_white else abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10)
+
         local_score = 0
 
         from_piece = l_board_state[from_number].lower()
 
         to_piece = l_board_state[to_number].lower()
 
-        local_score += ALLPSQT[from_piece][abs(to_number - offset)] - \
-                        ALLPSQT[from_piece][abs(from_number - offset)]
+        local_score += ALLPSQT[from_piece][to_offset] - \
+                        ALLPSQT[from_piece][from_offset]
 
         if to_piece != '-':
-            local_score += ALLPSQT[to_piece][abs(to_number - offset)]
+            local_score += ALLPSQT[to_piece][to_offset]
 
         if from_piece == 'p':
             if uci_coordinate[2:4] == self.en_passant:
                 # add in an extra pawn for EP capture
-                local_score += ALLPSQT[from_piece][abs(to_number - offset)]
+                local_score += ALLPSQT[from_piece][to_offset]
             elif len(uci_coordinate) > 4:
                 promote = uci_coordinate[4:5]
                 # adjust value for promoting from pawn to queen
-                local_score += ALLPSQT[promote][abs(to_number - offset)] - \
-                                ALLPSQT['p'][abs(to_number - offset)]
+                local_score += ALLPSQT[promote][to_offset] - \
+                                ALLPSQT['p'][to_offset]
 
             if self.passer_pawn(from_number):
                 local_score += 10
@@ -364,11 +367,11 @@ class Board:
         elif from_piece == 'k':
             if abs(to_number - from_number) == 2:
                 if to_number > from_number:
-                    local_score += ALLPSQT['r'][abs(to_number - offset) - 1] - \
-                                    ALLPSQT['r'][abs(to_number - offset) + 1]
+                    local_score += ALLPSQT['r'][to_offset - 1] - \
+                                    ALLPSQT['r'][to_offset + 1]
                 else:
-                    local_score += ALLPSQT['r'][abs(to_number - offset) + 1] - \
-                                    ALLPSQT['r'][abs(to_number - offset) - 2]
+                    local_score += ALLPSQT['r'][to_offset + 1] - \
+                                    ALLPSQT['r'][to_offset - 2]
 
                 # put castling higher up
                 if sorting:

@@ -129,24 +129,25 @@ class A6:
   return Z.A4(A1,1)
  def A4(Z,A1,M4=0):
   i=Z.A8%2==0
-  D1=0 if i else 119
   D11=-10 if i else 10
   D5='P' if i else 'p'
   C8=Z.C8()
   l_A7=Z.A7
   (B0,O)=Y(A1)
+  to_D1=O if i else abs(O-119)+((O%10)-(abs(O-119)%10))
+  from_D1=B0 if i else abs(B0-119)+(B0%10)-(abs(B0-119)%10)
   d=0
   C2=l_A7[B0].lower()
   D4=l_A7[O].lower()
-  d+=B[C2][abs(O-D1)]- B[C2][abs(B0-D1)]
+  d+=B[C2][to_D1]- B[C2][from_D1]
   if D4!='-':
-   d+=B[D4][abs(O-D1)]
+   d+=B[D4][to_D1]
   if C2=='p':
    if A1[2:4]==Z.B7:
-    d+=B[C2][abs(O-D1)]
+    d+=B[C2][to_D1]
    elif len(A1)>4:
     D7=A1[4:5]
-    d+=B[D7][abs(O-D1)]- B['p'][abs(O-D1)]
+    d+=B[D7][to_D1]- B['p'][to_D1]
    if Z.ZH(B0):
     d+=10
    if Z.ZM(B0):
@@ -154,9 +155,9 @@ class A6:
   elif C2=='k':
    if abs(O-B0)==2:
     if O>B0:
-     d+=B['r'][abs(O-D1)-1]- B['r'][abs(O-D1)+1]
+     d+=B['r'][to_D1-1]- B['r'][to_D1+1]
     else:
-     d+=B['r'][abs(O-D1)+1]- B['r'][abs(O-D1)-2]
+     d+=B['r'][to_D1+1]- B['r'][to_D1-2]
     if M4:
      d+=60
   return d
@@ -333,15 +334,15 @@ class F0:
  def H9(Z,l,S,a,b):
   if t()>Z.G2:
    return-Z.ZD
-  Z.V+=1
   L11=b>a+1
   E01=l.E0(l.A8%2==0)
   S+=E01 
+  if(l.A0.count(l.K3)>2 or l.M9>=100):
+   return 0
   if S<=0:
    return Z.H93(l,a,b,200)
   e=Z.G3.get((l.K3),{'M1':2*Z.ZD,'M2':Z.ZB,'M0':-1,'N1':None})
-  if e['N1']and(l.A0.count(l.K3)>2 or l.M9>=100):
-   return 0
+  Z.V+=1
   L2=a
   if e['M0']>=S and e['N1']and not L11:
    if e['M2']==Z.ZA or (e['M2']==Z.ZC and e['M1']>=b)or (e['M2']==Z.ZB and e['M1']<=a):

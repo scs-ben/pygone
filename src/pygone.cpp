@@ -8,6 +8,7 @@
 #include <functional>
 #include <limits>
 #include <map>
+#include <mutex>
 #include <random>
 #include <string>
 #include <thread>
@@ -427,8 +428,8 @@ int Board::calculate_score(string uci_coordinate, bool sorting) {
     int from_number = unpack[0];
     int to_number = unpack[1];
 
-    int to_offset = is_white ? 0 : abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10));
-    int from_offset = is_white ? 0 : abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10);
+    int to_offset = is_white ? to_number : abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10));
+    int from_offset = is_white ? from_number : abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10);
 
     int local_score = 0;
 
@@ -530,7 +531,46 @@ uint64_t Board::hash_board()
             row = (start_position - 20) / 10;
             column = (start_position % 10) - 1;
 
-            int piece = index_of(board_state[start_position]);
+            int piece = 0;
+
+            switch (board_state[start_position]) {
+                case 'P':
+                    piece = 0;
+                    break;
+                case 'N':
+                    piece = 1;
+                    break;
+                case 'B':
+                    piece = 2;
+                    break;
+                case 'R':
+                    piece = 3;
+                    break;
+                case 'Q':
+                    piece = 4;
+                    break;
+                case 'K':
+                    piece = 5;
+                    break;
+                case 'p':
+                    piece = 6;
+                    break;
+                case 'n':
+                    piece = 7;
+                    break;
+                case 'b':
+                    piece = 8;
+                    break;
+                case 'r':
+                    piece = 9;
+                    break;
+                case 'q':
+                    piece = 10;
+                    break;
+                case 'k':
+                    piece = 11;
+                    break;
+            }
 
             h ^= ZobristTable[column][row][piece];
         }
@@ -632,8 +672,9 @@ vector<struct Move> Board::generate_valid_moves(bool captures_only) {
                     if (piece_lower == 'p') {
                         if ((board_position >= min_row && board_position <= (min_row + 8) && piece_move[0] == 0 && eval_piece == '-') ||
                             (board_position >= min_row && board_position <= (min_row + 8) && piece_move[0] != 0 && eval_piece != '-' && valid_pieces.find(eval_piece) < 100)) {
-                            for (char const &promote: "qrbn") {
-                                move.coordinate = start_coordinate + dest + promote;
+                            string promotes = "qrbn";
+                            for (int i = 0; i < promotes.length(); i++) {
+                                move.coordinate = start_coordinate + dest + promotes[i];
                                 move.score = 0;
                                 valid_moves.push_back(move);
                             }
@@ -738,8 +779,9 @@ struct [[nodiscard]] Node {
     string coordinate;
 };
 
-uint64_t tt_size = pow(2, 24);
+auto tt_size = 64ULL << 15;
 vector<Node> tt_bucket;
+mutex tt_lock;
 
 class Search {
 public:
@@ -785,12 +827,12 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
         // Node tt_entry;
 
         while (v_depth <= depth) {
-            auto window = 60;
-            auto research = 0;
+            // auto window = 60;
+            // auto research = 0;
 
-            research:
-            // local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper);
-            local_score = search(local_board, v_depth, local_score - window, local_score + window);
+            // research:
+            local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper);
+            // local_score = search(local_board, v_depth, local_score - window, local_score + window);
 
             if (get_time() < critical_time) {
                 const uint64_t tt_key = local_board.hash_board();
@@ -833,11 +875,11 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
                 // print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), best_move);
             }
 
-            if (local_score >= best_score + window || local_score <= best_score - window) {
-                window <<= ++research;
-                best_score = local_score;
-                goto research;
-            }
+            // if (local_score >= best_score + window || local_score <= best_score - window) {
+            //     window <<= ++research;
+            //     best_score = local_score;
+            //     goto research;
+            // }
 
             best_score = local_score;
             v_depth++;
@@ -856,7 +898,6 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
     }
 
     if (count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) > 2 || local_board.move_counter >= 100) {
-        cout << count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) << endl;
         return 0;
     }
 
@@ -1026,10 +1067,14 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
     // update TT only if we are not in time cut
     if (get_time() < critical_time) {
         if (v_depth >= tt_entry.depth) {
+            tt_lock.lock();
+
             tt_entry.score = best_score;
             tt_entry.coordinate = best_move;
             tt_entry.depth = v_depth;
             tt_entry.flag = (best_score >= beta) ? eval_lower : (best_score > original_alpha) ? eval_exact : eval_upper;
+
+            tt_lock.unlock();
         }
     }
 
@@ -1042,7 +1087,6 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
     }
 
     if (count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) > 2 || local_board.move_counter >= 100) {
-        cout << count(local_board.repetitions.begin(), local_board.repetitions.end(), local_board.board_string) << endl;
         return 0;
     }
 
