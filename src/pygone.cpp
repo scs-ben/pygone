@@ -88,11 +88,11 @@ map<char, array<int, 120>> ALLPSQT
         0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
         0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
         0,  30, 30, 30, 30,     30,     30, 30, 30, 0,
-        0,  8,  8,  17, 26,     26,     17, 8,  8,  0,
-        0,  5,  5,  8,  24,     24,     8,  5,  5,  0,
-        0,  0,  0,  0,  24,     24,     0,  0,  0,  0,
-        0,  5,  -5, -8, 6,      6,      -8, -5, 5,  0,
-        0,  5,  8,  8,  -22,    -22,    8,  8,  5,  0,
+        0,  4,  4,  8, 13,     13,     8, 4,  4,  0,
+        0,  3,  3,  4,  12,     12,     4,  3,  3,  0,
+        0,  0,  0,  0,  12,     12,     0,  0,  0,  0,
+        0,  3,  -3, -4, 6,      6,      -4, -3, 3,  0,
+        0,  3,  4,  4,  -11,    -11,    4,  4,  3,  0,
         0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
         0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
         0,  0,  0,  0,  0,      0,      0,  0,  0,  0}
@@ -1095,16 +1095,16 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         return 0;
     }
 
-    const uint64_t tt_key = local_board.hash_board();
-    Node &tt_entry = tt_bucket[tt_key % tt_size];
+    // const uint64_t tt_key = local_board.hash_board();
+    // Node &tt_entry = tt_bucket[tt_key % tt_size];
 
-    if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
-        if (tt_entry.flag == eval_exact ||
-        (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
-        (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
-            return tt_entry.score;
-        }
-    }
+    // if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
+    //     if (tt_entry.flag == eval_exact ||
+    //     (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
+    //     (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
+    //         return tt_entry.score;
+    //     }
+    // }
 
     int local_score = local_board.rolling_score;
 
@@ -1235,8 +1235,6 @@ int main() {
 
     Search searcher;
     searcher.reset();
-
-    cout << tt_bucket.size() << endl;
 
     string line;
 
