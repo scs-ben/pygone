@@ -532,46 +532,7 @@ uint64_t Board::hash_board()
             row = (start_position - 20) / 10;
             column = (start_position % 10) - 1;
 
-            int piece = 0;
-
-            switch (board_state[start_position]) {
-                case 'P':
-                    piece = 0;
-                    break;
-                case 'N':
-                    piece = 1;
-                    break;
-                case 'B':
-                    piece = 2;
-                    break;
-                case 'R':
-                    piece = 3;
-                    break;
-                case 'Q':
-                    piece = 4;
-                    break;
-                case 'K':
-                    piece = 5;
-                    break;
-                case 'p':
-                    piece = 6;
-                    break;
-                case 'n':
-                    piece = 7;
-                    break;
-                case 'b':
-                    piece = 8;
-                    break;
-                case 'r':
-                    piece = 9;
-                    break;
-                case 'q':
-                    piece = 10;
-                    break;
-                case 'k':
-                    piece = 11;
-                    break;
-            }
+            int piece = index_of(board_state[start_position]);
 
             h ^= ZobristTable[column][row][piece];
         }
@@ -839,9 +800,22 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
             if (get_time() < critical_time) {
                 const uint64_t tt_key = local_board.hash_board();
 
-                Node &tt_entry = tt_bucket[tt_key % tt_size];
-                if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
-                    best_move = tt_entry.coordinate;
+                Node tt_entry;
+                int key_offset = 0;
+                while (true) {
+                    if ((tt_key % tt_size) + key_offset > tt_size) {
+                        key_offset = 0;
+                        tt_entry = tt_bucket[(tt_key % tt_size)];
+                        break;
+                    }
+                    tt_entry = tt_bucket[(tt_key % tt_size) + key_offset];
+
+                    if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
+                        best_move = tt_entry.coordinate;
+                        break;
+                    }
+
+                    ++key_offset;
                 }
             } else {
                 break;
@@ -861,12 +835,21 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
 
                     const uint64_t tt_key = pv_board.hash_board();
 
-                    Node &pv_entry = tt_bucket[tt_key % tt_size];
-
-                    if (pv_entry.coordinate.empty()) {
-                        break;
+                    Node pv_entry;
+                    int key_offset = 0;
+                    while (true) {
+                        if ((tt_key % tt_size) + key_offset > tt_size) {
+                            key_offset = 0;
+                            pv_entry = tt_bucket[(tt_key % tt_size)];
+                            break;
+                        }
+                        pv_entry = tt_bucket[(tt_key % tt_size) + key_offset];
+                        ++key_offset;
                     }
 
+                    if (pv_entry.coordinate.empty() || pv_entry.key <= 0) {
+                        break;
+                    }
                     pv_board = pv_board.make_move(pv_entry.coordinate);
 
                     pv += ' ' + pv_entry.coordinate;
@@ -915,7 +898,21 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
     ++v_nodes;
 
     const uint64_t tt_key = local_board.hash_board();
-    Node &tt_entry = tt_bucket[tt_key % tt_size];
+
+    int key_offset = 0;
+    Node tt_entry;
+    while (true) {
+        if ((tt_key % tt_size) + key_offset > tt_size) {
+            key_offset = 0;
+            tt_entry = tt_bucket[(tt_key % tt_size)];
+            break;
+        }
+        tt_entry = tt_bucket[(tt_key % tt_size) + key_offset];
+        if (tt_entry.coordinate.empty() || tt_entry.key == tt_key) {
+            break;
+        }
+        ++key_offset;
+    }
 
     if (tt_entry.key == tt_key && tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
         if (tt_entry.flag == eval_exact ||
@@ -929,9 +926,9 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
         return local_board.rolling_score;
     }
 
-    if (!is_pv_node && !is_in_check && v_depth <= 2 && local_board.rolling_score <= alpha - (350 * v_depth)) {
-        return local_board.rolling_score;
-    }
+    // if (!is_pv_node && !is_in_check && v_depth <= 2 && local_board.rolling_score <= alpha - (350 * v_depth)) {
+    //     return local_board.rolling_score;
+    // }
 
     int local_score = -eval_mate_upper;
 
@@ -958,7 +955,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
     if (!is_pv_node && !is_in_check && local_board.board_string.find(pieces[0]) < 10 && local_board.board_string.find(pieces[1]) < 10
             && local_board.board_string.find(pieces[2]) < 10 && local_board.board_string.find(pieces[3]) < 10) {
 
-        local_score = -search(local_board.nullmove(), max(0, v_depth - 4), -beta, -beta+1, thread_id);
+        local_score = -search(local_board.nullmove(), max(0, v_depth - 4), -beta, -beta+1, 0);
 
         if (local_score >= beta) {
             return beta;
@@ -966,7 +963,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
     }
 
     if (!is_pv_node && !is_in_check && tt_entry.key == tt_key && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
-        local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha, thread_id);
+        local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha, 0);
 
         if (local_score >= beta) {
             return beta;
@@ -991,95 +988,95 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
     sort(moves.begin(), moves.end(), struct_move);
 
     // Traditional AB
-    // for (Move move : moves) {
-    //     moved_board = local_board.make_move(move.coordinate);
-
-    //     // determine legality: if we moved and are in check, it's not legal
-    //     if (moved_board.in_check(is_white)) {
-    //         continue;
-    //     }
-
-    //     played_moves += 1;
-
-    //     local_score = -search(moved_board, v_depth - 1, -beta, -alpha, thread_id);
-
-    //     if (local_score >= beta) {
-    //         return beta;
-    //     }
-
-    //     if (local_score > best_score) {
-    //         best_score = local_score;
-    //         best_move = move.coordinate;
-
-    //         if (best_score > alpha) {
-    //             alpha = best_score;
-    //         }
-    //     }
-    // }
-
     for (Move move : moves) {
         moved_board = local_board.make_move(move.coordinate);
-        // cout << move.coordinate << " " << moved_board.rolling_score << endl;
 
         // determine legality: if we moved and are in check, it's not legal
         if (moved_board.in_check(is_white)) {
             continue;
         }
 
-        is_quiet = local_board.piece_count == moved_board.piece_count;
-
         played_moves += 1;
 
-        r_depth = 1;
-        if (!is_pv_node && is_quiet && v_depth > 2 && played_moves > 1) {
-            r_depth = max(3, (int) ceil(sqrt(v_depth-1) + sqrt(played_moves-1)));
-        }
+        local_score = -search(moved_board, v_depth - 1, -beta, -alpha, 0);
 
-        if (r_depth != 1) {
-            local_score = -search(moved_board, v_depth - r_depth, -alpha-1, -alpha, thread_id);
-        }
-
-        if ((r_depth != 1 && local_score > alpha) || (r_depth == 1 && (!is_pv_node || played_moves != 1))) {
-            local_score = -search(moved_board, v_depth - 1, -alpha-1, -alpha, thread_id);
-        }
-
-        if (is_pv_node && (played_moves == 1 || local_score > alpha)) {
-            local_score = -search(moved_board, v_depth - 1, -beta, -alpha, thread_id);
-        }
-
-        if (best_move.empty()) {
-            best_move = move.coordinate;
+        if (local_score >= beta) {
+            return beta;
         }
 
         if (local_score > best_score) {
-            best_move = move.coordinate;
             best_score = local_score;
+            best_move = move.coordinate;
 
-            if (local_score > alpha) {
-                alpha = local_score;
-
-                if (alpha >= beta) {
-                    break;
-                }
+            if (best_score > alpha) {
+                alpha = best_score;
             }
         }
     }
 
+    // for (Move move : moves) {
+    //     moved_board = local_board.make_move(move.coordinate);
+    //     // cout << move.coordinate << " " << moved_board.rolling_score << endl;
+
+    //     // determine legality: if we moved and are in check, it's not legal
+    //     if (moved_board.in_check(is_white)) {
+    //         continue;
+    //     }
+
+    //     is_quiet = local_board.piece_count == moved_board.piece_count;
+
+    //     played_moves += 1;
+
+    //     r_depth = 1;
+    //     if (!is_pv_node && is_quiet && v_depth > 2 && played_moves > 1) {
+    //         r_depth = max(3, (int) ceil(sqrt(v_depth-1) + sqrt(played_moves-1)));
+    //     }
+
+    //     if (r_depth != 1) {
+    //         local_score = -search(moved_board, v_depth - r_depth, -alpha-1, -alpha, 0);
+    //     }
+
+    //     if ((r_depth != 1 && local_score > alpha) || (r_depth == 1 && (!is_pv_node || played_moves != 1))) {
+    //         local_score = -search(moved_board, v_depth - 1, -alpha-1, -alpha, 0);
+    //     }
+
+    //     if (is_pv_node && (played_moves == 1 || local_score > alpha)) {
+    //         local_score = -search(moved_board, v_depth - 1, -beta, -alpha, 0);
+    //     }
+
+    //     if (best_move.empty()) {
+    //         best_move = move.coordinate;
+    //     }
+
+    //     if (local_score > best_score) {
+    //         best_move = move.coordinate;
+    //         best_score = local_score;
+
+    //         if (local_score > alpha) {
+    //             alpha = local_score;
+
+    //             if (alpha >= beta) {
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+
     if (played_moves == 0) {
-        return is_in_check ? -eval_mate_upper + local_board.played_move_count : 0;
+        return is_in_check ? -eval_mate_upper - local_board.played_move_count : 0;
     }
 
     // update TT only if we are not in time cut
     if (get_time() < critical_time) {
         if (v_depth >= tt_entry.depth || tt_entry.key != tt_key) {
-            tt_lock.lock();
-
             tt_entry.key = tt_key;
             tt_entry.score = best_score;
             tt_entry.coordinate = best_move;
             tt_entry.depth = v_depth;
             tt_entry.flag = (best_score >= beta) ? eval_lower : (best_score > original_alpha) ? eval_exact : eval_upper;
 
+            tt_lock.lock();
+            tt_bucket[(tt_key % tt_size) + key_offset] = tt_entry;
             tt_lock.unlock();
         }
     }
@@ -1096,16 +1093,30 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         return 0;
     }
 
-    // const uint64_t tt_key = local_board.hash_board();
-    // Node &tt_entry = tt_bucket[tt_key % tt_size];
+    const uint64_t tt_key = local_board.hash_board();
 
-    // if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
-    //     if (tt_entry.flag == eval_exact ||
-    //     (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
-    //     (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
-    //         return tt_entry.score;
-    //     }
-    // }
+    Node tt_entry;
+    int key_offset = 0;
+    while (true) {
+        if ((tt_key % tt_size) + key_offset > tt_size) {
+            key_offset = 0;
+            tt_entry = tt_bucket[(tt_key % tt_size)];
+            break;
+        }
+        tt_entry = tt_bucket[(tt_key % tt_size) + key_offset];
+        if (tt_entry.coordinate.empty() || tt_entry.key == tt_key) {
+            break;
+        }
+        ++key_offset;
+    }
+
+    if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
+        if (tt_entry.flag == eval_exact ||
+        (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
+        (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
+            return tt_entry.score;
+        }
+    }
 
     int local_score = local_board.rolling_score;
 

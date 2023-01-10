@@ -11,7 +11,7 @@
     -each \
         tc=0/1+1 \
         timemargin=1500 \
-        -concurrency 6 \
+        -concurrency 1 \
         -resign movecount=4 score=3000 \
         -openings file=book3.pgn \
         -repeat \
