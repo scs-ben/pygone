@@ -87,7 +87,7 @@ map<char, array<int, 120>> ALLPSQT
         0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
         0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
         0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
-        0,  30, 30, 30, 30,     30,     30, 30, 30, 0,
+        0,  20, 20, 20, 20,     20,     20, 20, 20, 0,
         0,  4,  4,  8, 13,     13,     8, 4,  4,  0,
         0,  3,  3,  4,  12,     12,     4,  3,  3,  0,
         0,  0,  0,  0,  12,     12,     0,  0,  0,  0,
@@ -430,6 +430,7 @@ int Board::calculate_score(string uci_coordinate, bool sorting) {
 
     int to_offset = is_white ? to_number : abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10));
     int from_offset = is_white ? from_number : abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10);
+    int capture_offset = is_white ? to_offset : to_number;
 
     int local_score = 0;
 
@@ -440,25 +441,25 @@ int Board::calculate_score(string uci_coordinate, bool sorting) {
     local_score += ALLPSQT[from_piece][to_offset] - ALLPSQT[from_piece][from_offset];
 
     if (to_piece != '-') {
-        local_score += ALLPSQT[to_piece][to_offset];
+        local_score += ALLPSQT[to_piece][capture_offset];
     }
 
     if (from_piece == 'p') {
         if (uci_coordinate.substr(2, 2) == en_passant) {
             // add in an extra pawn for EP capture
-            local_score += ALLPSQT[from_piece][to_offset];
+            local_score += ALLPSQT[from_piece][capture_offset];
         } else if (uci_coordinate.length() > 4) {
             char promote = uci_coordinate[4];
             // adjust value for promoting from pawn to queen
             local_score += ALLPSQT[promote][to_offset] - ALLPSQT['p'][to_offset];
         }
 
-        if (passer_pawn(from_number)) {
-            local_score += 10;
-        }
-        if (stacked_pawn(from_number)) {
-            local_score -= 15;
-        }
+        // if (passer_pawn(from_number)) {
+        //     local_score += 10;
+        // }
+        // if (stacked_pawn(from_number)) {
+        //     local_score -= 15;
+        // }
     } else if (from_piece == 'k') {
         if (abs(to_number - from_number) == 2) {
             if (to_number > from_number) {
