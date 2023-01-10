@@ -773,13 +773,14 @@ bool Board::attack_position(bool is_white, string coordinate) {
 }
 
 struct [[nodiscard]] Node {
+    uint64_t key;
     int depth;
     int score;
     int flag;
     string coordinate;
 };
 
-auto tt_size = 64ULL << 15;
+auto tt_size = 64ULL << 18;
 vector<Node> tt_bucket;
 mutex tt_lock;
 
@@ -797,7 +798,7 @@ public:
 
     void reset();
     string iterative_search(Board local_board, int depth, int thread_id, int &stop);
-    int search(Board local_board, int v_depth, int alpha, int beta);
+    int search(Board local_board, int v_depth, int alpha, int beta, int thread_id);
     int quiesce(Board local_board, int alpha, int beta);
 
 };
@@ -831,14 +832,14 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
             // auto research = 0;
 
             // research:
-            local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper);
+            local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper, thread_id);
             // local_score = search(local_board, v_depth, local_score - window, local_score + window);
 
             if (get_time() < critical_time) {
                 const uint64_t tt_key = local_board.hash_board();
 
                 Node &tt_entry = tt_bucket[tt_key % tt_size];
-                if (!tt_entry.coordinate.empty()) {
+                if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
                     best_move = tt_entry.coordinate;
                 }
             } else {
@@ -892,7 +893,7 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
         return best_move;
 }
 
-int Search::search(Board local_board, int v_depth, int alpha, int beta) {
+int Search::search(Board local_board, int v_depth, int alpha, int beta, int thread_id) {
     if (get_time() >= critical_time) {
         return -eval_mate_upper;
     }
@@ -915,7 +916,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
     const uint64_t tt_key = local_board.hash_board();
     Node &tt_entry = tt_bucket[tt_key % tt_size];
 
-    if (tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
+    if (tt_entry.key == tt_key && tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
         if (tt_entry.flag == eval_exact ||
         (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
         (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
@@ -956,15 +957,15 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
     if (!is_pv_node && !is_in_check && local_board.board_string.find(pieces[0]) < 10 && local_board.board_string.find(pieces[1]) < 10
             && local_board.board_string.find(pieces[2]) < 10 && local_board.board_string.find(pieces[3]) < 10) {
 
-        local_score = -search(local_board.nullmove(), max(0, v_depth - 4), -beta, -beta+1);
+        local_score = -search(local_board.nullmove(), max(0, v_depth - 4), -beta, -beta+1, thread_id);
 
         if (local_score >= beta) {
             return beta;
         }
     }
 
-    if (!is_pv_node && !is_in_check && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
-        local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha);
+    if (!is_pv_node && !is_in_check && tt_entry.key == tt_key && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
+        local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha, thread_id);
 
         if (local_score >= beta) {
             return beta;
@@ -981,6 +982,9 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     for (int i = 0; i < moves.size(); i++) {
         moves[i].score = local_board.rolling_score + local_board.calculate_score(moves[i].coordinate, true);
+        if (thread_id > 0) {
+            moves[i].score += (rand() % 10);
+        }
     }
 
     sort(moves.begin(), moves.end(), struct_move);
@@ -996,7 +1000,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     //     played_moves += 1;
 
-    //     local_score = -search(moved_board, v_depth - 1, -beta, -alpha);
+    //     local_score = -search(moved_board, v_depth - 1, -beta, -alpha, thread_id);
 
     //     if (local_score >= beta) {
     //         return beta;
@@ -1031,15 +1035,15 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
         }
 
         if (r_depth != 1) {
-            local_score = -search(moved_board, v_depth - r_depth, -alpha-1, -alpha);
+            local_score = -search(moved_board, v_depth - r_depth, -alpha-1, -alpha, thread_id);
         }
 
         if ((r_depth != 1 && local_score > alpha) || (r_depth == 1 && (!is_pv_node || played_moves != 1))) {
-            local_score = -search(moved_board, v_depth - 1, -alpha-1, -alpha);
+            local_score = -search(moved_board, v_depth - 1, -alpha-1, -alpha, thread_id);
         }
 
         if (is_pv_node && (played_moves == 1 || local_score > alpha)) {
-            local_score = -search(moved_board, v_depth - 1, -beta, -alpha);
+            local_score = -search(moved_board, v_depth - 1, -beta, -alpha, thread_id);
         }
 
         if (best_move.empty()) {
@@ -1066,9 +1070,10 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta) {
 
     // update TT only if we are not in time cut
     if (get_time() < critical_time) {
-        if (v_depth >= tt_entry.depth) {
+        if (v_depth >= tt_entry.depth || tt_entry.key != tt_key) {
             tt_lock.lock();
 
+            tt_entry.key = tt_key;
             tt_entry.score = best_score;
             tt_entry.coordinate = best_move;
             tt_entry.depth = v_depth;
@@ -1093,7 +1098,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
     const uint64_t tt_key = local_board.hash_board();
     Node &tt_entry = tt_bucket[tt_key % tt_size];
 
-    if (!tt_entry.coordinate.empty()) {
+    if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
         if (tt_entry.flag == eval_exact ||
         (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
         (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
@@ -1230,6 +1235,8 @@ int main() {
 
     Search searcher;
     searcher.reset();
+
+    cout << tt_bucket.size() << endl;
 
     string line;
 
