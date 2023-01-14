@@ -662,32 +662,40 @@ vector<struct Move> Board::generate_valid_moves(bool captures_only) {
             vector<array<int, 2>> piece_moves = get_moves(piece_lower);
 
             for(array<int, 2> piece_move : piece_moves) {
-                if (is_white) {
-                    to_row = row - piece_move[0];
-                } else {
-                    to_row = row + piece_move[0];
-                }
-                to_column = column + piece_move[1];
-
-                if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8 &&
-                        (board_state[to_row][to_column] == '-' || isupper(piece) != isupper(board_state[to_row][to_column]))) {
-
-                    move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, to_column);
-
-                    if (piece_lower == 'p') {
-                        if (to_row == 0 || to_row == 7) {
-                            promotion_move.coordinate = move.coordinate + 'q';
-                            valid_moves.push_back(promotion_move);
-                            promotion_move.coordinate = move.coordinate + 'r';
-                            valid_moves.push_back(promotion_move);
-                            promotion_move.coordinate = move.coordinate + 'b';
-                            valid_moves.push_back(promotion_move);
-                            promotion_move.coordinate = move.coordinate + 'n';
-                            valid_moves.push_back(promotion_move);
-                        }
-                        valid_moves.push_back(move);
+                to_row = row;
+                to_column = column;
+                while (true) {
+                    if (is_white) {
+                        to_row -= piece_move[0];
                     } else {
-                        valid_moves.push_back(move);
+                        to_row += piece_move[0];
+                    }
+                    to_column += piece_move[1];
+
+                    if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8 &&
+                            (board_state[to_row][to_column] == '-' || isupper(piece) != isupper(board_state[to_row][to_column]))) {
+
+                        move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, to_column);
+
+                        if (piece_lower == 'p') {
+                            if (to_row == 0 || to_row == 7) {
+                                promotion_move.coordinate = move.coordinate + 'q';
+                                valid_moves.push_back(promotion_move);
+                                promotion_move.coordinate = move.coordinate + 'r';
+                                valid_moves.push_back(promotion_move);
+                                promotion_move.coordinate = move.coordinate + 'b';
+                                valid_moves.push_back(promotion_move);
+                                promotion_move.coordinate = move.coordinate + 'n';
+                                valid_moves.push_back(promotion_move);
+                            }
+                            valid_moves.push_back(move);
+                        } else {
+                            valid_moves.push_back(move);
+                        }
+                    }
+
+                    if (board_state[to_row][to_column] != '-' || piece_lower == 'p' || piece_lower == 'n' || piece_lower == 'k' || to_row < 0 || to_row > 7 || to_column < 0 || to_column > 7) {
+                        break;
                     }
                 }
             }
@@ -714,25 +722,33 @@ bool Board::attack_position(bool is_white, string coordinate) {
             piece = board_state[row][column];
             piece_lower = tolower(piece);
 
-            if (piece == '-' || is_white == (piece == piece_lower)) {
+            if (piece == '-' || is_white == isupper(piece)) {
                 continue;
             }
 
             vector<array<int, 2>> piece_moves = get_moves(piece_lower);
 
             for(array<int, 2> piece_move : piece_moves) {
-                if (is_white) {
-                    to_row = row - piece_move[0];
-                } else {
-                    to_row = row + piece_move[0];
-                }
-                to_column = column + piece_move[1];
+                to_row = row;
+                to_column = column;
+                while (true) {
+                    if (is_white) {
+                        to_row -= piece_move[0];
+                    } else {
+                        to_row += piece_move[0];
+                    }
+                    to_column += piece_move[1];
 
-                if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8 &&
-                        (board_state[to_row][to_column] == '-' || isupper(piece) != isupper(board_state[to_row][to_column]))) {
+                    if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8 &&
+                            (board_state[to_row][to_column] == '-' || isupper(piece) != isupper(board_state[to_row][to_column]))) {
 
-                    if (get_coordinate(to_row, to_column) == coordinate) {
-                        return true;
+                        if (get_coordinate(to_row, to_column) == coordinate) {
+                            return true;
+                        }
+                    }
+
+                    if (board_state[to_row][to_column] != '-' || piece_lower == 'p' || piece_lower == 'n' || piece_lower == 'k' || to_row < 0 || to_row > 7 || to_column < 0 || to_column > 7) {
+                        break;
                     }
                 }
             }
