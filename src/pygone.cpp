@@ -81,138 +81,123 @@ int index_of(char piece)
         return -1;
 }
 
-map<char, array<int, 120>> ALLPSQT
+int ALLPSQT[8][8][6];
+
+int P_PSQT[8][8] = {
+        {0,0,0,0,0,0,0,0},
+        {30,30,30,30,30,30,30,30},
+        {8,8,17,26,26,17,8,8},
+        {5, 5,8,24,24,8, 5, 5},
+        {0, 0, 0,24,24, 0, 0, 0},
+        {5,-5,-8, 6, 6,-8,-5, 5},
+        {5,8,8,-22,-22,8,8, 5},
+        {0, 0, 0, 0, 0, 0, 0, 0}};
+
+int N_PSQT[8][8] = {
+        {-50,-40,-30,-30,-30,-30,-40,-50},
+        {-40,-20, 0, 0, 0, 0,-20,-40},
+        {-30, 0,8,13,13,8, 0,-30},
+        {-30, 5,13,18,18,13, 5,-30},
+        {-30, 0,13,18,18,13, 0,-30},
+        {-30, 5,7,13,13,7, 5,-30},
+        {-40,-20, 0, 5, 5, 0,-20,-40},
+        {-50,-40,-20,-30,-30,-20,-40,-50}};
+int B_PSQT[8][8] = {
+        {-20,-10,-10,-10,-10,-10,-10,-20},
+        {-10, 0, 0, 0, 0, 0, 0,-10},
+        {-10, 0, 5,10,10, 5, 0,-10},
+        {-10, 5, 5,10,10, 5, 5,-10},
+        {-10, 0,10,10,10,10, 0,-10},
+        {-10,10,10,10,10,10,10,-10},
+        {-10, 5, 0, 0, 0, 0, 5,-10},
+        {-20,-10,-40,-10,-10,-40,-10,-20}};
+int R_PSQT[8][8] = {
+        {10,20,20,20,20,20,20, 10},
+        {-10, 0, 0, 0, 0, 0, 0,-10},
+        {-10, 0, 0, 0, 0, 0, 0,-10},
+        {-10, 0, 0, 0, 0, 0, 0,-10},
+        {-10, 0, 0, 0, 0, 0, 0,-10},
+        {-10, 0, 0, 0, 0, 0, 0,-10},
+        {-10, 0, 0, 0, 0, 0, 0,-10},
+        {-10, 0, 0,10,10, 10, 0,-10}};
+int Q_PSQT[8][8] = {
+        {-40,-20,-20,-10,-10,-20,-20,-40},
+        {-20, 0, 0, 0, 0, 0, 0,-20},
+        {-20, 0,10,10,10,10, 0,-20},
+        {-10, 0,10,10,10,10, 0,-10},
+        {0, 0,10,10,10,10, 0,-10},
+        {-20,10,10,10,10,10, 0,-20},
+        {-20, 0,10, 0, 0, 0, 0,-20},
+        {-40,-20,-20,-10,-10,-20,-20,-40}};
+int K_PSQT[8][8] = {
+        {-50,-40,-30,-20,-20,-30,-40,-50},
+        {-30,-20,-10, 0, 0,-10,-20,-30},
+        {-30,-10,20,30,30,20,-10,-30},
+        {-30,-10,30,40,40,30,-10,-30},
+        {-30,-10,30,40,40,30,-10,-30},
+        {-10,-20,-20,-20,-20,-20,-20,-10},
+        {20,20,0,0,0,0,20,20},
+        {20,20,35,0,0,10,35,20}};
+
+void init_psqt_table()
 {
-    {'p', {
-        0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
-        0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
-        0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
-        0,  20, 20, 20, 20,     20,     20, 20, 20, 0,
-        0,  4,  4,  8, 13,     13,     8, 4,  4,  0,
-        0,  3,  3,  4,  12,     12,     4,  3,  3,  0,
-        0,  0,  0,  0,  12,     12,     0,  0,  0,  0,
-        0,  3,  -3, -4, 6,      6,      -4, -3, 3,  0,
-        0,  3,  4,  4,  -11,    -11,    4,  4,  3,  0,
-        0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
-        0,  0,  0,  0,  0,      0,      0,  0,  0,  0,
-        0,  0,  0,  0,  0,      0,      0,  0,  0,  0}
-    },
-    {'n', {
-        0,  0,      0,      0,      0,      0,      0,      0,      0,      0,
-        0,  0,      0,      0,      0,      0,      0,      0,      0,      0,
-        0,  -50,    -40,    -30,    -30,    -30,    -30,    -40,    -50,    0,
-        0,  -40,    -20,    0,      0,      0,      0,      -20,    -40,    0,
-        0,  -30,     0,     8,      13,     13,     8,      0,      -30,    0,
-        0,  -30,     5,     13,     18,     18,     13,     5,      -30,    0,
-        0,  -30,     0,     13,     18,     18,     13,     0,      -30,    0,
-        0,  -30,     5,     7,      13,     13,     7,      5,      -30,    0,
-        0,  -40,    -20,    0,      5,      5,      0,      -20,    -40,    0,
-        0,  -50,    -40,    -20,    -30,    -30,    -20,    -40,    -50,    0,
-        0,  0,      0,      0,      0,      0,      0,      0,      0,      0,
-        0,  0,      0,      0,      0,      0,      0,      0,      0,      0}
-    },
-    {'b', {
-        0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,
-        0,-20,-10,-10,-10,-10,-10,-10,-20,0,
-        0,-10, 0, 0, 0, 0, 0, 0,-10,0,
-        0,-10, 0, 5,10,10, 5, 0,-10,0,
-        0,-10, 5, 5,10,10, 5, 5,-10,0,
-        0,-10, 0,10,10,10,10, 0,-10,0,
-        0,-10,10,10,10,10,10,10,-10,0,
-        0,-10, 5, 0, 0, 0, 0, 5,-10,0,
-        0,-20,-10,-40,-10,-10,-40,-10,-20,0,
-        0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0}
-    },
-    {'r', {
-        0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,
-        0,10,20,20,20,20,20,20, 10,0,
-        0,-10, 0, 0, 0, 0, 0, 0,-10,0,
-        0,-10, 0, 0, 0, 0, 0, 0,-10,0,
-        0,-10, 0, 0, 0, 0, 0, 0,-10,0,
-        0,-10, 0, 0, 0, 0, 0, 0,-10,0,
-        0,-10, 0, 0, 0, 0, 0, 0,-10,0,
-        0,-10, 0, 0, 0, 0, 0, 0,-10,0,
-        0,-10, 0, 0,10,10, 10, 0,-10,0,
-        0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0}
-    },
-    {'q', {
-        0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,
-        0,-40,-20,-20,-10,-10,-20,-20,-40,0,
-        0,-20, 0, 0, 0, 0, 0, 0,-20,0,
-        0,-20, 0,10,10,10,10, 0,-20,0,
-        0,-10, 0,10,10,10,10, 0,-10,0,
-        0,0, 0,10,10,10,10, 0,-10,0,
-        0,-20,10,10,10,10,10, 0,-20,0,
-        0,-20, 0,10, 0, 0, 0, 0,-20,0,
-        0,-40,-20,-20,-10,-10,-20,-20,-40,0,
-        0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0}
-    },
-    {'k', {
-        0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,
-        0,-50,-40,-30,-20,-20,-30,-40,-50,0,
-        0,-30,-20,-10, 0, 0,-10,-20,-30,0,
-        0,-30,-10,20,30,30,20,-10,-30,0,
-        0,-30,-10,30,40,40,30,-10,-30,0,
-        0,-30,-10,30,40,40,30,-10,-30,0,
-        0,-10,-20,-20,-20,-20,-20,-20,-10,0,
-        0,20,20,0,0,0,0,20,20,0,
-        0,20,20,35,0,0,10,35,20,0,
-        0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0}
+    for (int i = 0; i<8; i++) {
+        for (int j = 0; j<8; j++) {
+            for (int k = 0; k<6; k++) {
+                switch (k) {
+                    case 0:
+                        ALLPSQT[i][j][k] = P_PSQT[i][j] + PIECEPOINTS['p'];
+                        break;
+                    case 1:
+                        ALLPSQT[i][j][k] = N_PSQT[i][j] + PIECEPOINTS['n'];
+                        break;
+                    case 2:
+                        ALLPSQT[i][j][k] = B_PSQT[i][j] + PIECEPOINTS['b'];
+                        break;
+                    case 3:
+                        ALLPSQT[i][j][k] = R_PSQT[i][j] + PIECEPOINTS['r'];
+                        break;
+                    case 4:
+                        ALLPSQT[i][j][k] = Q_PSQT[i][j] + PIECEPOINTS['q'];
+                        break;
+                    case 5:
+                        ALLPSQT[i][j][k] = K_PSQT[i][j] + PIECEPOINTS['k'];
+                        break;
+                }
+            }
+        }
     }
-};
+}
 
 vector<array<int, 2>> get_moves(char piece) {
     vector<array<int, 2>> moves;
 
     if (piece == 'k') {
-        moves = {{0, 10}, {0, -10}, {1, 0}, {-1, 0}, {1, 10}, {1, -10}, {-1, 10}, {-1, -10}};
+        moves = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     } else if (piece == 'q') {
-        moves = {{0, 10}, {0, -10}, {1, 0}, {-1, 0}, {1, 10}, {1, -10}, {-1, 10}, {-1, -10}};
+        moves = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     } else if (piece == 'r') {
-        moves = {{0, 10}, {0, -10}, {1, 0}, {-1, 0}};
+        moves = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
     } else if (piece == 'b') {
-        moves = {{1, 10}, {1, -10}, {-1, 10}, {-1, -10}};
+        moves = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     } else if (piece == 'n') {
-        moves = {{1, -20}, {-1, -20}, {2, -10}, {-2, -10}, {1, 20}, {-1, 20}, {2, 10}, {-2, 10}};
+        moves = {{1, -2}, {-1, -2}, {2, -1}, {-2, -1}, {1, 2}, {-1, 2}, {2, 1}, {-2, 1}};
     } else {
-        moves = {{0, -10}, {1, -10}, {-1, -10}};
+        moves = {{1, 0}};
     }
 
     return moves;
-}
-
-char number_to_letter(int to_number) {
-    return 96 + to_number;
 }
 
 void print_stats(string v_depth, string v_score, string v_time, string v_nodes, string v_nps, string v_pv) {
     cout << "info depth " << v_depth << " score cp " << v_score << " time " << v_time << " nodes " << v_nodes << " nps " << v_nps << " pv " << v_pv << endl;
 }
 
-int coordinate_to_position(string coordinate) {
-    char letter = coordinate[0];
-    int number = coordinate[1] - '0';
+string get_coordinate(int row, int column)
+{
+    char col = 97 + column;
 
-    int position = letter - 97;
-
-    return 10 * (abs(number - 8) + 2) + position + 1;
-}
-
-array<int, 2> unpack_coordinate(string uci_coordinate) {
-    return {coordinate_to_position(uci_coordinate.substr(0, 2)),
-            coordinate_to_position(uci_coordinate.substr(2, 4))};
-}
-
-string position_to_coordinate(int board_position) {
-    return number_to_letter(board_position % 10) + to_string(abs(board_position / 10 - 10));
+    return col + to_string(abs(8 - row));
 }
 
 uint64_t get_time() {
@@ -228,44 +213,35 @@ struct [[nodiscard]] Move {
 
 class Board {
 public:
-    string board_state = "";
-    string board_string = "";
+    char board_state[8][8] = {
+        {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
+        {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
+        {'-', '-', '-', '-', '-', '-', '-', '-'},
+        {'-', '-', '-', '-', '-', '-', '-', '-'},
+        {'-', '-', '-', '-', '-', '-', '-', '-'},
+        {'-', '-', '-', '-', '-', '-', '-', '-'},
+        {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
+        {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}};
+    string board_string = "rnbqkbnrpppppppp--------------------------------PPPPPPPPRNBQKBNR1";
     int played_move_count = 0;
     vector<string> repetitions = {};
+    string black_king_position = "e8";
+    string white_king_position = "e1";
     bool white_castling[2] = {true, true};
     bool black_castling[2] = {true, true};
-    string white_king_position = "e1";
-    string black_king_position = "e8";
-    int rolling_score = 0;
     int piece_count = 32;
-    string en_passant = "";
+    string en_passant;
     int move_counter = 0;
 
-    Board() {
-        board_state = ".....................rnbqkbnr..pppppppp..--------..--------..--------..--------..PPPPPPPP..RNBQKBNR.....................";
-        board_string = str_board();
-            // '..........'   0 -  9
-            // '..........'  10 - 19
-            // '.rnbqkbnr.'  20 - 29
-            // '.pppppppp.'  30 - 39
-            // '.--------.'  40 - 49
-            // '.--------.'  50 - 59
-            // '.--------.'  60 - 69
-            // '.--------.'  70 - 79
-            // '.PPPPPPPP.'  80 - 89
-            // '.RNBQKBNR.'  90 - 99
-            // '..........' 100 -109
-            // '..........' 110 -119
-    }
+    void print_board();
 
     Board board_copy();
     Board make_move(string uci_coordinate);
+    void set_string();
     Board nullmove();
-    void mutate_board(int board_position, char piece);
-    void apply_move(string uci_coordinate);
     int get_piece_count();
     bool check_is_endgame();
-    int calculate_score(string uci_coordinate, bool sorting=false);
+    int calculate_score();
     bool passer_pawn(int board_position);
     bool stacked_pawn(int board_position);
     string str_board();
@@ -275,6 +251,13 @@ public:
     bool attack_position(bool is_white, string coordinate);
 };
 
+void Board::print_board() {
+    for (int i = 0; i < 64; i += 8) {
+        cout << board_string.substr(i, 8) << endl;
+    }
+    cout << "Score: " << calculate_score() << " In Check: " << in_check(played_move_count % 2 == 0) << endl;
+}
+
 Board Board::board_copy() {
     // copy the board, does not copy the score
     Board board;
@@ -282,12 +265,14 @@ Board Board::board_copy() {
     board.played_move_count = played_move_count;
     board.white_king_position = white_king_position;
     board.black_king_position = black_king_position;
+
     board.board_string = board_string;
     board.piece_count = piece_count;
     board.en_passant = en_passant;
     board.move_counter = move_counter;
-    board.board_state = board_state;
     board.repetitions = repetitions;
+
+    memcpy(board.board_state, board_state, 64);
     memcpy(board.white_castling, white_castling, 2);
     memcpy(board.black_castling, black_castling, 2);
 
@@ -299,36 +284,102 @@ Board Board::make_move(string uci_coordinate) {
     // this allows us to avoid "undoing" the move
     Board board = board_copy();
 
-    // should calc score before moving
-    board.rolling_score = rolling_score + calculate_score(uci_coordinate);
+    string from = uci_coordinate.substr(0, 2);
+    string to = uci_coordinate.substr(2, 2);
+    char promote;
+    if (uci_coordinate.length() == 5) {
+        promote = uci_coordinate[4];
+    }
 
-    // set castling rights
-    if (uci_coordinate.find("e1") < 100) {
+    int from_row = abs(8 - (from[1] - '0'));
+    int from_column = from[0] - 97;
+
+    int to_row = abs(8 - (to[1] - '0'));
+    int to_column = to[0] - 97;
+
+    char from_piece = board.board_state[from_row][from_column];
+    char from_piece_lower = tolower(from_piece);
+
+    if (from_piece_lower == 'p' || from_piece != '-') {
+        move_counter = 0;
+    } else {
+        ++move_counter;
+    }
+
+    // castling
+    if (from_piece_lower == 'k' && abs(from_column - to_column) > 1) {
+        if (from_column > to_column) {
+            // queen side
+            board.board_state[to_row][to_column + 1] = board.board_state[to_row][to_column - 2];
+            board.board_state[to_row][to_column - 2] = '-';
+        } else {
+            // king side
+            board.board_state[to_row][to_column - 1] = board.board_state[to_row][to_column + 1];
+            board.board_state[to_row][to_column + 1] = '-';
+        }
+    }
+
+    // set castling
+    if (from_piece_lower == 'k' && from == "e1") {
         board.white_castling[0] = false;
-        board.white_castling[1] = false;
-    } else if (uci_coordinate.find("a1") < 100) {
-        board.white_castling[0] = false;
-    } else if (uci_coordinate.find("h1") < 100) {
         board.white_castling[1] = false;
     }
 
-    if (uci_coordinate.find("e8") < 100) {
-        board.black_castling[0] = false;
-        board.black_castling[1] = false;
-    } else if (uci_coordinate.find("a8") < 100) {
-        board.black_castling[0] = false;
-    } else if (uci_coordinate.find("h8") < 100) {
-        board.black_castling[1] = false;
+    // set castling
+    if (from_piece_lower == 'r' && from == "a1") {
+        board.white_castling[0] = false;
+    }
+    if (from_piece_lower == 'r' && from == "h1") {
+        board.white_castling[1] = false;
     }
 
-    board.apply_move(uci_coordinate);
+    // en passant
+    if (from_piece_lower == 'p' && to == board.en_passant) {
+        board.board_state[from_row][to_column] = '-';
+    }
+
+    if (from_piece_lower == 'p' && (to_row - from_row) == 2) {
+        board.en_passant = to_string(from_column - 96) + to_string(from_row + 1);
+    } else {
+        board.en_passant = "";
+    }
+
+    if (from_piece == 'K') {
+        white_king_position = to;
+    } else if (from_piece == 'k') {
+        black_king_position = to;
+    }
+
+    board.board_state[to_row][to_column] = board.board_state[from_row][from_column];
+    board.board_state[from_row][from_column] = '-';
+
+    if (isblank(promote)) {
+        if (toupper(board.board_state[to_row][to_column]) == board.board_state[to_row][to_column]) {
+            board.board_state[to_row][to_column] = toupper(promote);
+        } else {
+            board.board_state[to_row][to_column] = promote;
+        }
+    }
 
     board.played_move_count += 1;
-    board.rolling_score = -board.rolling_score;
+
+    board.set_string();
+
+    board.piece_count = board.get_piece_count();
 
     board.repetitions.push_back(board.board_string);
 
     return board;
+}
+
+void Board::set_string() {
+    board_string = "";
+    for (int row = 0; row < 8; row += 1) {
+        for (int column = 0; column < 8; column += 1) {
+            board_string += board_state[row][column];
+        }
+    }
+    board_string += to_string(played_move_count % 2);
 }
 
 Board Board::nullmove() {
@@ -337,75 +388,17 @@ Board Board::nullmove() {
     // this allows us to avoid "undoing" the move
     Board board = board_copy();
     board.played_move_count += 1;
-    board.rolling_score = -rolling_score;
 
     return board;
 }
 
-void Board::mutate_board(int board_position, char piece) {
-    board_state = board_state.substr(0, board_position) + piece + board_state.substr(board_position + 1, board_state.length());
-}
-
-void Board::apply_move(string uci_coordinate) {
-    bool is_white = played_move_count % 2 == 0;
-
-    move_counter += 1;
-
-    // break uci coordinate into location in board state list
-    array<int, 2> unpack;
-    unpack = unpack_coordinate(uci_coordinate);
-
-    int from_number = unpack[0];
-    int to_number = unpack[1];
-
-    char from_piece = tolower(board_state[from_number]);
-
-    if (board_state[to_number] != '-') {
-        move_counter = 0;
-    }
-
-    mutate_board(to_number, board_state[from_number]);
-    mutate_board(from_number, '-');
-
-    bool set_en_passant = false;
-
-    if (from_piece == 'p') {
-        move_counter = 0;
-        set_en_passant = abs(from_number - to_number) == 20;
-        int en_passant_offset = is_white ? -1 : 1;
-        if (set_en_passant) {
-            en_passant = uci_coordinate[0] + to_string(uci_coordinate[3] - '0' + en_passant_offset);
-        } else if (uci_coordinate.substr(2,2) == en_passant) {
-            mutate_board(to_number - 10 * en_passant_offset, '-');
-        } else if (uci_coordinate.length() > 4) {
-            mutate_board(to_number, is_white ? toupper(uci_coordinate[4]) : uci_coordinate[4]);
-        }
-    } else if (from_piece == 'k') {
-        if (is_white) {
-            white_king_position = uci_coordinate.substr(2, 2);
-        } else {
-            black_king_position = uci_coordinate.substr(2, 2);
-        }
-
-        if (abs(to_number - from_number) == 2) {
-            mutate_board(to_number + (to_number > from_number ? 1 : -2), '-');
-            mutate_board(from_number + ((to_number - from_number) / 2), is_white ? 'R' : 'r');
-        }
-    }
-
-    if (!set_en_passant) {
-        en_passant = "";
-    }
-
-    board_string = str_board();
-    piece_count = get_piece_count();
-}
-
 int Board::get_piece_count() {
     int piece_count = 0;
-    for (int i = 21; i < 99; i++) {
-        if (board_state[i] != '.' && board_state[i] != '-') {
-            ++piece_count;
+    for (int row = 0; row < 8; row += 1) {
+        for (int column = 0; column < 8; column += 1) {
+            if (board_state[row][column] != '-') {
+                ++piece_count;
+            }
         }
     }
     return piece_count;
@@ -415,104 +408,120 @@ bool Board::check_is_endgame() {
     return piece_count < 14;
 }
 
-int Board::calculate_score(string uci_coordinate, bool sorting) {
-    bool is_white = played_move_count % 2 == 0;
-    // int offset = is_white ? 0 : 119;
-    int p_offset = is_white ? -10 : 10;
-    char p_piece = is_white ? 'P' : 'p';
-    bool is_endgame = check_is_endgame();
+int Board::calculate_score() {
+    int score = 0;
+    for (int row = 0; row < 8; row += 1) {
+        for (int column = 0; column < 8; column += 1) {
+            if (board_state[row][column] != '-') {
+                int piece = index_of(toupper(board_state[row][column]));
 
-    array<int, 2> unpack;
-    unpack = unpack_coordinate(uci_coordinate);
-
-    int from_number = unpack[0];
-    int to_number = unpack[1];
-
-    int to_offset = is_white ? to_number : abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10));
-    int from_offset = is_white ? from_number : abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10);
-    int capture_offset = is_white ? to_offset : to_number;
-
-    int local_score = 0;
-
-    char from_piece = tolower(board_state[from_number]);
-
-    char to_piece = tolower(board_state[to_number]);
-
-    local_score += ALLPSQT[from_piece][to_offset] - ALLPSQT[from_piece][from_offset];
-
-    if (to_piece != '-') {
-        local_score += ALLPSQT[to_piece][capture_offset];
-    }
-
-    if (from_piece == 'p') {
-        if (uci_coordinate.substr(2, 2) == en_passant) {
-            // add in an extra pawn for EP capture
-            local_score += ALLPSQT[from_piece][capture_offset];
-        } else if (uci_coordinate.length() > 4) {
-            char promote = uci_coordinate[4];
-            // adjust value for promoting from pawn to queen
-            local_score += ALLPSQT[promote][to_offset] - ALLPSQT['p'][to_offset];
-        }
-
-        // if (passer_pawn(from_number)) {
-        //     local_score += 10;
-        // }
-        // if (stacked_pawn(from_number)) {
-        //     local_score -= 15;
-        // }
-    } else if (from_piece == 'k') {
-        if (abs(to_number - from_number) == 2) {
-            if (to_number > from_number) {
-                local_score += ALLPSQT['r'][to_offset - 1] - ALLPSQT['r'][to_offset + 1];
-            } else {
-                local_score += ALLPSQT['r'][to_offset + 1] - ALLPSQT['r'][to_offset - 2];
-            }
-
-            // put castling higher up
-            if (sorting) {
-                local_score += 60;
+                if (tolower(board_state[row][column]) == board_state[row][column]) {
+                    score -= ALLPSQT[abs(7 - row)][column][piece];
+                } else {
+                    score += ALLPSQT[row][column][piece];
+                }
             }
         }
     }
 
-    return local_score;
+    return score;
+
+    // bool is_white = played_move_count % 2 == 0;
+    // // int offset = is_white ? 0 : 119;
+    // int p_offset = is_white ? -10 : 10;
+    // char p_piece = is_white ? 'P' : 'p';
+    // bool is_endgame = check_is_endgame();
+    // array<int, 2> unpack;
+    // unpack = unpack_coordinate(uci_coordinate);
+
+    // int from_number = unpack[0];
+    // int to_number = unpack[1];
+
+    // int to_offset = is_white ? to_number : abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10));
+    // int from_offset = is_white ? from_number : abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10);
+    // int capture_offset = is_white ? to_offset : to_number;
+
+    // int local_score = 0;
+
+    // char from_piece = tolower(board_state[from_number]);
+
+    // char to_piece = tolower(board_state[to_number]);
+
+    // local_score += ALLPSQT[from_piece][to_offset] - ALLPSQT[from_piece][from_offset];
+
+    // if (to_piece != '-') {
+    //     local_score += ALLPSQT[to_piece][capture_offset];
+    // }
+
+    // if (from_piece == 'p') {
+    //     if (uci_coordinate.substr(2, 2) == en_passant) {
+    //         // add in an extra pawn for EP capture
+    //         local_score += ALLPSQT[from_piece][capture_offset];
+    //     } else if (uci_coordinate.length() > 4) {
+    //         char promote = uci_coordinate[4];
+    //         // adjust value for promoting from pawn to queen
+    //         local_score += ALLPSQT[promote][to_offset] - ALLPSQT['p'][to_offset];
+    //     }
+
+    //     // if (passer_pawn(from_number)) {
+    //     //     local_score += 10;
+    //     // }
+    //     // if (stacked_pawn(from_number)) {
+    //     //     local_score -= 15;
+    //     // }
+    // } else if (from_piece == 'k') {
+    //     if (abs(to_number - from_number) == 2) {
+    //         if (to_number > from_number) {
+    //             local_score += ALLPSQT['r'][to_offset - 1] - ALLPSQT['r'][to_offset + 1];
+    //         } else {
+    //             local_score += ALLPSQT['r'][to_offset + 1] - ALLPSQT['r'][to_offset - 2];
+    //         }
+
+    //         // put castling higher up
+    //         if (sorting) {
+    //             local_score += 60;
+    //         }
+    //     }
+    // }
+
+    // return local_score;
 }
 
 bool Board::passer_pawn(int board_position) {
-    bool is_white = played_move_count % 2 == 0;
-    int p_offset = is_white ? -10 : 10;
-    int start_position = board_position + p_offset;
+    // bool is_white = played_move_count % 2 == 0;
+    // int p_offset = is_white ? -10 : 10;
+    // int start_position = board_position + p_offset;
 
-    int piece_count = 1;
-    while (start_position >= 20 && start_position <= 100) {
-        if (board_state[start_position] != '.' && board_state[start_position] != '-') {
-            return false;
-        }
-        start_position += p_offset;
-    }
+    // int piece_count = 1;
+    // while (start_position >= 20 && start_position <= 100) {
+    //     if (board_state[start_position] != '.' && board_state[start_position] != '-') {
+    //         return false;
+    //     }
+    //     start_position += p_offset;
+    // }
 
     return true;
 }
 
 bool Board::stacked_pawn(int board_position) {
-    bool is_white = played_move_count % 2 == 0;
-    int p_offset = is_white ? -10 : 10;
-    char p_piece = is_white ? 'P' : 'p';
+//     bool is_white = played_move_count % 2 == 0;
+//     int p_offset = is_white ? -10 : 10;
+//     char p_piece = is_white ? 'P' : 'p';
 
-    int start_position = board_position + p_offset;
+//     int start_position = board_position + p_offset;
 
-    while (start_position >= 20 && start_position <= 100) {
-        if (board_state[start_position] == p_piece) {
-            return true;
-        }
-        start_position += p_offset;
-    }
+//     while (start_position >= 20 && start_position <= 100) {
+//         if (board_state[start_position] == p_piece) {
+//             return true;
+//         }
+//         start_position += p_offset;
+//     }
 
     return false;
 }
 
 string Board::str_board() {
-    return board_state + to_string(played_move_count % 2);
+    return board_string;
 }
 
 uint64_t Board::hash_board()
@@ -527,16 +536,14 @@ uint64_t Board::hash_board()
     int row = 0;
     int column = 0;
 
-    while (start_position < 99) {
-        if (board_state[start_position] != '.' && board_state[start_position] != '-') {
-            row = (start_position - 20) / 10;
-            column = (start_position % 10) - 1;
+    for (int row = 0; row < 8; row += 1) {
+        for (int column = 0; column < 8; column += 1) {
+            if (board_state[row][column] != '-') {
+                int piece = index_of(board_state[row][column]);
 
-            int piece = index_of(board_state[start_position]);
-
-            h ^= ZobristTable[column][row][piece];
+                h ^= ZobristTable[column][row][piece];
+            }
         }
-        start_position++;
     }
 
     return h;
@@ -544,191 +551,192 @@ uint64_t Board::hash_board()
 
 vector<struct Move> Board::generate_valid_moves(bool captures_only) {
     // Return list of valid (maybe illegal) moves
-    int offset = 1;
-
-    bool is_white = false;
-
-    int board_position = 21;
-    int max_row = 31;
-    int min_row = 81;
-    string valid_pieces = "PRNBQK-";
-
-    if (played_move_count % 2 == 0) {
-        is_white = true;
-
-        max_row = 81;
-        min_row = 31;
-        valid_pieces = "prnbqk-";
-    }
 
     vector<struct Move> valid_moves;
+
+    bool is_white = played_move_count % 2 == 0;
+
+    char piece;
+    char piece_lower;
+
+    int to_row;
+    int to_column;
+
     Move move;
+    Move promotion_move;
 
-    while (board_position > 20 && board_position < 99) {
-        char piece = board_state[board_position];
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            piece = board_state[row][column];
+            piece_lower = tolower(piece);
 
-        if (piece == '-' || piece == '.' || valid_pieces.find(piece) < 100) {
-            board_position += 1;
-            continue;
-        }
-
-        string start_coordinate = position_to_coordinate(board_position);
-
-        char piece_lower = tolower(piece);
-
-        if (piece == 'p') {
-            offset = -1;
-        }
-
-        // castling and double pawn move off home position
-        if (!captures_only) {
-            if (piece == 'K') {
-                if (white_castling[1] && board_state.substr(96, 3) == "--R" &&
-                        !attack_position(is_white, "e1") && !attack_position(is_white, "f1") && !attack_position(is_white, "g1")) {
-                    move.coordinate = start_coordinate + "g1";
-                    move.score = 0;
-                    valid_moves.push_back(move);
-                }
-                if (white_castling[0] && board_state.substr(91, 4) == "R---" &&
-                        !attack_position(is_white, "e1") && !attack_position(is_white, "d1") && !attack_position(is_white, "c1")) {
-                    move.coordinate = start_coordinate + "c1";
-                    move.score = 0;
-                    valid_moves.push_back(move);
-                }
-            } else if (piece == 'k') {
-                if (black_castling[1] && board_state.substr(26, 3) == "--r" &&
-                        !attack_position(is_white, "e8") && !attack_position(is_white, "f8") && !attack_position(is_white, "g8")) {
-
-                    move.coordinate = start_coordinate + "g8";
-                    move.score = 0;
-                    valid_moves.push_back(move);
-                }
-                if (black_castling[0] && board_state.substr(21, 4) == "r---" &&
-                        !attack_position(is_white, "e8") && !attack_position(is_white, "d8") && !attack_position(is_white, "c8")) {
-                    move.coordinate = start_coordinate + "c8";
-                    move.score = 0;
-                    valid_moves.push_back(move);
-                }
-            } else if (piece_lower == 'p' && board_position >= max_row && board_position < max_row + 8
-                    && board_state[board_position + -10*offset] == '-' && board_state[board_position + -20*offset] == '-') {
-                move.coordinate = start_coordinate + position_to_coordinate(board_position + -20*offset);
-                move.score = 0;
-                valid_moves.push_back(move);
+            if (piece == '-' || is_white == (piece == piece_lower)) {
+                continue;
             }
-        }
 
-        vector<array<int, 2>> piece_moves = get_moves(piece_lower);
-
-        int to_position = 0;
-        char eval_piece;
-
-        for(array<int, 2> piece_move : piece_moves) {
-            to_position = board_position + piece_move[0] + (piece_move[1] * offset);
-
-            while (20 < to_position < 99) {
-                eval_piece = board_state[to_position];
-
-                if (!captures_only || (captures_only && eval_piece != '-' && eval_piece != '.')) {
-                    string dest = position_to_coordinate(to_position);
-
-                    if (piece_lower == 'p') {
-                        if ((board_position >= min_row && board_position <= (min_row + 8) && piece_move[0] == 0 && eval_piece == '-') ||
-                            (board_position >= min_row && board_position <= (min_row + 8) && piece_move[0] != 0 && eval_piece != '-' && valid_pieces.find(eval_piece) < 100)) {
-                            string promotes = "qrbn";
-                            for (int i = 0; i < promotes.length(); i++) {
-                                move.coordinate = start_coordinate + dest + promotes[i];
-                                move.score = 0;
-                                valid_moves.push_back(move);
-                            }
-                        } else {
-                            if ((piece_move[0] == 0 && eval_piece == '-') ||
-                                (piece_move[0] != 0 && eval_piece != '-' && valid_pieces.find(eval_piece) < 100) ||
-                                dest == en_passant) {
-
-                                move.coordinate = start_coordinate + dest;
-                                move.score = 0;
-                                valid_moves.push_back(move);
-                            }
-                        }
-                    } else if (valid_pieces.find(eval_piece) < 100) {
-                        move.coordinate = start_coordinate + dest;
-                        move.score = 0;
+            if (piece_lower == 'p') {
+                // check for double pawn moves
+                if (piece == 'p' && row == 1) {
+                    if (board_state[row + 1][column] == '-' && board_state[row + 2][column] == '-') {
+                        move.coordinate = get_coordinate(row, column) + get_coordinate(row + 2, column);
                         valid_moves.push_back(move);
                     }
                 }
 
-                if (eval_piece != '-' || piece_lower == 'k' || piece_lower == 'n' || piece_lower == 'p') {
-                    break;
+                if (piece == 'P' && row == 6) {
+                    if (board_state[row - 1][column] == '-' && board_state[row - 2][column] == '-') {
+                        move.coordinate = get_coordinate(row, column) + get_coordinate(row - 2, column);
+                        valid_moves.push_back(move);
+                    }
                 }
 
-                to_position = to_position + piece_move[0] + (piece_move[1] * offset);
+                // check for diagonal capture
+                to_row = is_white ? row - 1 : row + 1;
+
+                if (column > 0 && board_state[to_row][column - 1] != '-' && isupper(piece) != isupper(board_state[to_row][column - 1])) {
+                    move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, column - 1);
+                    if (to_row == 0 || to_row == 7) {
+                        promotion_move.coordinate = move.coordinate + 'q';
+                        valid_moves.push_back(promotion_move);
+                        promotion_move.coordinate = move.coordinate + 'r';
+                        valid_moves.push_back(promotion_move);
+                        promotion_move.coordinate = move.coordinate + 'b';
+                        valid_moves.push_back(promotion_move);
+                        promotion_move.coordinate = move.coordinate + 'n';
+                        valid_moves.push_back(promotion_move);
+                    } else {
+                        valid_moves.push_back(move);
+                    }
+                }
+
+                if (column < 7 && board_state[to_row][column + 1] != '-' && isupper(piece) != isupper(board_state[to_row][column + 1])) {
+                    move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, column + 1);
+                    if (to_row == 0 || to_row == 7) {
+                        promotion_move.coordinate = move.coordinate + 'q';
+                        valid_moves.push_back(promotion_move);
+                        promotion_move.coordinate = move.coordinate + 'r';
+                        valid_moves.push_back(promotion_move);
+                        promotion_move.coordinate = move.coordinate + 'b';
+                        valid_moves.push_back(promotion_move);
+                        promotion_move.coordinate = move.coordinate + 'n';
+                        valid_moves.push_back(promotion_move);
+                    } else {
+                        valid_moves.push_back(move);
+                    }
+                }
+
+                // check for en-passant
+                if (en_passant == get_coordinate(to_row, column - 1)) {
+                    move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, column - 1);
+                    valid_moves.push_back(move);
+                } else if (en_passant == get_coordinate(to_row, column + 1)) {
+                    move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, column + 1);
+                    valid_moves.push_back(move);
+                }
+
+                // check for promotion
+            }
+
+            // check for castling
+            if (piece_lower == 'k') {
+                if (is_white && white_castling[1] || !is_white && black_castling[1]) {
+                    if (board_state[row][column + 1] == '-' && board_state[row][column + 2] == '-' && tolower(board_state[row][column + 3] == 'r')) {
+                        // make sure our K won't pass through attack on castle
+                        if (!attack_position(is_white, get_coordinate(row, column)) && !attack_position(is_white, get_coordinate(row, column + 1)) && !attack_position(is_white, get_coordinate(row, column + 2))) {
+                            move.coordinate = get_coordinate(row, column) + get_coordinate(row, column + 2);
+                            valid_moves.push_back(move);
+                        }
+                    }
+                }
+                if (is_white && white_castling[0] || !is_white && black_castling[1]) {
+                    if (board_state[row][column - 1] == '-' && board_state[row][column - 2] == '-' && board_state[row][column - 3] == '-' && tolower(board_state[row][column - 4] == 'r')) {
+                        // make sure our K won't pass through attack on castle
+                        if (!attack_position(is_white, get_coordinate(row, column)) && !attack_position(is_white, get_coordinate(row, column - 1)) && !attack_position(is_white, get_coordinate(row, column - 2))) {
+                            move.coordinate = get_coordinate(row, column) + get_coordinate(row, column + 2);
+                            valid_moves.push_back(move);
+                        }
+                    }
+                }
+            }
+
+            vector<array<int, 2>> piece_moves = get_moves(piece_lower);
+
+            for(array<int, 2> piece_move : piece_moves) {
+                if (is_white) {
+                    to_row = row - piece_move[0];
+                } else {
+                    to_row = row + piece_move[0];
+                }
+                to_column = column + piece_move[1];
+
+                if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8 &&
+                        (board_state[to_row][to_column] == '-' || isupper(piece) != isupper(board_state[to_row][to_column]))) {
+
+                    move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, to_column);
+
+                    if (piece_lower == 'p') {
+                        if (to_row == 0 || to_row == 7) {
+                            promotion_move.coordinate = move.coordinate + 'q';
+                            valid_moves.push_back(promotion_move);
+                            promotion_move.coordinate = move.coordinate + 'r';
+                            valid_moves.push_back(promotion_move);
+                            promotion_move.coordinate = move.coordinate + 'b';
+                            valid_moves.push_back(promotion_move);
+                            promotion_move.coordinate = move.coordinate + 'n';
+                            valid_moves.push_back(promotion_move);
+                        }
+                        valid_moves.push_back(move);
+                    } else {
+                        valid_moves.push_back(move);
+                    }
+                }
             }
         }
-
-
-        board_position += 1;
     }
-
     return valid_moves;
 }
 
-bool Board::in_check(bool is_white) {
+bool Board::in_check( bool is_white) {
     string king_position = is_white ? white_king_position : black_king_position;
 
     return attack_position(is_white, king_position);
 }
 
 bool Board::attack_position(bool is_white, string coordinate) {
-    int offset = 1;
-    string valid_pieces = is_white ? "PRNBQK-" : "prnbqk-";
+    char piece;
+    char piece_lower;
 
-    int attack_position = coordinate_to_position(coordinate);
+    int to_row;
+    int to_column;
 
-    int board_position = 21;
+    for (int row = 0; row < 8; row++) {
+        for (int column = 0; column < 8; column++) {
+            piece = board_state[row][column];
+            piece_lower = tolower(piece);
 
-    while (board_position > 20 && board_position < 99) {
-        char piece = board_state[board_position];
-        if (piece == '-' || piece == '.' || valid_pieces.find(piece) < 100) {
-            board_position += 1;
-            continue;
-        }
-
-        if (piece == 'p') {
-            offset = -1;
-        }
-
-        piece = tolower(piece);
-
-        vector<array<int, 2>> piece_moves = get_moves(piece);
-
-        int to_position = 0;
-        char eval_piece;
-
-        for(array<int, 2> piece_move : piece_moves) {
-            to_position = board_position + piece_move[0] + (piece_move[1] * offset);
-
-            if (piece == 'p' && !piece_move[0]) {
+            if (piece == '-' || is_white == (piece == piece_lower)) {
                 continue;
             }
 
-            to_position = board_position + piece_move[0] + (offset * piece_move[1]);
+            vector<array<int, 2>> piece_moves = get_moves(piece_lower);
 
-            while (20 < to_position < 99) {
-                eval_piece = board_state[to_position];
-
-                if (valid_pieces.find(eval_piece) < 100 && to_position == attack_position) {
-                    return true;
+            for(array<int, 2> piece_move : piece_moves) {
+                if (is_white) {
+                    to_row = row - piece_move[0];
+                } else {
+                    to_row = row + piece_move[0];
                 }
+                to_column = column + piece_move[1];
 
-                if (eval_piece != '-' || piece == 'k' || piece == 'n' || piece == 'p') {
-                    break;
+                if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8 &&
+                        (board_state[to_row][to_column] == '-' || isupper(piece) != isupper(board_state[to_row][to_column]))) {
+
+                    if (get_coordinate(to_row, to_column) == coordinate) {
+                        return true;
+                    }
                 }
-
-                to_position = to_position + piece_move[0] + offset * piece_move[1];
             }
         }
-
-        board_position += 1;
     }
 
     return false;
@@ -779,7 +787,7 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
         uint64_t start_time = get_time();
 
         int best_score = -eval_mate_upper;
-        int local_score = local_board.rolling_score;
+        int local_score = local_board.calculate_score();
 
         string best_move;
         uint64_t elapsed_time;
@@ -800,22 +808,9 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
             if (get_time() < critical_time) {
                 const uint64_t tt_key = local_board.hash_board();
 
-                Node tt_entry;
-                int key_offset = 0;
-                while (true) {
-                    if ((tt_key % tt_size) + key_offset > tt_size) {
-                        key_offset = 0;
-                        tt_entry = tt_bucket[(tt_key % tt_size)];
-                        break;
-                    }
-                    tt_entry = tt_bucket[(tt_key % tt_size) + key_offset];
-
-                    if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
-                        best_move = tt_entry.coordinate;
-                        break;
-                    }
-
-                    ++key_offset;
+                Node tt_entry = tt_bucket[(tt_key % tt_size)];
+                if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
+                    best_move = tt_entry.coordinate;
                 }
             } else {
                 break;
@@ -835,17 +830,7 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
 
                     const uint64_t tt_key = pv_board.hash_board();
 
-                    Node pv_entry;
-                    int key_offset = 0;
-                    while (true) {
-                        if ((tt_key % tt_size) + key_offset > tt_size) {
-                            key_offset = 0;
-                            pv_entry = tt_bucket[(tt_key % tt_size)];
-                            break;
-                        }
-                        pv_entry = tt_bucket[(tt_key % tt_size) + key_offset];
-                        ++key_offset;
-                    }
+                    Node pv_entry = tt_bucket[(tt_key % tt_size)];
 
                     if (pv_entry.coordinate.empty() || pv_entry.key <= 0) {
                         break;
@@ -890,6 +875,8 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
         return quiesce(local_board, alpha, beta);
     }
 
+    Board nullboard = local_board.nullmove();
+
     bool is_white = local_board.played_move_count % 2 == 0;
     bool is_pv_node = beta > (alpha + 1);
     bool is_in_check = local_board.in_check(is_white);
@@ -899,20 +886,8 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
 
     const uint64_t tt_key = local_board.hash_board();
 
-    int key_offset = 0;
     Node tt_entry;
-    while (true) {
-        if ((tt_key % tt_size) + key_offset > tt_size) {
-            key_offset = 0;
-            tt_entry = tt_bucket[(tt_key % tt_size)];
-            break;
-        }
-        tt_entry = tt_bucket[(tt_key % tt_size) + key_offset];
-        if (tt_entry.coordinate.empty() || tt_entry.key == tt_key) {
-            break;
-        }
-        ++key_offset;
-    }
+    tt_entry = tt_bucket[(tt_key % tt_size)];
 
     if (tt_entry.key == tt_key && tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
         if (tt_entry.flag == eval_exact ||
@@ -922,53 +897,53 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
         }
     }
 
-    if (!is_pv_node && !is_in_check && v_depth <= 7 && local_board.rolling_score >= beta + (100 * v_depth)) {
-        return local_board.rolling_score;
-    }
+    // if (!is_pv_node && !is_in_check && v_depth <= 7 && local_board.calculate_score() >= beta + (100 * v_depth)) {
+    //     return local_board.calculate_score();
+    // }
 
-    // if (!is_pv_node && !is_in_check && v_depth <= 2 && local_board.rolling_score <= alpha - (350 * v_depth)) {
-    //     return local_board.rolling_score;
+    // if (!is_pv_node && !is_in_check && v_depth <= 2 && local_board.calculate_score() <= alpha - (350 * v_depth)) {
+    //     return local_board.calculate_score();
     // }
 
     int local_score = -eval_mate_upper;
 
-    if (!is_pv_node && !is_in_check && v_depth <= 5) {
-        int cut_boundary = alpha - (385 * v_depth);
-        if (local_board.rolling_score <= cut_boundary) {
-            if (v_depth <= 2) {
-                return quiesce(local_board, alpha, alpha + 1);
-            }
+    // if (!is_pv_node && !is_in_check && v_depth <= 5) {
+    //     int cut_boundary = alpha - (385 * v_depth);
+    //     if (local_board.calculate_score() <= cut_boundary) {
+    //         if (v_depth <= 2) {
+    //             return quiesce(local_board, alpha, alpha + 1);
+    //         }
 
-            local_score = quiesce(local_board, cut_boundary, cut_boundary + 1);
+    //         local_score = quiesce(local_board, cut_boundary, cut_boundary + 1);
 
-            if (local_score <= cut_boundary) {
-                return local_score;
-            }
-        }
-    }
+    //         if (local_score <= cut_boundary) {
+    //             return local_score;
+    //         }
+    //     }
+    // }
 
-    local_score = -eval_mate_upper;
+    // local_score = -eval_mate_upper;
     int best_score = -eval_mate_upper - 1;
 
-    string pieces = is_white ? "RNBQ" : "rnbq";
+    // string pieces = is_white ? "RNBQ" : "rnbq";
 
-    if (!is_pv_node && !is_in_check && local_board.board_string.find(pieces[0]) < 10 && local_board.board_string.find(pieces[1]) < 10
-            && local_board.board_string.find(pieces[2]) < 10 && local_board.board_string.find(pieces[3]) < 10) {
+    // if (!is_pv_node && !is_in_check && local_board.board_string.find(pieces[0]) < 10 && local_board.board_string.find(pieces[1]) < 10
+    //         && local_board.board_string.find(pieces[2]) < 10 && local_board.board_string.find(pieces[3]) < 10) {
 
-        local_score = -search(local_board.nullmove(), max(0, v_depth - 4), -beta, -beta+1, 0);
+    //     local_score = -search(nullboard, max(0, v_depth - 4), -beta, -beta+1, 0);
 
-        if (local_score >= beta) {
-            return beta;
-        }
-    }
+    //     if (local_score >= beta) {
+    //         return beta;
+    //     }
+    // }
 
-    if (!is_pv_node && !is_in_check && tt_entry.key == tt_key && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
-        local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha, 0);
+    // if (!is_pv_node && !is_in_check && tt_entry.key == tt_key && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
+    //     local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha, 0);
 
-        if (local_score >= beta) {
-            return beta;
-        }
-    }
+    //     if (local_score >= beta) {
+    //         return beta;
+    //     }
+    // }
 
     Board moved_board;
     string best_move = "";
@@ -979,13 +954,18 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
     vector<struct Move> moves = local_board.generate_valid_moves();
 
     for (int i = 0; i < moves.size(); i++) {
-        moves[i].score = local_board.rolling_score + local_board.calculate_score(moves[i].coordinate, true);
+        moved_board = local_board.make_move(moves[i].coordinate);
+        moves[i].score = moved_board.calculate_score();
         if (thread_id > 0) {
             moves[i].score += (rand() % 10);
         }
     }
 
     sort(moves.begin(), moves.end(), struct_move);
+
+    for (Move move : moves) {
+        cout << v_depth << " " << move.coordinate << " " <<   move.score << endl;
+    }
 
     // Traditional AB
     for (Move move : moves) {
@@ -1016,7 +996,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
 
     // for (Move move : moves) {
     //     moved_board = local_board.make_move(move.coordinate);
-    //     // cout << move.coordinate << " " << moved_board.rolling_score << endl;
+    //     // cout << move.coordinate << " " << moved_board.calculate_score() << endl;
 
     //     // determine legality: if we moved and are in check, it's not legal
     //     if (moved_board.in_check(is_white)) {
@@ -1076,7 +1056,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
             tt_entry.flag = (best_score >= beta) ? eval_lower : (best_score > original_alpha) ? eval_exact : eval_upper;
 
             tt_lock.lock();
-            tt_bucket[(tt_key % tt_size) + key_offset] = tt_entry;
+            tt_bucket[(tt_key % tt_size)] = tt_entry;
             tt_lock.unlock();
         }
     }
@@ -1096,19 +1076,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
     const uint64_t tt_key = local_board.hash_board();
 
     Node tt_entry;
-    int key_offset = 0;
-    while (true) {
-        if ((tt_key % tt_size) + key_offset > tt_size) {
-            key_offset = 0;
-            tt_entry = tt_bucket[(tt_key % tt_size)];
-            break;
-        }
-        tt_entry = tt_bucket[(tt_key % tt_size) + key_offset];
-        if (tt_entry.coordinate.empty() || tt_entry.key == tt_key) {
-            break;
-        }
-        ++key_offset;
-    }
+    tt_entry = tt_bucket[(tt_key % tt_size)];
 
     if (!tt_entry.coordinate.empty() && tt_entry.key == tt_key) {
         if (tt_entry.flag == eval_exact ||
@@ -1118,7 +1086,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         }
     }
 
-    int local_score = local_board.rolling_score;
+    int local_score = local_board.calculate_score();
 
     if (local_score >= beta) {
         return beta;
@@ -1126,15 +1094,15 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
 
     alpha = max(alpha, local_score);
 
-    vector<struct Move> moves = local_board.generate_valid_moves(true);
+    Board moved_board;
+    vector<struct Move> moves = local_board.generate_valid_moves();
 
     for (int i = 0; i < moves.size(); i++) {
-        moves[i].score = local_board.rolling_score + local_board.calculate_score(moves[i].coordinate, true);
+        moved_board = local_board.make_move(moves[i].coordinate);
+        moves[i].score = moved_board.calculate_score();
     }
 
     sort(moves.begin(), moves.end(), struct_move);
-
-    Board moved_board;
 
     int played_moves = 0;
 
@@ -1142,7 +1110,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         moved_board = local_board.make_move(move.coordinate);
 
         // determine legality: if we moved and are in check, it's not legal
-        if (moved_board.in_check(local_board.played_move_count % 2 == 0)) {
+        if (moved_board.in_check(local_board.played_move_count % 2 == 0) || local_board.piece_count == moved_board.piece_count) {
             continue;
         }
 
@@ -1177,6 +1145,7 @@ int run_perft(Board local_board, int original_depth, int v_depth) {
     }
 
     Board moved_board;
+    Board nullboard;
 
     if (v_depth != original_depth) {
         int total = 0;
@@ -1189,6 +1158,8 @@ int run_perft(Board local_board, int original_depth, int v_depth) {
             if (moved_board.in_check(local_board.played_move_count % 2 == 0)) {
                 continue;
             }
+
+            nullboard = moved_board.nullmove();
 
             if (local_board.piece_count != moved_board.piece_count) {
                 perft_captures += 1;
@@ -1212,6 +1183,8 @@ int run_perft(Board local_board, int original_depth, int v_depth) {
             continue;
         }
 
+        nullboard = moved_board.nullmove();
+
         if (local_board.piece_count != moved_board.piece_count) {
             perft_captures += 1;
         }
@@ -1232,18 +1205,18 @@ int run_perft(Board local_board, int original_depth, int v_depth) {
 }
 
 int main() {
-    for (int i = 0; i < PIECES.length(); i++) {
-        for (int j = 21; j < 99; j++) {
-            if (j % 10 == 0 || j % 10 == 9) {
-                continue;
-            }
-            ALLPSQT[PIECES[i]][j] += PIECEPOINTS[PIECES[i]];
-        }
-    }
-
+    init_psqt_table();
     init_table();
 
     Board game_board;
+
+    // game_board = game_board.make_move("e2e4");
+
+    // vector<struct Move> moves = game_board.generate_valid_moves();
+
+    // for (Move move: moves) {
+    //     cout << move.coordinate << endl;
+    // }
 
     Search searcher;
     searcher.reset();
@@ -1268,6 +1241,8 @@ int main() {
             searcher.reset();
         } else if (line == "isready") {
             cout << "readyok\n";
+        } else if (line == "print") {
+            game_board.print_board();
         } else if (line.rfind("position", 0) == 0) {
             game_board = Board();
             if (line == "position startpos") {
