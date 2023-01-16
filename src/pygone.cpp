@@ -240,10 +240,11 @@ public:
     void set_string();
     Board nullmove();
     int get_piece_count();
-    bool check_is_endgame();
+    // bool check_is_endgame();
     int calculate_score();
     bool passer_pawn(int board_position);
     bool stacked_pawn(int board_position);
+    int rook_score(int board_position);
     string str_board();
     uint64_t hash_board();
     vector<struct Move> generate_valid_moves(bool captures_only=false);
@@ -301,9 +302,9 @@ Board Board::make_move(string uci_coordinate) {
     char from_piece_lower = tolower(from_piece);
 
     if (from_piece_lower == 'p' || from_piece != '-') {
-        move_counter = 0;
+        board.move_counter = 0;
     } else {
-        ++move_counter;
+        ++board.move_counter;
     }
 
     // castling
@@ -320,17 +321,36 @@ Board Board::make_move(string uci_coordinate) {
     }
 
     // set castling
-    if (from_piece_lower == 'k' && from == "e1") {
-        board.white_castling[0] = false;
-        board.white_castling[1] = false;
+    if (from_piece_lower == 'k') {
+        if (from == "e1") {
+            board.white_castling[0] = false;
+            board.white_castling[1] = false;
+        } else if (from == "e8") {
+            board.black_castling[0] = false;
+            board.black_castling[1] = false;
+        }
+
+        if (from_piece == 'K') {
+            board.white_king_position = to;
+        } else {
+            board.black_king_position = to;
+        }
     }
 
     // set castling
-    if (from_piece_lower == 'r' && from == "a1") {
-        board.white_castling[0] = false;
+    if (from_piece_lower == 'r') {
+        if (from == "a1") {
+            board.white_castling[0] = false;
+        } else if (from == "a8") {
+            board.black_castling[0] = false;
+        }
     }
-    if (from_piece_lower == 'r' && from == "h1") {
-        board.white_castling[1] = false;
+    if (from_piece_lower == 'r') {
+        if (from == "h1") {
+            board.white_castling[1] = false;
+        } else if (from == "h8") {
+            board.black_castling[1] = false;
+        }
     }
 
     // en passant
@@ -338,16 +358,10 @@ Board Board::make_move(string uci_coordinate) {
         board.board_state[from_row][to_column] = '-';
     }
 
-    if (from_piece_lower == 'p' && (to_row - from_row) == 2) {
-        board.en_passant = to_string(from_column - 96) + to_string(from_row + 1);
+    if (from_piece_lower == 'p' && abs(to_row - from_row) == 2) {
+        board.en_passant = get_coordinate(from_row + ((to_row - from_row) / 2) , from_column);
     } else {
         board.en_passant = "";
-    }
-
-    if (from_piece == 'K') {
-        white_king_position = to;
-    } else if (from_piece == 'k') {
-        black_king_position = to;
     }
 
     board.board_state[to_row][to_column] = board.board_state[from_row][from_column];
@@ -404,87 +418,34 @@ int Board::get_piece_count() {
     return piece_count;
 }
 
-bool Board::check_is_endgame() {
-    return piece_count < 14;
-}
+// bool Board::check_is_endgame() {
+//     return piece_count < 14;
+// }
 
 int Board::calculate_score() {
+    bool is_white = played_move_count % 2 == 0;
     int score = 0;
     for (int row = 0; row < 8; row += 1) {
         for (int column = 0; column < 8; column += 1) {
             if (board_state[row][column] != '-') {
                 int piece = index_of(toupper(board_state[row][column]));
 
-                if (tolower(board_state[row][column]) == board_state[row][column]) {
-                    score -= ALLPSQT[abs(7 - row)][column][piece];
+                int to_row = row;
+
+                if (islower(board_state[row][column])) {
+                    to_row = abs(7 - row);
+                }
+
+                if (is_white == (bool) isupper(board_state[row][column])) {
+                    score += ALLPSQT[to_row][column][piece];
                 } else {
-                    score += ALLPSQT[row][column][piece];
+                    score -= ALLPSQT[to_row][column][piece];
                 }
             }
         }
     }
 
     return score;
-
-    // bool is_white = played_move_count % 2 == 0;
-    // // int offset = is_white ? 0 : 119;
-    // int p_offset = is_white ? -10 : 10;
-    // char p_piece = is_white ? 'P' : 'p';
-    // bool is_endgame = check_is_endgame();
-    // array<int, 2> unpack;
-    // unpack = unpack_coordinate(uci_coordinate);
-
-    // int from_number = unpack[0];
-    // int to_number = unpack[1];
-
-    // int to_offset = is_white ? to_number : abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10));
-    // int from_offset = is_white ? from_number : abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10);
-    // int capture_offset = is_white ? to_offset : to_number;
-
-    // int local_score = 0;
-
-    // char from_piece = tolower(board_state[from_number]);
-
-    // char to_piece = tolower(board_state[to_number]);
-
-    // local_score += ALLPSQT[from_piece][to_offset] - ALLPSQT[from_piece][from_offset];
-
-    // if (to_piece != '-') {
-    //     local_score += ALLPSQT[to_piece][capture_offset];
-    // }
-
-    // if (from_piece == 'p') {
-    //     if (uci_coordinate.substr(2, 2) == en_passant) {
-    //         // add in an extra pawn for EP capture
-    //         local_score += ALLPSQT[from_piece][capture_offset];
-    //     } else if (uci_coordinate.length() > 4) {
-    //         char promote = uci_coordinate[4];
-    //         // adjust value for promoting from pawn to queen
-    //         local_score += ALLPSQT[promote][to_offset] - ALLPSQT['p'][to_offset];
-    //     }
-
-    //     // if (passer_pawn(from_number)) {
-    //     //     local_score += 10;
-    //     // }
-    //     // if (stacked_pawn(from_number)) {
-    //     //     local_score -= 15;
-    //     // }
-    // } else if (from_piece == 'k') {
-    //     if (abs(to_number - from_number) == 2) {
-    //         if (to_number > from_number) {
-    //             local_score += ALLPSQT['r'][to_offset - 1] - ALLPSQT['r'][to_offset + 1];
-    //         } else {
-    //             local_score += ALLPSQT['r'][to_offset + 1] - ALLPSQT['r'][to_offset - 2];
-    //         }
-
-    //         // put castling higher up
-    //         if (sorting) {
-    //             local_score += 60;
-    //         }
-    //     }
-    // }
-
-    // return local_score;
 }
 
 bool Board::passer_pawn(int board_position) {
@@ -518,6 +479,10 @@ bool Board::stacked_pawn(int board_position) {
 //     }
 
     return false;
+}
+
+int Board::rook_score(int board_position) {
+    return 0;
 }
 
 string Board::str_board() {
@@ -593,7 +558,7 @@ vector<struct Move> Board::generate_valid_moves(bool captures_only) {
                 // check for diagonal capture
                 to_row = is_white ? row - 1 : row + 1;
 
-                if (column > 0 && board_state[to_row][column - 1] != '-' && isupper(piece) != isupper(board_state[to_row][column - 1])) {
+                if (column > 0 && board_state[to_row][column - 1] != '-' && (bool) isupper(piece) != (bool) isupper(board_state[to_row][column - 1])) {
                     move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, column - 1);
                     if (to_row == 0 || to_row == 7) {
                         promotion_move.coordinate = move.coordinate + 'q';
@@ -609,7 +574,7 @@ vector<struct Move> Board::generate_valid_moves(bool captures_only) {
                     }
                 }
 
-                if (column < 7 && board_state[to_row][column + 1] != '-' && isupper(piece) != isupper(board_state[to_row][column + 1])) {
+                if (column < 7 && board_state[to_row][column + 1] != '-' && (bool) isupper(piece) != (bool) isupper(board_state[to_row][column + 1])) {
                     move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, column + 1);
                     if (to_row == 0 || to_row == 7) {
                         promotion_move.coordinate = move.coordinate + 'q';
@@ -633,14 +598,12 @@ vector<struct Move> Board::generate_valid_moves(bool captures_only) {
                     move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, column + 1);
                     valid_moves.push_back(move);
                 }
-
-                // check for promotion
             }
 
             // check for castling
             if (piece_lower == 'k') {
                 if (is_white && white_castling[1] || !is_white && black_castling[1]) {
-                    if (board_state[row][column + 1] == '-' && board_state[row][column + 2] == '-' && tolower(board_state[row][column + 3] == 'r')) {
+                    if (board_state[row][column + 1] == '-' && board_state[row][column + 2] == '-' && tolower(board_state[row][column + 3]) == 'r') {
                         // make sure our K won't pass through attack on castle
                         if (!attack_position(is_white, get_coordinate(row, column)) && !attack_position(is_white, get_coordinate(row, column + 1)) && !attack_position(is_white, get_coordinate(row, column + 2))) {
                             move.coordinate = get_coordinate(row, column) + get_coordinate(row, column + 2);
@@ -648,11 +611,11 @@ vector<struct Move> Board::generate_valid_moves(bool captures_only) {
                         }
                     }
                 }
-                if (is_white && white_castling[0] || !is_white && black_castling[1]) {
-                    if (board_state[row][column - 1] == '-' && board_state[row][column - 2] == '-' && board_state[row][column - 3] == '-' && tolower(board_state[row][column - 4] == 'r')) {
+                if (is_white && white_castling[0] || !is_white && black_castling[0]) {
+                    if (board_state[row][column - 1] == '-' && board_state[row][column - 2] == '-' && board_state[row][column - 3] == '-' && tolower(board_state[row][column - 4]) == 'r') {
                         // make sure our K won't pass through attack on castle
                         if (!attack_position(is_white, get_coordinate(row, column)) && !attack_position(is_white, get_coordinate(row, column - 1)) && !attack_position(is_white, get_coordinate(row, column - 2))) {
-                            move.coordinate = get_coordinate(row, column) + get_coordinate(row, column + 2);
+                            move.coordinate = get_coordinate(row, column) + get_coordinate(row, column - 2);
                             valid_moves.push_back(move);
                         }
                     }
@@ -672,29 +635,33 @@ vector<struct Move> Board::generate_valid_moves(bool captures_only) {
                     }
                     to_column += piece_move[1];
 
-                    if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8 &&
-                            (board_state[to_row][to_column] == '-' || isupper(piece) != isupper(board_state[to_row][to_column]))) {
+                    if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8) {
 
                         move.coordinate = get_coordinate(row, column) + get_coordinate(to_row, to_column);
 
                         if (piece_lower == 'p') {
-                            if (to_row == 0 || to_row == 7) {
-                                promotion_move.coordinate = move.coordinate + 'q';
-                                valid_moves.push_back(promotion_move);
-                                promotion_move.coordinate = move.coordinate + 'r';
-                                valid_moves.push_back(promotion_move);
-                                promotion_move.coordinate = move.coordinate + 'b';
-                                valid_moves.push_back(promotion_move);
-                                promotion_move.coordinate = move.coordinate + 'n';
-                                valid_moves.push_back(promotion_move);
+                            if (board_state[to_row][to_column] == '-') {
+                                if  (to_row == 0 || to_row == 7) {
+                                    promotion_move.coordinate = move.coordinate + 'q';
+                                    valid_moves.push_back(promotion_move);
+                                    promotion_move.coordinate = move.coordinate + 'r';
+                                    valid_moves.push_back(promotion_move);
+                                    promotion_move.coordinate = move.coordinate + 'b';
+                                    valid_moves.push_back(promotion_move);
+                                    promotion_move.coordinate = move.coordinate + 'n';
+                                    valid_moves.push_back(promotion_move);
+                                } else {
+                                    valid_moves.push_back(move);
+                                }
                             }
-                            valid_moves.push_back(move);
                         } else {
-                            valid_moves.push_back(move);
+                            if (board_state[to_row][to_column] == '-' || (bool) isupper(piece) != (bool) isupper(board_state[to_row][to_column])) {
+                                valid_moves.push_back(move);
+                            }
                         }
                     }
 
-                    if (board_state[to_row][to_column] != '-' || piece_lower == 'p' || piece_lower == 'n' || piece_lower == 'k' || to_row < 0 || to_row > 7 || to_column < 0 || to_column > 7) {
+                    if (board_state[to_row][to_column] != '-' || piece_lower == 'p' || piece_lower == 'n' || piece_lower == 'k') {
                         break;
                     }
                 }
@@ -714,6 +681,9 @@ bool Board::attack_position(bool is_white, string coordinate) {
     char piece;
     char piece_lower;
 
+    int attack_row = abs(8 - (coordinate[1] - '0'));
+    int attack_column = coordinate[0] - 97;
+
     int to_row;
     int to_column;
 
@@ -722,7 +692,7 @@ bool Board::attack_position(bool is_white, string coordinate) {
             piece = board_state[row][column];
             piece_lower = tolower(piece);
 
-            if (piece == '-' || is_white == isupper(piece)) {
+            if (piece == '-' || is_white == (bool) isupper(piece)) {
                 continue;
             }
 
@@ -732,22 +702,33 @@ bool Board::attack_position(bool is_white, string coordinate) {
                 to_row = row;
                 to_column = column;
                 while (true) {
-                    if (is_white) {
+                    if (piece == 'P') {
                         to_row -= piece_move[0];
                     } else {
                         to_row += piece_move[0];
                     }
                     to_column += piece_move[1];
 
-                    if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8 &&
-                            (board_state[to_row][to_column] == '-' || isupper(piece) != isupper(board_state[to_row][to_column]))) {
+                    if (to_row)
 
-                        if (get_coordinate(to_row, to_column) == coordinate) {
-                            return true;
+                    if (to_row >= 0 && to_row < 8 && to_column >= 0 && to_column < 8) {
+                        if (piece_lower == 'p') {
+                            if (column > 0 && get_coordinate(to_row, column - 1) == coordinate) {
+                                return true;
+                            }
+                            if (column < 7 && get_coordinate(to_row, column + 1) == coordinate) {
+                                return true;
+                            }
+                        } else {
+                            if ((board_state[to_row][to_column] == '-' || (bool) isupper(piece) != (bool) isupper(board_state[to_row][to_column]))) {
+                                if (get_coordinate(to_row, to_column) == coordinate) {
+                                    return true;
+                                }
+                            }
                         }
                     }
 
-                    if (board_state[to_row][to_column] != '-' || piece_lower == 'p' || piece_lower == 'n' || piece_lower == 'k' || to_row < 0 || to_row > 7 || to_column < 0 || to_column > 7) {
+                    if (board_state[to_row][to_column] != '-' || piece_lower == 'p' || piece_lower == 'n' || piece_lower == 'k') {
                         break;
                     }
                 }
@@ -803,7 +784,7 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
         uint64_t start_time = get_time();
 
         int best_score = -eval_mate_upper;
-        int local_score = local_board.calculate_score();
+        int local_score = 0;//local_board.calculate_score();
 
         string best_move;
         uint64_t elapsed_time;
@@ -814,12 +795,12 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
         // Node tt_entry;
 
         while (v_depth <= depth) {
-            // auto window = 60;
-            // auto research = 0;
+            auto window = 40;
+            auto research = 0;
 
-            // research:
-            local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper, thread_id);
-            // local_score = search(local_board, v_depth, local_score - window, local_score + window);
+            research:
+            local_score = search(local_board, v_depth, local_score - window, local_score + window, thread_id);
+            // local_score = search(local_board, v_depth, -eval_mate_upper, eval_mate_upper, thread_id);
 
             if (get_time() < critical_time) {
                 const uint64_t tt_key = local_board.hash_board();
@@ -838,22 +819,24 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
                 v_nps = (elapsed_time > 1000) ? ceil(v_nodes / (elapsed_time / 1000)) : v_nodes;
 
                 string pv = "";
-                int counter = 1;
-                Board pv_board = local_board.make_move(best_move);
+                if (v_depth > 1) {
+                    int counter = 1;
+                    Board pv_board = local_board.make_move(best_move);
 
-                while (counter < min(12, v_depth)) {
-                    counter += 1;
+                    while (counter < min(12, v_depth)) {
+                        counter += 1;
 
-                    const uint64_t tt_key = pv_board.hash_board();
+                        const uint64_t tt_key = pv_board.hash_board();
 
-                    Node pv_entry = tt_bucket[(tt_key % tt_size)];
+                        Node pv_entry = tt_bucket[(tt_key % tt_size)];
 
-                    if (pv_entry.coordinate.empty() || pv_entry.key <= 0) {
-                        break;
+                        if (pv_entry.coordinate.empty() || pv_entry.key <= 0) {
+                            break;
+                        }
+                        pv_board = pv_board.make_move(pv_entry.coordinate);
+
+                        pv += ' ' + pv_entry.coordinate;
                     }
-                    pv_board = pv_board.make_move(pv_entry.coordinate);
-
-                    pv += ' ' + pv_entry.coordinate;
                 }
 
                 print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), (best_move + pv));
@@ -861,11 +844,11 @@ string Search::iterative_search(Board local_board, int depth, int thread_id, int
                 // print_stats(to_string(v_depth), to_string(local_score), to_string(elapsed_time), to_string(v_nodes), to_string(v_nps), best_move);
             }
 
-            // if (local_score >= best_score + window || local_score <= best_score - window) {
-            //     window <<= ++research;
-            //     best_score = local_score;
-            //     goto research;
-            // }
+            if (local_score >= best_score + window || local_score <= best_score - window) {
+                window <<= ++research;
+                best_score = local_score;
+                goto research;
+            }
 
             best_score = local_score;
             v_depth++;
@@ -894,7 +877,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
     Board nullboard = local_board.nullmove();
 
     bool is_white = local_board.played_move_count % 2 == 0;
-    bool is_pv_node = beta > (alpha + 1);
+    // bool is_pv_node = beta > (alpha + 1);
     bool is_in_check = local_board.in_check(is_white);
     int original_alpha = alpha;
 
@@ -905,7 +888,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
     Node tt_entry;
     tt_entry = tt_bucket[(tt_key % tt_size)];
 
-    if (tt_entry.key == tt_key && tt_entry.depth >= v_depth && !tt_entry.coordinate.empty() && !is_pv_node) {
+    if (tt_entry.key == tt_key && tt_entry.depth >= v_depth && !tt_entry.coordinate.empty()) { // && !is_pv_node) {
         if (tt_entry.flag == eval_exact ||
         (tt_entry.flag == eval_lower && tt_entry.score >= beta) ||
         (tt_entry.flag == eval_upper && tt_entry.score <= alpha)) {
@@ -954,12 +937,13 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
     // }
 
     // if (!is_pv_node && !is_in_check && tt_entry.key == tt_key && tt_entry.depth >= v_depth && abs(tt_entry.score) < eval_mate_upper && !tt_entry.coordinate.empty()) {
-    //     local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha, 0);
+    if (tt_entry.key == tt_key) {
+        local_score = -search(local_board.make_move(tt_entry.coordinate), v_depth - 1, -beta, -alpha, 0);
 
-    //     if (local_score >= beta) {
-    //         return beta;
-    //     }
-    // }
+        if (local_score >= beta) {
+            return beta;
+        }
+    }
 
     Board moved_board;
     string best_move = "";
@@ -971,7 +955,7 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
 
     for (int i = 0; i < moves.size(); i++) {
         moved_board = local_board.make_move(moves[i].coordinate);
-        moves[i].score = moved_board.calculate_score();
+        moves[i].score = -moved_board.calculate_score();
         if (thread_id > 0) {
             moves[i].score += (rand() % 10);
         }
@@ -979,12 +963,16 @@ int Search::search(Board local_board, int v_depth, int alpha, int beta, int thre
 
     sort(moves.begin(), moves.end(), struct_move);
 
-    for (Move move : moves) {
-        cout << v_depth << " " << move.coordinate << " " <<   move.score << endl;
-    }
+    // for (Move move : moves) {
+    //     cout << v_depth << " " << move.coordinate << " " <<   move.score << endl;
+    // }
 
     // Traditional AB
     for (Move move : moves) {
+        if (tt_entry.key == tt_key && tt_entry.coordinate == move.coordinate) {
+            continue;
+        }
+
         moved_board = local_board.make_move(move.coordinate);
 
         // determine legality: if we moved and are in check, it's not legal
@@ -1115,7 +1103,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
 
     for (int i = 0; i < moves.size(); i++) {
         moved_board = local_board.make_move(moves[i].coordinate);
-        moves[i].score = moved_board.calculate_score();
+        moves[i].score = -moved_board.calculate_score();
     }
 
     sort(moves.begin(), moves.end(), struct_move);
@@ -1126,7 +1114,7 @@ int Search::quiesce(Board local_board, int alpha, int beta) {
         moved_board = local_board.make_move(move.coordinate);
 
         // determine legality: if we moved and are in check, it's not legal
-        if (moved_board.in_check(local_board.played_move_count % 2 == 0) || local_board.piece_count == moved_board.piece_count) {
+        if (local_board.piece_count == moved_board.piece_count || moved_board.in_check(local_board.played_move_count % 2 == 0)) {
             continue;
         }
 
@@ -1175,8 +1163,6 @@ int run_perft(Board local_board, int original_depth, int v_depth) {
                 continue;
             }
 
-            nullboard = moved_board.nullmove();
-
             if (local_board.piece_count != moved_board.piece_count) {
                 perft_captures += 1;
             }
@@ -1198,8 +1184,6 @@ int run_perft(Board local_board, int original_depth, int v_depth) {
         if (moved_board.in_check(local_board.played_move_count % 2 == 0)) {
             continue;
         }
-
-        nullboard = moved_board.nullmove();
 
         if (local_board.piece_count != moved_board.piece_count) {
             perft_captures += 1;
@@ -1280,6 +1264,9 @@ int main() {
             int depth = stoi(line.erase(0, 9));
 
             uint64_t start_time = get_time();
+            perft_captures = 0;
+            perft_checks = 0;
+            nodes = 0;
             run_perft(game_board, depth, depth);
             cout << "total time: " << (get_time() - start_time) << endl;
         } else if (line.rfind("go depth", 0) == 0) {
