@@ -287,7 +287,7 @@ Board Board::make_move(string uci_coordinate) {
 
     string from = uci_coordinate.substr(0, 2);
     string to = uci_coordinate.substr(2, 2);
-    char promote;
+    char promote = '-';
     if (uci_coordinate.length() == 5) {
         promote = uci_coordinate[4];
     }
@@ -367,7 +367,7 @@ Board Board::make_move(string uci_coordinate) {
     board.board_state[to_row][to_column] = board.board_state[from_row][from_column];
     board.board_state[from_row][from_column] = '-';
 
-    if (isblank(promote)) {
+    if (promote != '-') {
         if (toupper(board.board_state[to_row][to_column]) == board.board_state[to_row][to_column]) {
             board.board_state[to_row][to_column] = toupper(promote);
         } else {
@@ -678,14 +678,14 @@ bool Board::in_check( bool is_white) {
 }
 
 bool Board::attack_position(bool is_white, string coordinate) {
-    char piece;
-    char piece_lower;
+    char piece = 'p';
+    char piece_lower = 'p';
 
     int attack_row = abs(8 - (coordinate[1] - '0'));
     int attack_column = coordinate[0] - 97;
 
-    int to_row;
-    int to_column;
+    int to_row = 0;
+    int to_column = 0;
 
     for (int row = 0; row < 8; row++) {
         for (int column = 0; column < 8; column++) {
