@@ -1,4 +1,4 @@
-/home/vagrant/code/pygone/bin/cutechess-cli \
+cutechess-cli \
     -debug \
     -engine \
         name=pygone \
@@ -13,7 +13,7 @@
         timemargin=1500 \
         -concurrency 1 \
         -resign movecount=4 score=3000 \
-        -openings file=book3.pgn \
+        -openings file=book2.pgn \
         -repeat \
         -pgnout games.pgn \
         -recover \

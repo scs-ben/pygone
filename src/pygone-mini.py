@@ -134,8 +134,9 @@ class A6:
   C8=Z.C8()
   l_A7=Z.A7
   (B0,O)=Y(A1)
-  to_D1=O if i else abs(O-119)+((O%10)-(abs(O-119)%10))
-  from_D1=B0 if i else abs(B0-119)+(B0%10)-(abs(B0-119)%10)
+  D1=0 if i else 119
+  to_D1=abs(O-D1)
+  from_D1=abs(B0-D1)
   d=0
   C2=l_A7[B0].lower()
   D4=l_A7[O].lower()
@@ -431,8 +432,8 @@ class F0:
    if G7.E0(l.A8%2==0):
     continue
    if I92==0:
-    ++Z.V
-   ++I92
+    Z.V+=1
+   I92+=1
    d=-Z.H93(G7,-b,-a,S-1)
    if d>a:
     a=d

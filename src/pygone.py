@@ -326,7 +326,6 @@ class Board:
 
     def calculate_score(self, uci_coordinate, sorting=False):
         is_white = self.played_move_count % 2 == 0
-        # offset = 0 if is_white else 119
         p_offset = -10 if is_white else 10
         p_piece = 'P' if is_white else 'p'
         is_endgame = self.is_endgame()
@@ -335,8 +334,12 @@ class Board:
 
         (from_number, to_number) = unpack_coordinate(uci_coordinate)
 
-        to_offset = to_number if is_white else abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10))
-        from_offset = from_number if is_white else abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10)
+        # to_offset = to_number if is_white else abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10))
+        # from_offset = from_number if is_white else abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10)
+
+        offset = 0 if is_white else 119
+        to_offset = abs(to_number - offset)
+        from_offset = abs(from_number - offset)
 
         local_score = 0
 
@@ -792,9 +795,9 @@ class Search:
 
             # only count a node once we have a legal move
             if played_moves == 0:
-                ++self.v_nodes
+                self.v_nodes += 1
 
-            ++played_moves
+            played_moves += 1
 
             local_score = -self.q_search(moved_board, -beta, -alpha, v_depth - 1)
 
