@@ -449,7 +449,7 @@ def main():
    if Z3=="quit":
     sys.exit()
    elif Z3=="uci":
-    Q("pygone 1.5.4\nuciok")
+    Q("pygone 1.5.5\nuciok")
    elif Z3=="ucinewgame":
     I7=A6()
     H91.G9()

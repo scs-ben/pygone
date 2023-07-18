@@ -820,7 +820,7 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print_to_terminal("pygone 1.5.4\nuciok")
+                print_to_terminal("pygone 1.5.5\nuciok")
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
