@@ -10,6 +10,6 @@ To build: `cd src`
 
 This will produce an executable in `bin`
 
-In `prepare.sh` need to set `NUMBER_OF_LINES` to the length of the binary (around 24 lines). The file needs to have a blank line added at the end to work proplery.
+In `prepare.sh` need to set `NUMBER_OF_LINES` to the length of the binary (around 24 lines). The file needs to have a blank line added at the end to work properly.
 
 This file needs to be further shrunk by running `bin/prepare.sh`

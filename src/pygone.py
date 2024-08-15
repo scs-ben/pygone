@@ -4,7 +4,7 @@ import math, sys, time
 t = time.time
 
 # PIECEPOINTS = {'p': 85, 'n': 290, 'b': 320, 'r': 620, 'q': 1250, 'k': 25000}
-PIECEPOINTS = {'p': 100, 'n': 320, 'b': 325, 'r': 500, 'q': 975, 'k': 32767}
+PIECEPOINTS = {'p': 85, 'n': 295, 'b': 300, 'r': 700, 'q': 1350, 'k': 32767}
 
 ALLPSQT = {
     'p': (
@@ -820,7 +820,7 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print_to_terminal("pygone 1.5.5\nuciok")
+                print_to_terminal("pygone 1.5.6\nuciok")
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
