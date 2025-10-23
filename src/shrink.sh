@@ -44,6 +44,7 @@ sed -i -e 's/black_king_position/B5/g' pygone-mini.py
 sed -i -e 's/rolling_score/B6/g' pygone-mini.py
 sed -i -e 's/set_en_passant/B71/g' pygone-mini.py
 sed -i -e 's/en_passant_offset/B72/g' pygone-mini.py
+sed -i -e 's/en_passant_file_index/B73/g' pygone-mini.py
 sed -i -e 's/en_passant/B7/g' pygone-mini.py
 sed -i -e 's/apply_move/B8/g' pygone-mini.py
 sed -i -e 's/from_letter_number/B9/g' pygone-mini.py
@@ -126,6 +127,7 @@ sed -i -e 's/game_board/I7/g' pygone-mini.py
 sed -i -e 's/searcher/I8/g' pygone-mini.py
 sed -i -e 's/start_moves/I91/g' pygone-mini.py
 sed -i -e 's/played_moves/I92/g' pygone-mini.py
+sed -i -e 's/get_moves/I93/g' pygone-mini.py
 sed -i -e 's/moves/I9/g' pygone-mini.py
 sed -i -e 's/position_move/I0/g' pygone-mini.py
 sed -i -e 's/white_time/J1/g' pygone-mini.py
@@ -231,6 +233,14 @@ sed -i -e 's/sort_by/ZR/g' pygone-mini.py
 sed -i -e 's/scramble/ZS/g' pygone-mini.py
 sed -i -e 's/random_move/ZT/g' pygone-mini.py
 
+sed -i -e 's/ZOBRIST_CASTLE/ZV/g' pygone-mini.py
+sed -i -e 's/ZOBRIST_EP/ZW/g' pygone-mini.py
+sed -i -e 's/ZOBRIST_SIDE/ZX/g' pygone-mini.py
+sed -i -e 's/ZOBRIST/ZU/g' pygone-mini.py
+sed -i -e 's/hash/ZY/g' pygone-mini.py
+sed -i -e 's/init_zobrist/ZZ/g' pygone-mini.py
+sed -i -e 's/zobrist/ZZ1/g' pygone-mini.py
+sed -i -e 's/square/ZZ2/g' pygone-mini.py
 
 sed -i -e 's/alpha/a/g' pygone-mini.py
 sed -i -e 's/beta/b/g' pygone-mini.py

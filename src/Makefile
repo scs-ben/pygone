@@ -1,2 +1,2 @@
 pygone: pygone.py
-	pyminifier -o pygone-mini.py pygone.py && bash shrink.sh && python3 combine.py pygone-mini.py > ../bin/pygone && chmod +x ../bin/pygone && xz -z ../bin/pygone && ls -l ../bin/pygone.xz && rm -f ../bin/pygone~ && cd ../bin && ./prepare.sh
+	python pyshrink.py && bash shrink.sh && python3 combine.py pygone-mini.py > ../bin/pygone && chmod +x ../bin/pygone && xz -z ../bin/pygone && ls -l ../bin/pygone.xz && rm -f ../bin/pygone~ && cd ../bin && ./prepare.sh

@@ -1,5 +1,5 @@
 #!/usr/bin/env pypy3
-import math, sys, time
+import math, random, sys, time
 
 t = time.time
 
@@ -180,6 +180,11 @@ def coordinate_to_position(coordinate):
 
 class Board:
     board_string = ''
+    hash = 0
+    ZOBRIST = {}
+    ZOBRIST_CASTLE = []
+    ZOBRIST_EP = []
+    ZOBRIST_SIDE = 0
     played_move_count = 0
     repetitions = []
     white_castling = [True, True]
@@ -189,6 +194,7 @@ class Board:
     rolling_score = 0
     piece_count = 32
     en_passant = ''
+    en_passant_file_index = 0
     move_counter = 0
 
     def __init__(self):
@@ -206,13 +212,42 @@ class Board:
             '..........' # 100 -109
             '..........' # 110 -119
             )
+        
+        self.hash = 0
+        self.init_zobrist()
 
-    def mutate_board(self, board_position, piece):
-        l_board_state = self.board_state;
-        self.board_state = l_board_state[:board_position] + piece + l_board_state[board_position + 1:]
+        for pos, piece in enumerate(self.board_state):
+            if piece in "prnbqkPRNBQK":
+                self.hash ^= self.ZOBRIST[(piece, pos)]
+
+    def init_zobrist(self):
+        random.seed(42)  # deterministic for testing
+        zobrist = {}
+        for piece in "prnbqkPRNBQK":
+            for square in range(120):
+                zobrist[(piece, square)] = random.getrandbits(64)
+
+        self.ZOBRIST = zobrist
+        self.ZOBRIST_CASTLE = [random.getrandbits(64) for _ in range(4)]
+        self.ZOBRIST_EP = [random.getrandbits(64) for _ in range(8)]
+        self.ZOBRIST_SIDE = random.getrandbits(64)
+
+    def mutate_board(self, pos, new_piece):
+        # assert 0 <= pos < 120, f"Position {pos} out of range"
+
+        old_piece = self.board_state[pos]
+        if old_piece in "prnbqkPRNBQK":
+            self.hash ^= self.ZOBRIST[(old_piece, pos)]
+        if new_piece in "prnbqkPRNBQK":
+            self.hash ^= self.ZOBRIST[(new_piece, pos)]
+
+        self.hash ^= self.ZOBRIST_EP[self.en_passant_file_index] if self.en_passant else 0
+
+        # Update board state
+        self.board_state = self.board_state[:pos] + new_piece + self.board_state[pos+1:]
 
     def apply_move(self, uci_coordinate):
-        l_board_state = self.board_state;
+        l_board_state = self.board_state
 
         is_white = self.played_move_count % 2 == 0
 
@@ -220,6 +255,8 @@ class Board:
 
         # break uci coordinate into location in board state list
         (from_number, to_number) = unpack_coordinate(uci_coordinate)
+
+        # assert 0 <= from_number < 120 and 0 <= to_number < 120
 
         from_piece = l_board_state[from_number].lower()
 
@@ -237,6 +274,7 @@ class Board:
             en_passant_offset = -1 if is_white else 1
             if set_en_passant:
                 self.en_passant = uci_coordinate[0:1] + str(int(uci_coordinate[3:4]) + en_passant_offset)
+                self.en_passant_file_index = ord(uci_coordinate[0]) - ord('a')
             elif uci_coordinate[2:4] == self.en_passant:
                 self.mutate_board(to_number - 10 * en_passant_offset, '-')
             elif len(uci_coordinate) > 4:
@@ -253,11 +291,15 @@ class Board:
 
         if not set_en_passant:
             self.en_passant = ''
+            self.en_passant_file_index = 0
+
+        self.hash ^= self.ZOBRIST_SIDE
 
         self.board_string = self.str_board()
         self.piece_count = self.get_piece_count()
-
+        
     def make_move(self, uci_coordinate):
+        
         # making the move will return an altered copy of the current state
         # this allows us to avoid "undoing" the move
         board = self.board_copy()
@@ -266,18 +308,35 @@ class Board:
 
         # set castling rights
         if 'e1' in uci_coordinate:
+            # remove white castling rights
+            for i, right in enumerate(board.white_castling):
+                if right:
+                    board.hash ^= board.ZOBRIST_CASTLE[i]  # XOR out previous right
             board.white_castling = [False, False]
+
         elif 'a1' in uci_coordinate:
-            board.white_castling[0] = False
+            if board.white_castling[0]:
+                board.hash ^= board.ZOBRIST_CASTLE[0]
+                board.white_castling[0] = False
         elif 'h1' in uci_coordinate:
-            board.white_castling[1] = False
+            if board.white_castling[1]:
+                board.hash ^= board.ZOBRIST_CASTLE[1]
+                board.white_castling[1] = False
 
         if 'e8' in uci_coordinate:
+            for i, right in enumerate(board.black_castling):
+                if right:
+                    board.hash ^= board.ZOBRIST_CASTLE[i + 2]
             board.black_castling = [False, False]
+
         elif 'a8' in uci_coordinate:
-            board.black_castling[0] = False
+            if board.black_castling[0]:
+                board.hash ^= board.ZOBRIST_CASTLE[2]
+                board.black_castling[0] = False
         elif 'h8' in uci_coordinate:
-            board.black_castling[1] = False
+            if board.black_castling[1]:
+                board.hash ^= board.ZOBRIST_CASTLE[3]
+                board.black_castling[1] = False
 
         board.apply_move(uci_coordinate)
 
@@ -289,7 +348,7 @@ class Board:
         return board
 
     def nullmove(self):
-        """ allows for a quick way to let other side move """
+        # allows for a quick way to let other side move
         # making the move will return an altered copy of the current state
         # this allows us to avoid "undoing" the move
         board = self.board_copy()
@@ -299,7 +358,7 @@ class Board:
         return board
 
     def board_copy(self):
-        """ copy the board, does not copy the score """
+        # copy the board, does not copy the score
         board = Board()
         board.played_move_count = self.played_move_count
         board.white_king_position = self.white_king_position
@@ -308,10 +367,15 @@ class Board:
         board.piece_count = self.piece_count
         board.en_passant = self.en_passant
         board.move_counter = self.move_counter
-        board.board_state = self.board_state
+        board.board_state = self.board_state[:]
         board.repetitions = self.repetitions.copy()
         board.white_castling = self.white_castling.copy()
         board.black_castling = self.black_castling.copy()
+        board.hash = self.hash
+        board.ZOBRIST = self.ZOBRIST
+        board.ZOBRIST_CASTLE = self.ZOBRIST_CASTLE
+        board.ZOBRIST_SIDE = self.ZOBRIST_SIDE
+        board.ZOBRIST_EP = self.ZOBRIST_EP
 
         return board
 
@@ -324,11 +388,16 @@ class Board:
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
 
+    def print_board(self, board_state):
+        for i in range(12):
+            row = board_state[i*10:(i+1)*10]  # slice 8 squares per row
+            print(' '.join(row)) 
+
     def calculate_score(self, uci_coordinate, sorting=False):
         is_white = self.played_move_count % 2 == 0
-        p_offset = -10 if is_white else 10
-        p_piece = 'P' if is_white else 'p'
-        is_endgame = self.is_endgame()
+        # p_offset = -10 if is_white else 10
+        # p_piece = 'P' if is_white else 'p'
+        # is_endgame = self.is_endgame()
 
         l_board_state = self.board_state
 
@@ -347,7 +416,8 @@ class Board:
 
         to_piece = l_board_state[to_number].lower()
 
-        local_score += ALLPSQT[from_piece][to_offset] - \
+        if from_piece != '-':
+            local_score += ALLPSQT[from_piece][to_offset] - \
                         ALLPSQT[from_piece][from_offset]
 
         if to_piece != '-':
@@ -417,7 +487,7 @@ class Board:
         return self.generate_valid_moves(True)
 
     def generate_valid_moves(self, captures_only=False):
-        """Return list of valid (maybe illegal) moves"""
+        # Return list of valid (maybe illegal) moves
         offset = 1
 
         if self.played_move_count % 2 == 0:
@@ -553,47 +623,47 @@ class Search:
         self.critical_time = 0
         self.tt_bucket.clear()
 
-    def run_perft(self, local_board, original_depth, v_depth):
-        if v_depth == 0:
-            return 1
+    # def run_perft(self, local_board, original_depth, v_depth):
+    #     if v_depth == 0:
+    #         return 1
 
-        if v_depth != original_depth:
-            total = 0
-            for s_move in local_board.generate_valid_moves():
-                moved_board = local_board.make_move(s_move)
+    #     if v_depth != original_depth:
+    #         total = 0
+    #         for s_move in local_board.generate_valid_moves():
+    #             moved_board = local_board.make_move(s_move)
 
-                if moved_board.in_check(local_board.played_move_count % 2 == 0):
-                    continue
+    #             if moved_board.in_check(local_board.played_move_count % 2 == 0):
+    #                 continue
 
-                if local_board.piece_count != moved_board.piece_count:
-                    self.perft_captures += 1
+    #             if local_board.piece_count != moved_board.piece_count:
+    #                 self.perft_captures += 1
 
-                if moved_board.in_check(local_board.played_move_count % 2 != 0):
-                    self.perft_checks += 1
+    #             if moved_board.in_check(local_board.played_move_count % 2 != 0):
+    #                 self.perft_checks += 1
 
-                total += self.run_perft(moved_board, original_depth, v_depth-1)
-            return total
+    #             total += self.run_perft(moved_board, original_depth, v_depth-1)
+    #         return total
 
-        per_moves = []
-        for s_move in local_board.generate_valid_moves():
-            moved_board = local_board.make_move(s_move)
+    #     per_moves = []
+    #     for s_move in local_board.generate_valid_moves():
+    #         moved_board = local_board.make_move(s_move)
 
-            if moved_board.in_check(local_board.played_move_count % 2 == 0):
-                continue
+    #         if moved_board.in_check(local_board.played_move_count % 2 == 0):
+    #             continue
 
-            if local_board.piece_count != moved_board.piece_count:
-                self.perft_captures += 1
+    #         if local_board.piece_count != moved_board.piece_count:
+    #             self.perft_captures += 1
 
-            if moved_board.in_check(local_board.played_move_count % 2 != 0):
-                self.perft_checks += 1
+    #         if moved_board.in_check(local_board.played_move_count % 2 != 0):
+    #             self.perft_checks += 1
 
-            print (f"{s_move}:", end=" ")
-            x = self.run_perft(moved_board, original_depth, v_depth-1)
-            print(x)
-            per_moves.append(x)
+    #         print (f"{s_move}:", end=" ")
+    #         x = self.run_perft(moved_board, original_depth, v_depth-1)
+    #         print(x)
+    #         per_moves.append(x)
 
-        print(f"Nodes searched: {sum(per_moves)}")
-        print(f"Captures: {self.perft_captures} Checks: {self.perft_checks}")
+    #     print(f"Nodes searched: {sum(per_moves)}")
+    #     print(f"Captures: {self.perft_captures} Checks: {self.perft_checks}")
 
     def iterative_search(self, local_board):
         start_time = t()
@@ -603,7 +673,7 @@ class Search:
             local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper)
 
             if t() < self.critical_time:
-                best_move = self.tt_bucket.get(local_board.board_string)
+                best_move = self.tt_bucket.get(local_board.hash)
                 if best_move:
                     best_move = best_move['tt_move']
             else:
@@ -619,7 +689,7 @@ class Search:
             while counter < min(6, v_depth):
                 counter += 1
 
-                pv_entry = self.tt_bucket.get(pv_board.board_string)
+                pv_entry = self.tt_bucket.get(pv_board.hash)
 
                 if not pv_entry or not pv_entry['tt_move']:
                     break
@@ -649,7 +719,7 @@ class Search:
         if v_depth <= 0:
             return self.q_search(local_board, alpha, beta, 200)
 
-        tt_entry = self.tt_bucket.get((local_board.board_string), {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
+        tt_entry = self.tt_bucket.get(local_board.hash, {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
 
         self.v_nodes += 1
 
@@ -756,9 +826,9 @@ class Search:
             else:
                 tt_entry['tt_flag'] = self.eval_exact
 
-            self.tt_bucket[local_board.board_string] = tt_entry
+            self.tt_bucket[local_board.hash] = tt_entry
         else:
-            self.tt_bucket[local_board.board_string] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
+            self.tt_bucket[local_board.hash] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
 
         return best_score
 
@@ -769,7 +839,7 @@ class Search:
         if local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100:
             return 0
 
-        tt_entry = self.tt_bucket.get(local_board.board_string)
+        tt_entry = self.tt_bucket.get(local_board.hash)
 
         if tt_entry:
             if tt_entry['tt_flag'] == self.eval_exact or \
@@ -820,7 +890,7 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print_to_terminal("pygone 1.5.6\nuciok")
+                print_to_terminal("pygone 1.5.7\nuciok")
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
@@ -893,7 +963,7 @@ def main():
                 move_time = 1e8
                 is_white = game_board.played_move_count % 2 == 0
 
-                is_perft = False
+                # is_perft = False
 
                 args = line.split()
                 for key, arg in enumerate(args):
@@ -902,20 +972,20 @@ def main():
                     # depth input can be commented out to save space since engine will be run on time
                     elif arg == 'depth':
                         searcher.v_depth = int(args[key + 1])
-                    elif arg == 'perft':
-                        searcher.v_depth = int(args[key + 1])
-                        is_perft = True
+                    # elif arg == 'perft':
+                    #     searcher.v_depth = int(args[key + 1])
+                    #     is_perft = True
 
-                if is_perft:
-                    # 1) start pos
-                    # 2) Kiwipete: position startpos moves b1c3 b7b5 d2d4 e7e6 e2e4 c8a6 c1d2 h7h5 d1f3 g7g6 f1e2 h5h4 g1h3 f8g7 h3f4 g8e7 f4d3 e7d5 d3e5 d5f6 d4d5 d8e7 d2e3 b5b4 e3d2 b8c6 d2e3 c6a5 e3d2 a5c4 d2e3 c4b6 e3d2 h4h3
-                    # 3) Tricky Steve: position startpos moves d2d3 c7c6 e2e4 e7e5 d3d4 f8e7 d4e5 d7d6 e5d6 g8f6 f1c4 f6e4 d6d7 e8f8 g1e2 e4f2
-                    start_time = t()
-                    searcher.perft_checks = 0
-                    searcher.perft_captures = 0
-                    searcher.run_perft(game_board, searcher.v_depth, searcher.v_depth)
-                    print("total time: ", t() - start_time)
-                    continue
+                # if is_perft:
+                #     # 1) start pos
+                #     # 2) Kiwipete: position startpos moves b1c3 b7b5 d2d4 e7e6 e2e4 c8a6 c1d2 h7h5 d1f3 g7g6 f1e2 h5h4 g1h3 f8g7 h3f4 g8e7 f4d3 e7d5 d3e5 d5f6 d4d5 d8e7 d2e3 b5b4 e3d2 b8c6 d2e3 c6a5 e3d2 a5c4 d2e3 c4b6 e3d2 h4h3
+                #     # 3) Tricky Steve: position startpos moves d2d3 c7c6 e2e4 e7e5 d3d4 f8e7 d4e5 d7d6 e5d6 g8f6 f1c4 f6e4 d6d7 e8f8 g1e2 e4f2
+                #     start_time = t()
+                #     searcher.perft_checks = 0
+                #     searcher.perft_captures = 0
+                #     searcher.run_perft(game_board, searcher.v_depth, searcher.v_depth)
+                #     print("total time: ", t() - start_time)
+                #     continue
 
                 searcher.critical_time = t() + max(0.75, move_time - 1)
                 move_time = max(2.2, move_time / 32)
