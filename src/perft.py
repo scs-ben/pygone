@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys, time
-from pygone import Board  # adjust to match your file name
+from board import Board  # adjust to match your file name
 
 perft_captures = 0
 perft_checks = 0

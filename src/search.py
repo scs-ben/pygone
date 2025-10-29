@@ -1,8 +1,6 @@
 #!/usr/bin/env pypy3
 import math, time
 
-t = time.time
-
 class Search:
     v_nodes = 0
     v_depth = 0
@@ -27,20 +25,20 @@ class Search:
         self.tt_bucket.clear()
 
     def iterative_search(self, local_board):
-        start_time = t()
+        start_time = time.time()
 
         local_score = local_board.rolling_score
         for v_depth in range(1, 100):
             local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper)
 
-            if t() < self.critical_time:
+            if time.time() < self.critical_time:
                 best_move = self.tt_bucket.get(local_board.hash)
                 if best_move:
                     best_move = best_move['tt_move']
             else:
                 break
 
-            elapsed_time = t() - start_time
+            elapsed_time = time.time() - start_time
 
             v_nps = math.ceil(self.v_nodes / elapsed_time) if elapsed_time > 0 else 1
 
@@ -64,7 +62,7 @@ class Search:
             yield v_depth, best_move, local_score
 
     def search(self, local_board, v_depth, alpha, beta):
-        if t() > self.critical_time:
+        if time.time() > self.critical_time:
             return -self.eval_mate_upper
 
         is_pv_node = beta > alpha + 1
@@ -173,7 +171,7 @@ class Search:
             return -self.eval_mate_upper + local_board.played_move_count if is_in_check else 0
 
         #update TT only if we are not in time cut
-        if t() < self.critical_time:
+        if time.time() < self.critical_time:
             tt_entry['tt_value'] = best_score
             if best_move:
                 tt_entry['tt_move'] = best_move
@@ -192,7 +190,7 @@ class Search:
         return best_score
 
     def q_search(self, local_board, alpha, beta, v_depth):
-        if t() > self.critical_time:
+        if time.time() > self.critical_time:
             return -self.eval_mate_upper
 
         if local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100:
