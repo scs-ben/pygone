@@ -25,3 +25,4 @@ src/pypy/*
 src/build/*
 src/dist/*
 src/pygone.spec
+src/myenv/*
