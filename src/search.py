@@ -70,7 +70,7 @@ class Search:
 
         v_depth += is_in_check # and not is_pv_node
 
-        if (local_board.repetitions.count(local_board.hash) > 2 or local_board.move_counter >= 100):
+        if (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
             return 0
 
         if v_depth <= 0:
@@ -193,7 +193,7 @@ class Search:
         if time.time() > self.critical_time:
             return -self.eval_mate_upper
 
-        if local_board.repetitions.count(local_board.hash) > 2 or local_board.move_counter >= 100:
+        if local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100:
             return 0
 
         tt_entry = self.tt_bucket.get(local_board.hash)
