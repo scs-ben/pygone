@@ -42,7 +42,7 @@ ALLPSQT = {
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
-        -10, 0, 0,10,10, 10, 0,-10,
+        0, 0, 0, 0, 0, 0, 0, 0,
     ),
     'q': (
         -40,-20,-20,-10,-10,-20,-20,-40 ,
@@ -364,11 +364,9 @@ class Board:
                                     ALLPSQT['r'][to_offset - 2]
 
                 # put castling higher up
-                if sorting:
-                    local_score += 5
+                local_score += 10
             else:
-                if sorting:
-                    local_score -= 30
+                local_score -= 20
 
         return local_score
 
