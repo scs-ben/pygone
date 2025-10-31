@@ -90,10 +90,12 @@ def main():
                         searcher.v_depth = int(args[key + 1])
 
                 searcher.critical_time = time.time() + max(0.75, move_time - 1)
-                move_time = max(2.2, move_time / 32)
+                move_time = max(2.2, move_time / 34)
 
                 searcher.end_time = time.time() + move_time
-
+                
+                searcher.critical_time = min(searcher.end_time, searcher.critical_time)
+                
                 searcher.v_nodes = 0
 
                 s_move = None
