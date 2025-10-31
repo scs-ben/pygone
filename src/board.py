@@ -351,9 +351,9 @@ class Board:
                                 ALLPSQT['p'][to_offset]
 
             if self.passer_pawn(from_number):
-                local_score += 10
+                local_score += 5 
             if self.stacked_pawn(from_number):
-                local_score -= 15
+                local_score -= 10
         elif from_piece == 'k':
             if abs(to_number - from_number) == 2:
                 if to_number > from_number:
@@ -365,7 +365,10 @@ class Board:
 
                 # put castling higher up
                 if sorting:
-                    local_score += 60
+                    local_score += 5
+            else:
+                if sorting:
+                    local_score -= 30
 
         return local_score
 
