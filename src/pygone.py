@@ -47,7 +47,7 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print_to_terminal("pygone 1.6.4\nuciok")
+                print_to_terminal("pygone 1.6.5\nuciok")
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()
@@ -90,7 +90,7 @@ def main():
                         searcher.v_depth = int(args[key + 1])
 
                 searcher.critical_time = time.time() + max(0.75, move_time - 1)
-                move_time = max(2.2, move_time / 34)
+                move_time = max(2.2, move_time / 28)
 
                 searcher.end_time = time.time() + move_time
                 

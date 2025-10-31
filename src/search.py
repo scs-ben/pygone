@@ -1,4 +1,3 @@
-#!/usr/bin/env pypy3
 import math, time
 
 class Search:
@@ -32,7 +31,7 @@ class Search:
             local_score = self.search(local_board, v_depth, -self.eval_mate_upper, self.eval_mate_upper)
 
             if time.time() < self.critical_time:
-                best_move = self.tt_bucket.get(local_board.hash)
+                best_move = self.tt_bucket.get(local_board.board_string)
                 if best_move:
                     best_move = best_move['tt_move']
             else:
@@ -48,7 +47,7 @@ class Search:
             while counter < min(6, v_depth):
                 counter += 1
 
-                pv_entry = self.tt_bucket.get(pv_board.hash)
+                pv_entry = self.tt_bucket.get(pv_board.board_string)
 
                 if not pv_entry or not pv_entry['tt_move']:
                     break
@@ -76,7 +75,7 @@ class Search:
         if v_depth <= 0:
             return self.q_search(local_board, alpha, beta, 200)
 
-        tt_entry = self.tt_bucket.get(local_board.hash, {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
+        tt_entry = self.tt_bucket.get(local_board.board_string, {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None})
 
         self.v_nodes += 1
 
@@ -183,9 +182,9 @@ class Search:
             else:
                 tt_entry['tt_flag'] = self.eval_exact
 
-            self.tt_bucket[local_board.hash] = tt_entry
+            self.tt_bucket[local_board.board_string] = tt_entry
         else:
-            self.tt_bucket[local_board.hash] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
+            self.tt_bucket[local_board.board_string] = {'tt_value': 2*self.eval_mate_upper, 'tt_flag': self.eval_upper, 'tt_depth': -1, 'tt_move': None}
 
         return best_score
 
@@ -196,7 +195,7 @@ class Search:
         if local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100:
             return 0
 
-        tt_entry = self.tt_bucket.get(local_board.hash)
+        tt_entry = self.tt_bucket.get(local_board.board_string)
 
         if tt_entry:
             if tt_entry['tt_flag'] == self.eval_exact or \
