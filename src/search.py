@@ -67,14 +67,26 @@ class Search:
             if move != tt_move:
                 yield move
 
+    def has_sufficient_material(self, is_white):
+        if is_white:
+            pawns  = self.board_string.count('P')
+            minors = self.board_string.count('N') + self.board_string.count('B')
+            majors = self.board_string.count('R') + self.board_string.count('Q')
+        else:
+            pawns  = self.board_string.count('p')
+            minors = self.board_string.count('n') + self.board_string.count('b')
+            majors = self.board_string.count('r') + self.board_string.count('q')
+
+        return pawns > 0 or minors + majors >= 2
+
     def search(self, local_board, v_depth, alpha, beta):
         if time.time() > self.critical_time:
-            return local_board.rolling_score
+            return -self.eval_mate_upper
 
         is_pv_node = beta > alpha + 1
         is_in_check = local_board.in_check(local_board.played_move_count % 2 == 0)
 
-        v_depth += is_in_check # and not is_pv_node
+        # v_depth += is_in_check # and not is_pv_node
 
         if (local_board.repetitions.count(local_board.board_string) > 2 or local_board.move_counter >= 100):
             return 0
@@ -94,11 +106,14 @@ class Search:
             (tt_entry['tt_flag'] == self.eval_upper and tt_entry['tt_value'] <= alpha):
                 return tt_entry['tt_value']
 
-        if not is_pv_node and not is_in_check and v_depth <= 7 and local_board.rolling_score >= beta + (100 * v_depth):
-            return local_board.rolling_score
+        if not is_pv_node and not is_in_check:
+            # Futility pruning (low eval)
+            if v_depth <= 2 and local_board.rolling_score + 120 * v_depth <= alpha:
+                return local_board.rolling_score
 
-        # if not is_pv_node and not is_in_check and v_depth <= 2 and local_board.rolling_score <= alpha - (350 * v_depth):
-        #     return local_board.rolling_score
+            # Razor pruning (high eval)
+            if v_depth <= 3 and local_board.rolling_score >= beta - 120 * v_depth:
+                return local_board.rolling_score
 
         if not is_pv_node and not is_in_check and v_depth <= 5:
             cut_boundary = alpha - (385 * v_depth)
@@ -116,13 +131,22 @@ class Search:
 
         is_white = local_board.played_move_count % 2 == 0
 
-        pieces = 'RNBQ' if is_white else 'rnbq'
+        # Null move pruning (only when safe)
+        if (
+            not is_pv_node
+            and not is_in_check
+            and v_depth >= 3
+            and local_board.has_sufficient_material(is_white)  # <-- helper function below
+        ):
+            reduction = 3 if v_depth < 6 else 4  # typical reduction
+            null_board = local_board.nullmove()
 
-        if not is_pv_node and not is_in_check and any(p in local_board.board_string for p in pieces):
-            local_score = -self.search(local_board.nullmove(), v_depth - 4, -beta, -beta+1)
+            # skip if nullmove leaves us in check (can happen in some custom rulesets)
+            if not null_board.in_check(not is_white):
+                null_score = -self.search(null_board, v_depth - reduction - 1, -beta, -beta + 1)
 
-            if local_score >= beta:
-                return beta
+                if null_score >= beta:
+                    return beta
 
         if not is_pv_node and not is_in_check and tt_entry['tt_depth'] >= v_depth and abs(tt_entry['tt_value']) < self.eval_mate_upper and tt_entry['tt_move']:
             local_score = -self.search(local_board.make_move(tt_entry['tt_move']), v_depth - 1, -beta, -alpha)
@@ -134,7 +158,8 @@ class Search:
 
         best_move = None
     
-        for s_move in self.ordered_moves(local_board, tt_entry.get('tt_move')):
+        # for s_move in self.ordered_moves(local_board, tt_entry.get('tt_move')):
+        for s_move in sorted(local_board.generate_valid_moves(), key=local_board.move_sort, reverse=True):
             moved_board = local_board.make_move(s_move)
 
             # print(f"{s_move} {moved_board.rolling_score}")
