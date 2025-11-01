@@ -67,15 +67,15 @@ class Search:
             if move != tt_move:
                 yield move
 
-    def has_sufficient_material(self, is_white):
+    def has_sufficient_material(self, board_string, is_white):
         if is_white:
-            pawns  = self.board_string.count('P')
-            minors = self.board_string.count('N') + self.board_string.count('B')
-            majors = self.board_string.count('R') + self.board_string.count('Q')
+            pawns  = board_string.count('P')
+            minors = board_string.count('N') + board_string.count('B')
+            majors = board_string.count('R') + board_string.count('Q')
         else:
-            pawns  = self.board_string.count('p')
-            minors = self.board_string.count('n') + self.board_string.count('b')
-            majors = self.board_string.count('r') + self.board_string.count('q')
+            pawns  = board_string.count('p')
+            minors = board_string.count('n') + board_string.count('b')
+            majors = board_string.count('r') + board_string.count('q')
 
         return pawns > 0 or minors + majors >= 2
 
@@ -136,7 +136,7 @@ class Search:
             not is_pv_node
             and not is_in_check
             and v_depth >= 3
-            and local_board.has_sufficient_material(is_white)  # <-- helper function below
+            and self.has_sufficient_material(local_board.board_string, is_white)  # <-- helper function below
         ):
             reduction = 3 if v_depth < 6 else 4  # typical reduction
             null_board = local_board.nullmove()
