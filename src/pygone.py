@@ -47,7 +47,11 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
+<<<<<<< Updated upstream
                 print_to_terminal("pygone 1.6.4\nuciok")
+=======
+                print_to_terminal("pygone 1.6.6\nuciok")
+>>>>>>> Stashed changes
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher.reset()

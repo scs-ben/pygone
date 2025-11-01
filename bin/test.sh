@@ -1,13 +1,14 @@
-/home/vagrant/code/pygone/bin/cutechess-cli \
+./cutechess-cli \
     -debug \
     -engine \
-        name=pygone \
-        cmd=/home/vagrant/code/pygone/bin/pygone \
+        name=pygone156 \
+        cmd=/home/ben/pygone/bin/pygone156 \
         proto=uci \
     -engine \
-        name=sunfish \
-        cmd=/home/vagrant/code/pygone/bin/sunfish/sunfish \
-        proto=xboard \
+        name=stockfish \
+        cmd=/home/ben/pygone/bin/stockfish/stockfish \
+        proto=uci \
+	nodes=100 \
     -each \
         tc=0/20+2 \
         timemargin=10000 \
@@ -17,6 +18,6 @@
         -pgnout games.pgn min \
         -recover \
         -wait 1000 \
-        -concurrency 1 \
+        -concurrency 4 \
         -resign movecount=6 score=800 \
         -games 2 -rounds 100 > debug.log

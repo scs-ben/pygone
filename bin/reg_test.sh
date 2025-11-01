@@ -1,17 +1,17 @@
-cutechess-cli \
+./cutechess-cli \
     -debug \
     -engine \
         name=pygone \
-        cmd=/home/vagrant/code/pygone/bin/pygone \
+        cmd=/home/ben/pygone/bin/pygone \
         proto=uci \
     -engine \
-        name=pygone154 \
-        cmd=/home/vagrant/code/pygone/bin/pygone154 \
+        name=pygone156 \
+        cmd=/home/ben/pygone/bin/pygone156 \
         proto=uci \
     -each \
         tc=0/1+1 \
         timemargin=1500 \
-        -concurrency 1 \
+        -concurrency 4 \
         -resign movecount=4 score=3000 \
         -openings file=book2.pgn \
         -repeat \

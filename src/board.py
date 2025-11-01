@@ -1,7 +1,12 @@
+<<<<<<< Updated upstream
 #!/usr/bin/env python3
 import random
 
 PIECEPOINTS = {'p': 85, 'n': 295, 'b': 300, 'r': 700, 'q': 1350, 'k': 32767}
+=======
+#PIECEPOINTS = {'p': 85, 'n': 295, 'b': 300, 'r': 700, 'q': 1350, 'k': 32767}
+PIECEPOINTS = {'p': 100, 'n': 320, 'b': 325, 'r': 500, 'q': 975, 'k': 32767}
+>>>>>>> Stashed changes
 
 ALLPSQT = {
     'p': (
@@ -70,6 +75,42 @@ for set_piece, set_board in ALLPSQT.items():
     ALLPSQT[set_piece] = sum((prow(set_board[column*8:column*8+8]) for column in range(8)), ())
     ALLPSQT[set_piece] = (0,)*20 + ALLPSQT[set_piece] + (0,)*20
 
+<<<<<<< Updated upstream
+=======
+def get_moves(piece):
+    if piece == 'k':
+        return [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), (1, -10), (-1, 10), (-1, -10)]
+    elif piece == 'q':
+        return [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), (1, -10), (-1, 10), (-1, -10)]
+    elif piece == 'r':
+        return [(0, 10), (0, -10), (1, 0), (-1, 0)]
+    elif piece == 'b':
+        return [(1, 10), (1, -10), (-1, 10), (-1, -10)]
+    elif piece == 'n':
+        return [(1, -20), (-1, -20), (2, -10), (-2, -10), (1, 20), (-1, 20), (2, 10), (-2, 10)]
+    else:
+        return [(0, -10), (1, -10), (-1, -10)]
+
+def number_to_letter(to_number):
+    return chr(to_number + 96)
+
+def print_to_terminal(print_string):
+    print(print_string, flush=True)
+
+def print_stats(v_depth, v_score, v_time, v_nodes, v_nps, v_pv):
+    print_to_terminal(f"info depth {v_depth} score cp {v_score} time {v_time} nodes {v_nodes} nps {v_nps} pv {v_pv}")
+
+def unpack_coordinate(uci_coordinate):
+    return (coordinate_to_position(uci_coordinate[0:2]),
+            coordinate_to_position(uci_coordinate[2:4]))
+
+def position_to_coordinate(board_position):
+    return number_to_letter(board_position % 10) + str(abs(board_position // 10 - 10))
+
+def coordinate_to_position(coordinate):
+    return 10 * (abs(int(coordinate[1]) - 8) + 2) + (ord(coordinate[0]) - 97) + 1
+
+>>>>>>> Stashed changes
 class Board:
     board_string = ''
     hash = 0
@@ -350,11 +391,19 @@ class Board:
                 local_score += ALLPSQT[promote][to_offset] - \
                                 ALLPSQT['p'][to_offset]
 
+<<<<<<< Updated upstream
             if self.passer_pawn(from_number):
                 local_score += 5 
             if self.stacked_pawn(from_number):
                 local_score -= 10
+=======
+            #if self.passer_pawn(from_number):
+            #    local_score += 8
+            #if self.stacked_pawn(from_number):
+            #    local_score -= 5
+>>>>>>> Stashed changes
         elif from_piece == 'k':
+            #local_score += self.king_safety(is_white)
             if abs(to_number - from_number) == 2:
                 if to_number > from_number:
                     local_score += ALLPSQT['r'][to_offset - 1] - \
@@ -370,6 +419,7 @@ class Board:
 
         return local_score
 
+<<<<<<< Updated upstream
     def passer_pawn(self, board_position):
         is_white = self.played_move_count % 2 == 0
         p_offset = -10 if is_white else 10
@@ -398,8 +448,84 @@ class Board:
             if self.board_state[pos] == p_piece:
                 return True
             pos += p_offset
-        return False
+=======
+    def passer_pawn(self, pos):
+        piece = self.board_state[pos]
+        if piece not in ('P', 'p'):
+            return False  # not a pawn
 
+        is_white = piece == 'P'
+        forward = -10 if is_white else 10
+        enemy_pawn = 'p' if is_white else 'P'
+
+        # Check all squares ahead (including diagonals) for blocking/capturing enemy pawns
+        offset_dirs = [forward - 1, forward, forward + 1]  # left, center, right columns
+
+        check_pos = pos + forward
+        while 20 <= check_pos <= 99:
+            for offset in offset_dirs:
+                test_square = check_pos + (offset - forward)  # adjust for diagonals
+                if 20 <= test_square <= 99 and self.board_state[test_square] == enemy_pawn:
+                    return False
+            check_pos += forward
+
+        return True
+
+    def stacked_pawn(self, pos):
+        piece = self.board_state[pos]
+        if piece not in ('P', 'p'):
+            return False
+
+        is_white = piece == 'P'
+        offset = -10 if is_white else 10
+
+        # Look ahead on same file
+        current = pos + offset
+        while 20 <= current <= 99:
+            if self.board_state[current] == piece:
+                return True
+            current += offset
+
+        # Optionally also check behind (if you want either pawn to register as stacked)
+        current = pos - offset
+        while 20 <= current <= 99:
+            if self.board_state[current] == piece:
+                return True
+            current -= offset
+
+>>>>>>> Stashed changes
+        return False
+   
+    def king_safety(self, is_white):
+        king_pos = coordinate_to_position(self.white_king_position if is_white else self.black_king_position)
+
+        forward = -10 if is_white else 10
+        pawn = 'P' if is_white else 'p'
+
+        # 1 Pawn shield directly in front of the king
+        pawn_cover = 0
+        for side in (-1, 0, 1):  # left, center, right
+            sq = king_pos + forward + side
+            if 20 <= sq <= 99 and self.board_state[sq] == pawn:
+                pawn_cover += 1
+
+        # 2 Open files / semi-open files near king
+        open_file_penalty = 0
+        for side in (-1, 0, 1):
+            fwd = king_pos + forward
+            while 20 <= fwd <= 99:
+                piece = self.board_state[fwd]
+                if piece in ('P', 'p'):
+                    break  # blocked by any pawn
+                fwd += forward
+            else:
+                # No blocking pawn found: open file in front of king
+                open_file_penalty += 10
+
+        # 3 Score: more pawn cover = safe, open file = unsafe
+        score = pawn_cover * 10 - open_file_penalty - 20
+        return score
+    
     def str_board(self):
         return self.board_state + \
           str(self.played_move_count % 2)
