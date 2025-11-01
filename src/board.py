@@ -1,12 +1,5 @@
-<<<<<<< Updated upstream
-#!/usr/bin/env python3
-import random
-
-PIECEPOINTS = {'p': 85, 'n': 295, 'b': 300, 'r': 700, 'q': 1350, 'k': 32767}
-=======
 #PIECEPOINTS = {'p': 85, 'n': 295, 'b': 300, 'r': 700, 'q': 1350, 'k': 32767}
 PIECEPOINTS = {'p': 100, 'n': 320, 'b': 325, 'r': 500, 'q': 975, 'k': 32767}
->>>>>>> Stashed changes
 
 ALLPSQT = {
     'p': (
@@ -47,7 +40,7 @@ ALLPSQT = {
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
         -10, 0, 0, 0, 0, 0, 0,-10 ,
-        0, 0, 0, 0, 0, 0, 0, 0,
+        -10, 0, 0,10,10, 10, 0,-10,
     ),
     'q': (
         -40,-20,-20,-10,-10,-20,-20,-40 ,
@@ -75,8 +68,6 @@ for set_piece, set_board in ALLPSQT.items():
     ALLPSQT[set_piece] = sum((prow(set_board[column*8:column*8+8]) for column in range(8)), ())
     ALLPSQT[set_piece] = (0,)*20 + ALLPSQT[set_piece] + (0,)*20
 
-<<<<<<< Updated upstream
-=======
 def get_moves(piece):
     if piece == 'k':
         return [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), (1, -10), (-1, 10), (-1, -10)]
@@ -110,14 +101,8 @@ def position_to_coordinate(board_position):
 def coordinate_to_position(coordinate):
     return 10 * (abs(int(coordinate[1]) - 8) + 2) + (ord(coordinate[0]) - 97) + 1
 
->>>>>>> Stashed changes
 class Board:
     board_string = ''
-    hash = 0
-    ZOBRIST = {}
-    ZOBRIST_CASTLE = []
-    ZOBRIST_EP = []
-    ZOBRIST_SIDE = 0
     played_move_count = 0
     repetitions = []
     white_castling = [True, True]
@@ -127,7 +112,6 @@ class Board:
     rolling_score = 0
     piece_count = 32
     en_passant = ''
-    en_passant_file_index = 0
     move_counter = 0
 
     def __init__(self):
@@ -145,76 +129,20 @@ class Board:
             '..........' # 100 -109
             '..........' # 110 -119
             )
-        
-        self.hash = 0
-        self.init_zobrist()
 
-        for pos, piece in enumerate(self.board_state):
-            if piece in "prnbqkPRNBQK":
-                self.hash ^= self.ZOBRIST[(piece, pos)]
-
-    def init_zobrist(self):
-        random.seed(42)  # deterministic for testing
-        zobrist = {}
-        for piece in "prnbqkPRNBQK":
-            for square in range(120):
-                zobrist[(piece, square)] = random.getrandbits(64)
-
-        self.ZOBRIST = zobrist
-        self.ZOBRIST_CASTLE = [random.getrandbits(64) for _ in range(4)]
-        self.ZOBRIST_EP = [random.getrandbits(64) for _ in range(8)]
-        self.ZOBRIST_SIDE = random.getrandbits(64)
-
-    def unpack_coordinate(self, uci_coordinate):
-        return (self.coordinate_to_position(uci_coordinate[0:2]),
-                self.coordinate_to_position(uci_coordinate[2:4]))
-        
-    def position_to_coordinate(self, board_position):
-        return self.number_to_letter(board_position % 10) + str(abs(board_position // 10 - 10))
-
-    def coordinate_to_position(self, coordinate):
-        return 10 * (abs(int(coordinate[1]) - 8) + 2) + (ord(coordinate[0]) - 97) + 1
-
-    def mutate_board(self, pos, new_piece):
-        # assert 0 <= pos < 120, f"Position {pos} out of range"
-
-        old_piece = self.board_state[pos]
-        if old_piece in "prnbqkPRNBQK":
-            self.hash ^= self.ZOBRIST[(old_piece, pos)]
-        if new_piece in "prnbqkPRNBQK":
-            self.hash ^= self.ZOBRIST[(new_piece, pos)]
-
-        self.hash ^= self.ZOBRIST_EP[self.en_passant_file_index] if self.en_passant else 0
-
-        # Update board state
-        self.board_state = self.board_state[:pos] + new_piece + self.board_state[pos+1:]
-
-    def get_moves(self, piece):
-        if piece == 'k':
-            return [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), (1, -10), (-1, 10), (-1, -10)]
-        elif piece == 'q':
-            return [(0, 10), (0, -10), (1, 0), (-1, 0), (1, 10), (1, -10), (-1, 10), (-1, -10)]
-        elif piece == 'r':
-            return [(0, 10), (0, -10), (1, 0), (-1, 0)]
-        elif piece == 'b':
-            return [(1, 10), (1, -10), (-1, 10), (-1, -10)]
-        elif piece == 'n':
-            return [(1, -20), (-1, -20), (2, -10), (-2, -10), (1, 20), (-1, 20), (2, 10), (-2, 10)]
-        else:
-            return [(0, -10), (1, -10), (-1, -10)]
-
-    def number_to_letter(self, to_number):
-        return chr(to_number + 96)
+    def mutate_board(self, board_position, piece):
+        l_board_state = self.board_state;
+        self.board_state = l_board_state[:board_position] + piece + l_board_state[board_position + 1:]
 
     def apply_move(self, uci_coordinate):
-        l_board_state = self.board_state
+        l_board_state = self.board_state;
 
         is_white = self.played_move_count % 2 == 0
 
         self.move_counter += 1
 
         # break uci coordinate into location in board state list
-        (from_number, to_number) = self.unpack_coordinate(uci_coordinate)
+        (from_number, to_number) = unpack_coordinate(uci_coordinate)
 
         from_piece = l_board_state[from_number].lower()
 
@@ -232,7 +160,6 @@ class Board:
             en_passant_offset = -1 if is_white else 1
             if set_en_passant:
                 self.en_passant = uci_coordinate[0:1] + str(int(uci_coordinate[3:4]) + en_passant_offset)
-                self.en_passant_file_index = ord(uci_coordinate[0]) - ord('a')
             elif uci_coordinate[2:4] == self.en_passant:
                 self.mutate_board(to_number - 10 * en_passant_offset, '-')
             elif len(uci_coordinate) > 4:
@@ -249,15 +176,11 @@ class Board:
 
         if not set_en_passant:
             self.en_passant = ''
-            self.en_passant_file_index = 0
-
-        self.hash ^= self.ZOBRIST_SIDE
 
         self.board_string = self.str_board()
         self.piece_count = self.get_piece_count()
-        
+
     def make_move(self, uci_coordinate):
-        
         # making the move will return an altered copy of the current state
         # this allows us to avoid "undoing" the move
         board = self.board_copy()
@@ -266,35 +189,18 @@ class Board:
 
         # set castling rights
         if 'e1' in uci_coordinate:
-            # remove white castling rights
-            for i, right in enumerate(board.white_castling):
-                if right:
-                    board.hash ^= board.ZOBRIST_CASTLE[i]  # XOR out previous right
             board.white_castling = [False, False]
-
         elif 'a1' in uci_coordinate:
-            if board.white_castling[0]:
-                board.hash ^= board.ZOBRIST_CASTLE[0]
-                board.white_castling[0] = False
+            board.white_castling[0] = False
         elif 'h1' in uci_coordinate:
-            if board.white_castling[1]:
-                board.hash ^= board.ZOBRIST_CASTLE[1]
-                board.white_castling[1] = False
+            board.white_castling[1] = False
 
         if 'e8' in uci_coordinate:
-            for i, right in enumerate(board.black_castling):
-                if right:
-                    board.hash ^= board.ZOBRIST_CASTLE[i + 2]
             board.black_castling = [False, False]
-
         elif 'a8' in uci_coordinate:
-            if board.black_castling[1]:
-                board.hash ^= board.ZOBRIST_CASTLE[2]
-                board.black_castling[1] = False
+            board.black_castling[0] = False
         elif 'h8' in uci_coordinate:
-            if board.black_castling[0]:
-                board.hash ^= board.ZOBRIST_CASTLE[3]
-                board.black_castling[0] = False
+            board.black_castling[1] = False
 
         board.apply_move(uci_coordinate)
 
@@ -306,7 +212,7 @@ class Board:
         return board
 
     def nullmove(self):
-        # allows for a quick way to let other side move
+        """ allows for a quick way to let other side move """
         # making the move will return an altered copy of the current state
         # this allows us to avoid "undoing" the move
         board = self.board_copy()
@@ -316,7 +222,7 @@ class Board:
         return board
 
     def board_copy(self):
-        # copy the board, does not copy the score
+        """ copy the board, does not copy the score """
         board = Board()
         board.played_move_count = self.played_move_count
         board.white_king_position = self.white_king_position
@@ -325,15 +231,10 @@ class Board:
         board.piece_count = self.piece_count
         board.en_passant = self.en_passant
         board.move_counter = self.move_counter
-        board.board_state = self.board_state[:]
+        board.board_state = self.board_state
         board.repetitions = self.repetitions.copy()
         board.white_castling = self.white_castling.copy()
         board.black_castling = self.black_castling.copy()
-        board.hash = self.hash
-        board.ZOBRIST = self.ZOBRIST
-        board.ZOBRIST_CASTLE = self.ZOBRIST_CASTLE
-        board.ZOBRIST_SIDE = self.ZOBRIST_SIDE
-        board.ZOBRIST_EP = self.ZOBRIST_EP
 
         return board
 
@@ -346,20 +247,15 @@ class Board:
     def move_sort(self, uci_coordinate):
         return self.calculate_score(uci_coordinate, True)
 
-    def print_board(self, board_state):
-        for i in range(12):
-            row = board_state[i*10:(i+1)*10]  # slice 8 squares per row
-            print(' '.join(row)) 
-
     def calculate_score(self, uci_coordinate, sorting=False):
         is_white = self.played_move_count % 2 == 0
-        # p_offset = -10 if is_white else 10
-        # p_piece = 'P' if is_white else 'p'
-        # is_endgame = self.is_endgame()
+        p_offset = -10 if is_white else 10
+        p_piece = 'P' if is_white else 'p'
+        is_endgame = self.is_endgame()
 
         l_board_state = self.board_state
 
-        (from_number, to_number) = self.unpack_coordinate(uci_coordinate)
+        (from_number, to_number) = unpack_coordinate(uci_coordinate)
 
         # to_offset = to_number if is_white else abs(to_number - 119) + ((to_number % 10) - (abs(to_number - 119) % 10))
         # from_offset = from_number if is_white else abs(from_number - 119) + (from_number % 10) - (abs(from_number - 119) % 10)
@@ -374,8 +270,7 @@ class Board:
 
         to_piece = l_board_state[to_number].lower()
 
-        if from_piece != '-':
-            local_score += ALLPSQT[from_piece][to_offset] - \
+        local_score += ALLPSQT[from_piece][to_offset] - \
                         ALLPSQT[from_piece][from_offset]
 
         if to_piece != '-':
@@ -391,17 +286,10 @@ class Board:
                 local_score += ALLPSQT[promote][to_offset] - \
                                 ALLPSQT['p'][to_offset]
 
-<<<<<<< Updated upstream
-            if self.passer_pawn(from_number):
-                local_score += 5 
-            if self.stacked_pawn(from_number):
-                local_score -= 10
-=======
             #if self.passer_pawn(from_number):
             #    local_score += 8
             #if self.stacked_pawn(from_number):
             #    local_score -= 5
->>>>>>> Stashed changes
         elif from_piece == 'k':
             #local_score += self.king_safety(is_white)
             if abs(to_number - from_number) == 2:
@@ -419,36 +307,6 @@ class Board:
 
         return local_score
 
-<<<<<<< Updated upstream
-    def passer_pawn(self, board_position):
-        is_white = self.played_move_count % 2 == 0
-        p_offset = -10 if is_white else 10
-        start_positions = [
-            board_position + p_offset,           # same file
-            board_position + p_offset - 1,       # left file
-            board_position + p_offset + 1        # right file
-        ]
-
-        while 20 <= min(start_positions) <= 100 and max(start_positions) <= 100:
-            for pos in start_positions:
-                piece = self.board_state[pos]
-                if piece in ('prnbqk' if is_white else 'PRNBQK'):
-                    return False
-            start_positions = [pos + p_offset for pos in start_positions]
-
-        return True
-
-    def stacked_pawn(self, board_position):
-        is_white = self.played_move_count % 2 == 0
-        p_piece = 'P' if is_white else 'p'
-        p_offset = -10 if is_white else 10
-
-        pos = board_position + p_offset
-        while 20 <= pos <= 100:
-            if self.board_state[pos] == p_piece:
-                return True
-            pos += p_offset
-=======
     def passer_pawn(self, pos):
         piece = self.board_state[pos]
         if piece not in ('P', 'p'):
@@ -493,7 +351,6 @@ class Board:
                 return True
             current -= offset
 
->>>>>>> Stashed changes
         return False
    
     def king_safety(self, is_white):
@@ -534,7 +391,7 @@ class Board:
         return self.generate_valid_moves(True)
 
     def generate_valid_moves(self, captures_only=False):
-        # Return list of valid (maybe illegal) moves
+        """Return list of valid (maybe illegal) moves"""
         offset = 1
 
         if self.played_move_count % 2 == 0:
@@ -554,7 +411,7 @@ class Board:
             if piece in "-." or is_white == piece.islower():
                 continue
 
-            start_coordinate = self.position_to_coordinate(board_position)
+            start_coordinate = position_to_coordinate(board_position)
 
             piece_lower = piece.lower()
 
@@ -564,26 +421,26 @@ class Board:
             # castling
             if not captures_only:
                 if piece == 'K':
-                    if self.white_castling[0] and self.board_state[96:99] == '--R' and \
+                    if self.white_castling[1] and self.board_state[96:99] == '--R' and \
                         not any(self.attack_position(is_white, coordinate) for coordinate in ['e1', 'f1', 'g1']):
                         yield start_coordinate + 'g1'
-                    if self.white_castling[1] and self.board_state[91:95] == 'R---' and \
+                    if self.white_castling[0] and self.board_state[91:95] == 'R---' and \
                         not any(self.attack_position(is_white, coordinate) for coordinate in ['e1', 'd1', 'c1']):
                         yield start_coordinate + 'c1'
                 elif piece == 'k':
-                    if self.black_castling[0] and self.board_state[26:29] == '--r' and \
+                    if self.black_castling[1] and self.board_state[26:29] == '--r' and \
                         not any(self.attack_position(is_white, coordinate) for coordinate in ['e8', 'f8', 'g8']):
                         yield start_coordinate + 'g8'
-                    if self.black_castling[1] and self.board_state[21:25] == 'r---' and \
+                    if self.black_castling[0] and self.board_state[21:25] == 'r---' and \
                         not any(self.attack_position(is_white, coordinate) for coordinate in ['e8', 'd8', 'c8']):
                         yield start_coordinate + 'c8'
                 elif piece_lower == 'p' and \
                     max_row <= board_position < max_row + 8 and \
                     self.board_state[board_position + -10*offset] == '-' and \
                     self.board_state[board_position + -20*offset] == '-':
-                    yield start_coordinate + self.position_to_coordinate(board_position + -20*offset)
+                    yield start_coordinate + position_to_coordinate(board_position + -20*offset)
 
-            for piece_move in self.get_moves(piece_lower):
+            for piece_move in get_moves(piece_lower):
                 to_position = board_position + piece_move[0] + (piece_move[1] * offset)
 
                 while 20 < to_position < 99:
@@ -591,7 +448,7 @@ class Board:
 
                     if not captures_only or (captures_only and eval_piece not in '-.'):
 
-                        dest = self.position_to_coordinate(to_position)
+                        dest = position_to_coordinate(to_position)
 
                         if piece_lower == 'p':
                             if (board_position in range(min_row, min_row+8) and piece_move[0] == 0 and eval_piece == '-') or \
@@ -620,7 +477,7 @@ class Board:
         offset = 1
         valid_pieces = 'PRNBQK-' if is_white else 'prnbqk-'
 
-        attack_position = self.coordinate_to_position(coordinate)
+        attack_position = coordinate_to_position(coordinate)
 
         for board_position, piece in enumerate(self.board_state):
             if piece in "-." or is_white == piece.isupper():
@@ -631,7 +488,7 @@ class Board:
 
             piece = piece.lower()
 
-            for piece_move in self.get_moves(piece):
+            for piece_move in get_moves(piece):
                 if piece == 'p' and not piece_move[0]:
                     continue
 
