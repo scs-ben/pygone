@@ -6,6 +6,7 @@ from search2 import Search
 from perft2 import Perft
 
 board = Board()
+search = Search(board)
 
 for line in sys.stdin:
     line = line.strip()
@@ -17,24 +18,37 @@ for line in sys.stdin:
         fen = line[len("position fen "):]
         board.set_fen(fen)
         board.print_board()
+    elif line.startswith("uci"):
+        print("pygone2.0\nuciok", flush=True)
+    elif line.startswith("ucinewgame"):
+            board = Board()
+            search.set_board(board)
+    elif line.startswith("isready"):
+        print("readyok", flush=True)
     elif line.startswith("position startpos "):
+        board = Board()
+        
         moves = line.split()
         for move in moves[3:]:
             board.uci_move(move)
             
-        board.print_board()
-    elif line.startswith("go depth "):
-        search = Search(board)
+        search.set_board(board)
+    elif line.startswith("go "):
+        search.set_board(board)
         
-        depth = int(line[len("go depth ")])
+        depth = 4 # int(line[len("go depth ")])
         for s_depth, move, score in search.iterative_search():
             if s_depth >= depth:
                 break
             
-        print(f"bestmove {board.move_to_uci(move)}")
+        print(f"bestmove {board.move_to_uci(move)}", flush=True)
     elif line.startswith("go perft "):
         perft = Perft(board)       
         depth = int(line[len("go perft ")])
         perft.run(depth)
-    else:
-        print(f"Unknown command: {line}", flush=True)
+    elif line.startswith('print'):
+        board.print_board()
+    elif line.startswith('fen'):
+        print(board.get_fen(), flush=True)
+    # else:
+    #     print(f"Unknown command: {line}", flush=True)

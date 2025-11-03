@@ -194,6 +194,63 @@ class Board:
         if not self.white_to_move:
             self.rotate()
 
+    def get_fen(self):
+        """Return the FEN string representing the current board state."""
+        
+        # Reverse mapping of bitboards to piece characters
+        bitboard_map = {
+            'white_pawns': 'P',   'white_knights': 'N', 'white_bishops': 'B',
+            'white_rooks': 'R',   'white_queens': 'Q',  'white_kings': 'K',
+            'black_pawns': 'p',   'black_knights': 'n', 'black_bishops': 'b',
+            'black_rooks': 'r',   'black_queens': 'q',  'black_kings': 'k'
+        }
+
+        rows = []
+        for rank in range(7, -1, -1):  # rank 8 to 1
+            row = ''
+            empty = 0
+            for file in range(8):  # file a to h
+                sq = rank * 8 + file
+                piece_found = False
+                for bb_attr, piece_char in bitboard_map.items():
+                    if getattr(self, bb_attr) & (1 << sq):
+                        if empty > 0:
+                            row += str(empty)
+                            empty = 0
+                        row += piece_char
+                        piece_found = True
+                        break
+                if not piece_found:
+                    empty += 1
+            if empty > 0:
+                row += str(empty)
+            rows.append(row)
+        
+        placement = '/'.join(rows)
+
+        # Side to move
+        side = 'w' if self.white_to_move else 'b'
+
+        # Castling rights
+        castling = ''
+        castling += 'K' if self.castling_rights[0] else ''
+        castling += 'Q' if self.castling_rights[1] else ''
+        castling += 'k' if self.castling_rights[2] else ''
+        castling += 'q' if self.castling_rights[3] else ''
+        if castling == '':
+            castling = '-'
+
+        # En passant square
+        ep = '-' if self.en_passant_square is None else self.SQUARES_REV[self.en_passant_square]
+
+        # Halfmove clock
+        halfmove = str(self.halfmove_clock)
+
+        # Fullmove number
+        fullmove = str((self.plies_played // 2) + 1)
+
+        return f"{placement} {side} {castling} {ep} {halfmove} {fullmove}"
+
     def move_to_uci(self, move):
         if move.white_to_move:
             return self.INDEX_TO_SQUARE[move.from_sq] + self.INDEX_TO_SQUARE[move.to_sq] + (move.promo or '')
@@ -623,7 +680,7 @@ class Board:
         king_sq = self.king_square(for_white)  # our king
         if king_sq is None:
             return False  # or raise an error if king is missing
-        # Check if enemy (after rotation, always black) attacks the square             
+        # Check if enemy (after rotation, always black) attacks the square  
         return self.is_square_attacked(king_sq, not for_white)
 
     def is_square_attacked(self, sq, by_white=True):
@@ -659,39 +716,28 @@ class Board:
             return True
 
         # Sliding pieces
-        if by_white:
-            for bb, offsets in [(bishops|queens, self.BISHOP_OFFSETS),(rooks|queens, self.ROOK_OFFSETS)]:
-                for sqp in range(64):
-                    if not (bb & (1 << sqp)):
-                        continue
-                    r, f = divmod(sqp, 8)
-                    for offset in offsets:
-                        tr, tf = r, f
-                        while True:
-                            tr += offset // 8
-                            tf += offset % 8
-                            if not (0 <= tr < 8 and 0 <= tf < 8):
-                                break
-                            tsq = tr*8 + tf
-                            if tsq == sq:
-                                return True  # check detected
-                            if all_pieces & (1 << tsq):
-                                break  # blocked
-        else:
-            for bb, offsets in [(bishops|queens, self.BISHOP_OFFSETS), (rooks|queens, self.ROOK_OFFSETS)]:
+        attackers = [
+                (bishops | queens, self.BISHOP_OFFSETS),
+                (rooks   | queens, self.ROOK_OFFSETS),
+            ]
+
+        for bb, offsets in attackers:
+            for piece_sq in range(64):
+                if not (bb & (1 << piece_sq)):
+                    continue
+                r, f = divmod(piece_sq, 8)
                 for offset in offsets:
-                    tsq = sq
+                    tr, tf = r, f
                     while True:
-                        tr, tf = divmod(tsq, 8)
                         tr += offset // 8
                         tf += offset % 8
                         if not (0 <= tr < 8 and 0 <= tf < 8):
                             break
                         tsq = tr*8 + tf
+                        if tsq == sq:
+                            return True  # attacked
                         if all_pieces & (1 << tsq):
-                            if bb & (1 << tsq):
-                                return True
-                            break
+                            break  # blocked
 
         return False
 
@@ -829,4 +875,4 @@ class Board:
             print(' '.join(board[rank*8:(rank+1)*8]))
             
         score = self.evaluate()
-        print(f"White?: {(self.white_to_move)} Plies: {self.plies_played} Moves: {self.moves_played} Score: {score}")
+        print(f"White?: {(self.white_to_move)} Plies: {self.plies_played} Moves: {self.moves_played} Score: {score} Check: {self.in_check()}")

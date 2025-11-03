@@ -41,6 +41,9 @@ class Search:
         self.nodes = 0
         self.tt = TranspositionTable(size_bytes=tt_size_bytes)
 
+    def set_board(self, board):
+        self.board = board
+
     def print_stats(self, depth, score, time, notes, nps, pv):
         print(f"info depth {depth} score cp {score} time {time} nodes {notes} nps {nps} pv {pv}", flush=True)
 
