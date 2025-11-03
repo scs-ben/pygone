@@ -197,6 +197,9 @@ class Board:
     def get_fen(self):
         """Return the FEN string representing the current board state."""
         
+        if not self.white_to_move:
+            self.rotate()
+        
         # Reverse mapping of bitboards to piece characters
         bitboard_map = {
             'white_pawns': 'P',   'white_knights': 'N', 'white_bishops': 'B',
@@ -249,6 +252,9 @@ class Board:
         # Fullmove number
         fullmove = str((self.plies_played // 2) + 1)
 
+        if not self.white_to_move:
+            self.rotate()
+
         return f"{placement} {side} {castling} {ep} {halfmove} {fullmove}"
 
     def move_to_uci(self, move):
@@ -271,6 +277,8 @@ class Board:
             
         promo = uci[4] if len(uci) == 5 else None
         
+        print(f"{uci} {from_sq} {to_sq}")
+        
         self.move(from_sq, to_sq, promo)
 
     def move(self, from_sq, to_sq, promo):
@@ -282,6 +290,35 @@ class Board:
         # Determine which piece is moving (white always on bottom)
         for name in 'pawn knight bishop rook queen king'.split():
             bb_name = "".join(["white_",name,"s"])
+
+            if bb_name == "white_kings":
+                # Kingside castling
+                if abs(to_sq - from_sq) == 2:
+                    if to_sq > from_sq: 
+                        if from_sq == 4:
+                            rook_from = 7
+                            rook_to = 5
+                        else:
+                            rook_from = 7
+                            rook_to = 5
+                    else: 
+                        if from_sq == 4:
+                            rook_from = 0
+                            rook_to = 3
+                        else:
+                            rook_from = 0
+                            rook_to = 2
+
+                    print(f"C {rook_from} {rook_to}")
+                    # Move rook bitboard
+                    rook_bb_name = "white_rooks"
+                    rook_bb = getattr(self, rook_bb_name)
+                    rook_bb ^= (1 << rook_from) | (1 << rook_to)
+                    setattr(self, rook_bb_name, rook_bb)
+
+                    # Update Zobrist hash for rook
+                    self.hash ^= Zobrist.PIECE_KEYS[Zobrist.PIECE_INDEX[rook_bb_name]][rook_from]
+                    self.hash ^= Zobrist.PIECE_KEYS[Zobrist.PIECE_INDEX[rook_bb_name]][rook_to]
             
             bb = getattr(self, bb_name)
             if bb & (1 << from_sq):
