@@ -40,6 +40,18 @@ class Search:
         self.board = board
         self.nodes = 0
         self.tt = TranspositionTable(size_bytes=tt_size_bytes)
+        self.time_limit = None      # seconds
+        self.end_time = None
+        self.time_up = False
+        self.depth = 50
+
+    def set_time_limit(self, seconds):
+        self.time_limit = seconds
+        self.end_time = time.time() + seconds
+        self.time_up = False
+        
+    def set_depth(self, depth):
+        self.depth = depth
 
     def set_board(self, board):
         self.board = board
@@ -49,25 +61,35 @@ class Search:
 
     def iterative_search(self):
         start_time = time.time()
+        best_move = None
+        best_score = None
 
-        local_score = self.board.evaluate()
-        for depth in range(1, 100):
+        for depth in range(1, 100):  # iterative deepening
+            if self.time_up:
+                break
+
             local_score = self.search(depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
 
-            # if time.time() < self.critical_time:
             entry = self.tt.probe(self.board.hash)
-            # else:
-                # break
+            if entry:
+                best_move = entry.move
+                best_score = local_score
 
             elapsed_time = time.time() - start_time
-
             nps = math.ceil(self.nodes / elapsed_time) if elapsed_time > 0 else 1
 
-            uci_move = self.board.move_to_uci(entry.move)
+            uci_move = self.board.move_to_uci(best_move) if best_move else None
+            self.print_stats(str(depth), str(math.ceil(best_score)), str(math.ceil(elapsed_time * 1000)), str(self.nodes), str(nps), str(uci_move))
 
-            self.print_stats(str(depth), str(math.ceil(local_score)), str(math.ceil(elapsed_time * 1000)), str(self.nodes), str(nps), str(uci_move))
+            if self.time_limit and time.time() >= self.end_time:
+                self.time_up = True
+                break
+            
+            if depth >= self.depth:
+                break
 
-            yield depth, entry.move, local_score
+        # When time expires, return the best move/eval found
+        return best_move, best_score
 
     def threefold(self):
         count = 0
@@ -80,6 +102,10 @@ class Search:
         return count >= 3
 
     def search(self, depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER):
+        if self.time_up or (self.time_limit and time.time() >= self.end_time):
+            self.time_up = True
+            return self.board.evaluate()
+            
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
         
@@ -128,7 +154,7 @@ class Search:
                 break  # beta cutoff
 
         if not played_moves:
-            return -self.MATE_SCORE_UPPER + played_moves if self.board.in_check() else 0
+            return -self.MATE_SCORE_UPPER + depth if self.board.in_check() else 0
 
         # --- Store in TT ---
         if best_score <= alpha_orig:
@@ -138,13 +164,20 @@ class Search:
         else:
             flag = 'EXACT'
 
-        self.tt.store(self.board.hash, depth, best_score, flag, best_move)
+        if not self.time_up:
+            self.tt.store(self.board.hash, depth, best_score, flag, best_move)
 
         return best_score
     
     def q_search(self, alpha, beta):
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
+        
+        stand_pat = self.board.evaluate()
+        
+        if self.time_up or (self.time_limit and time.time() >= self.end_time):
+            self.time_up = True
+            return stand_pat
         
         # TT lookup
         entry = self.tt.probe(self.board.hash)
@@ -160,7 +193,6 @@ class Search:
 
         self.nodes += 1
         
-        stand_pat = self.board.evaluate()
         if stand_pat >= beta:
             return beta
         if alpha < stand_pat:
@@ -176,12 +208,15 @@ class Search:
 
             if score >= beta:
                 # Store cutoff in TT
-                self.tt.store(self.board.hash, 0, beta, 'LOWERBOUND', move)
+                if not self.time_up:
+                    self.tt.store(self.board.hash, 0, beta, 'LOWERBOUND', move)
                 return beta
             if score > alpha:
                 alpha = score
 
         # Store stand_pat result
-        self.tt.store(self.board.hash, 0, alpha, 'EXACT', None)
+        if not self.time_up:
+            self.tt.store(self.board.hash, 0, alpha, 'EXACT', None)
+            
         return alpha
         

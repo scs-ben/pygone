@@ -34,12 +34,39 @@ for line in sys.stdin:
             
         search.set_board(board)
     elif line.startswith("go "):
+        tokens = line.split()
+        wtime = btime = movestogo = None
+        depth = None
+
+        i = 1
+        while i < len(tokens):
+            if tokens[i] == "wtime":
+                wtime = int(tokens[i+1])
+                i += 2
+            elif tokens[i] == "btime":
+                btime = int(tokens[i+1])
+                i += 2
+            elif tokens[i] == "movestogo":
+                movestogo = int(tokens[i+1])
+                i += 2
+            elif tokens[i] == "depth":
+                depth = int(tokens[i+1])
+                i += 2
+            else:
+                i += 1
+              
         search.set_board(board)
-        
-        depth = 4 # int(line[len("go depth ")])
-        for s_depth, move, score in search.iterative_search():
-            if s_depth >= depth:
-                break
+          
+        if depth:
+            search.set_depth(depth)
+        else:
+            side_time = (wtime if board.white_to_move else btime) / 1000
+            
+            move_time = max(2.2, side_time / 28)
+            
+            search.set_time_limit(move_time)
+            
+        move, score = search.iterative_search()
             
         print(f"bestmove {board.move_to_uci(move)}", flush=True)
     elif line.startswith("go perft "):
