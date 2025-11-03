@@ -34,6 +34,8 @@ class TranspositionTable:
         return None
 
 class Search:
+    MATE_SCORE_UPPER = 27000
+    
     def __init__(self, board, tt_size_bytes=2_147_483_648):
         self.board = board
         self.nodes = 0
@@ -47,7 +49,7 @@ class Search:
 
         local_score = self.board.evaluate()
         for depth in range(1, 100):
-            local_score = self.search(depth, -float('inf'), float('inf'))
+            local_score = self.search(depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
 
             # if time.time() < self.critical_time:
             entry = self.tt.probe(self.board.hash)
@@ -64,8 +66,20 @@ class Search:
 
             yield depth, entry.move, local_score
 
-    def search(self, depth, alpha=-float('inf'), beta=float('inf')):
-        self.nodes += 1
+    def threefold(self):
+        count = 0
+        
+        for entry in self.board.history:
+            count += entry[-1] == self.board.hash
+            if count >= 3:
+                break
+            
+        return count >= 3
+
+    def search(self, depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER):
+        if self.threefold() or self.board.halfmove_clock >= 100:
+            return 0
+        
         alpha_orig = alpha
 
         # --- TT lookup ---
@@ -80,15 +94,26 @@ class Search:
             if alpha >= beta:
                 return entry.score
 
+        self.nodes += 1
+
         # --- Leaf node ---
         if depth == 0:
-            return self.board.evaluate()
+            return self.q_search(alpha, beta)
 
         best_score = -float('inf')
         best_move = None
 
+        played_moves = 0
+
         for move in sorted(self.board.generate_pseudo_legal_moves(), key=self.board.score_move, reverse=True):
             self.board.move_tuple(move)
+            
+            if self.board.in_check(False):
+                self.board.unmove()
+                continue
+            
+            played_moves += 1
+            
             score = -self.search(depth - 1, -beta, -alpha)
             self.board.unmove()
 
@@ -98,6 +123,9 @@ class Search:
             alpha = max(alpha, score)
             if alpha >= beta:
                 break  # beta cutoff
+
+        if not played_moves:
+            return -self.MATE_SCORE_UPPER + played_moves if self.board.in_check() else 0
 
         # --- Store in TT ---
         if best_score <= alpha_orig:
@@ -110,3 +138,47 @@ class Search:
         self.tt.store(self.board.hash, depth, best_score, flag, best_move)
 
         return best_score
+    
+    def q_search(self, alpha, beta):
+        if self.threefold() or self.board.halfmove_clock >= 100:
+            return 0
+        
+        # TT lookup
+        entry = self.tt.probe(self.board.hash)
+        if entry and entry.depth == 0:  # q-search "depth"
+            if entry.flag == 'EXACT':
+                return entry.score
+            elif entry.flag == 'LOWERBOUND':
+                alpha = max(alpha, entry.score)
+            elif entry.flag == 'UPPERBOUND':
+                beta = min(beta, entry.score)
+            if alpha >= beta:
+                return entry.score
+
+        self.nodes += 1
+        
+        stand_pat = self.board.evaluate()
+        if stand_pat >= beta:
+            return beta
+        if alpha < stand_pat:
+            alpha = stand_pat
+
+        for move in sorted(self.board.generate_pseudo_legal_moves(active=True), key=self.board.score_move, reverse=True):
+            if not move.capture and not move.promo:
+                continue
+
+            self.board.move_tuple(move)
+            score = -self.q_search(-beta, -alpha)
+            self.board.unmove()
+
+            if score >= beta:
+                # Store cutoff in TT
+                self.tt.store(self.board.hash, 0, beta, 'LOWERBOUND', move)
+                return beta
+            if score > alpha:
+                alpha = score
+
+        # Store stand_pat result
+        self.tt.store(self.board.hash, 0, alpha, 'EXACT', None)
+        return alpha
+        
