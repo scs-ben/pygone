@@ -6,7 +6,6 @@ from search2 import Search
 from perft2 import Perft
 
 board = Board()
-board.set_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
 
 for line in sys.stdin:
     line = line.strip()
@@ -19,7 +18,11 @@ for line in sys.stdin:
         board.set_fen(fen)
         board.print_board()
     elif line.startswith("position startpos "):
-        moves = line[len("position startpos ")]
+        moves = line.split()
+        for move in moves[3:]:
+            board.uci_move(move)
+            
+        board.print_board()
     elif line.startswith("go depth "):
         search = Search(board)
         
