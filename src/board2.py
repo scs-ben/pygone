@@ -28,6 +28,41 @@ for sq in range(64):
             if r+1 < 8: WHITE_PAWN_ATTACKS[sq] |= 1 << ((r+1)*8 + f+df)
             if r-1 >= 0: BLACK_PAWN_ATTACKS[sq] |= 1 << ((r-1)*8 + f+df)
 
+N, S, E, W = 0, 1, 2, 3
+NE, NW, SE, SW = 4, 5, 6, 7
+# Directions (indexing into RAYS)
+# Direction constants
+RAYS = [{} for _ in range(64)] # RAYS[sq][dir] → bitboard
+
+# Define directions as (dr, df) tuples: (rank_change, file_change)
+DIRECTIONS = {
+    N: (1, 0), S: (-1, 0), E: (0, 1), W: (0, -1),
+    NE: (1, 1), NW: (1, -1), SE: (-1, 1), SW: (-1, -1)
+}
+
+def get_ray_mask(r, f, dr, df):
+    """Calculates a bitmask for a ray starting at (r, f) and moving by (dr, df)."""
+    mask = 0
+    rr, ff = r + dr, f + df
+    
+    # Loop until the coordinates go out of the 8x8 board bounds (0-7)
+    while 0 <= rr < 8 and 0 <= ff < 8:
+        # Calculate the square index: (rank * 8 + file)
+        mask |= 1 << (rr * 8 + ff)
+        # Move to the next square in the ray
+        rr += dr
+        ff += df
+    return mask
+
+# --- Main Generation Loop ---
+
+for sq in range(64):
+    r, f = divmod(sq, 8)
+    
+    for direction, (dr, df) in DIRECTIONS.items():
+        RAYS[sq][direction] = get_ray_mask(r, f, dr, df)
+
+
 class Zobrist:
     PIECE_KEYS = [[random.getrandbits(64) for _ in range(64)] for _ in range(12)]
     CASTLING_KEYS = [random.getrandbits(64) for _ in range(4)]  # KQkq
@@ -74,12 +109,12 @@ class Board:
     BLACK_INDEX_TO_SQUARE = {idx: sq for sq, idx in BLACK_SQUARES.items()}
     
     PIECE_VALUES = {
-        'p': 100,
-        'n': 320,
-        'b': 330,
-        'r': 500,
-        'q': 900,
-        'k': 27000
+        'p': 1.0,
+        'n': 3.2,
+        'b': 3.3,
+        'r': 5.0,
+        'q': 9.0,
+        'k': 0
     }
     
     PIECE_MAP = {'q': 'queen', 'r': 'rook', 'b': 'bishop', 'n': 'knight', 'p': 'pawn', 'k': 'king'}
@@ -244,7 +279,7 @@ class Board:
             castling = '-'
 
         # En passant square
-        ep = '-' if self.en_passant_square is None else self.SQUARES_REV[self.en_passant_square]
+        ep = '-' if self.en_passant_square is None else self.INDEX_TO_SQUARE[self.en_passant_square]
 
         # Halfmove clock
         halfmove = str(self.halfmove_clock)
@@ -520,162 +555,139 @@ class Board:
                     self.black_rooks | self.black_queens | self.black_kings)
 
     def generate_pseudo_legal_moves(self, active=False):      
-        # Sliding pieces
-        for piece_type, bb, offsets in [
-            ('b', self.white_bishops, self.BISHOP_OFFSETS),
-            ('r', self.white_rooks, self.ROOK_OFFSETS),
-            ('q', self.white_queens, self.QUEEN_OFFSETS)
-        ]:
-            yield from self.generate_sliding_moves(bb, offsets, piece_type, active=active)
+        # Bishops
+        yield from self.generate_sliding_moves(self.white_bishops, [NE, NW, SE, SW], 'b', active=active)
+
+        # Rooks
+        yield from self.generate_sliding_moves(self.white_rooks, [N, S, E, W], 'r', active=active)
+
+        # Queens (all directions)
+        yield from self.generate_sliding_moves(self.white_queens, [N, S, E, W, NE, NW, SE, SW], 'q', active=active)
 
         # Knights
-        yield from self.generate_knight_moves(active=active)
+        yield from self.generate_piece_moves(self.white_knights, KNIGHT_ATTACKS, 'n', active=active)
 
         if not active:
             for move in self.generate_castling_moves():
                 yield move
 
         # King
-        yield from self.generate_king_moves(active=active)
+        yield from self.generate_piece_moves(self.white_kings, KING_ATTACKS, 'k', active=active)
 
         # Pawns
         yield from self.generate_pawn_moves(active=active)
 
     def generate_pawn_moves(self, active=False):
-        """Generate pseudo-legal pawn moves for rotated board."""
         all_pieces = self.all_pieces()
         enemy_pieces = self.enemy_pieces()
         pawns = self.white_pawns
-        
-        while pawns:
-            sq = (pawns & -pawns).bit_length() - 1  # get LSB index
-            pawns &= pawns - 1  # clear LSB
-            
-            # Single push
-            to_sq = sq + 8
-            if to_sq < 64 and not (all_pieces & (1 << to_sq)):
-                # Check promotion
-                if (1 << to_sq) & self.RANK_8:
-                    for p in 'qrbn':
-                        yield Move(sq, to_sq, p, None, 'p', self.white_to_move)
-                else:
-                    if not active:
-                        yield Move(sq, to_sq, None, None, 'p', self.white_to_move)
-                # Double push from rank 2
-                if (1 << sq) & self.RANK_2:
-                    to_sq2 = sq + 16
-                    if not (all_pieces & (1 << to_sq2)):
-                        if not active:
-                            yield Move(sq, to_sq2, None, None, 'p', self.white_to_move)
 
-            # Captures
-            for df in [-1, 1]:
-                file = sq % 8
-                target_file = file + df
-                if 0 <= target_file <= 7:
-                    capture_sq = sq + 8 + df
-                    if capture_sq < 64 and (enemy_pieces & (1 << capture_sq)):
-                        # Promotion capture
-                        if (1 << capture_sq) & self.RANK_8:
-                            for p in 'qrbn':
-                                yield Move(sq, capture_sq, p, self.determine_capture(capture_sq), 'p', self.white_to_move)
-                        else:
-                            yield Move(sq, capture_sq, None, self.determine_capture(capture_sq), 'p', self.white_to_move)
-                    elif capture_sq == self.en_passant_square:
-                        yield Move(sq, self.en_passant_square, None, self.determine_capture(self.en_passant_square), 'p', self.white_to_move)
+        # single push
+        single_push = (pawns << 8) & ~all_pieces
+        # promotion
+        promo_push = single_push & self.RANK_8
+        normal_push = single_push & ~self.RANK_8
+        for to_sq in range(64):
+            if promo_push & (1 << to_sq):
+                from_sq = to_sq - 8
+                for p in 'qrbn':
+                    yield Move(from_sq, to_sq, p, None, 'p', self.white_to_move)
+            elif normal_push & (1 << to_sq):
+                from_sq = to_sq - 8
+                if not active:
+                    yield Move(from_sq, to_sq, None, None, 'p', self.white_to_move)
 
-    def generate_knight_moves(self, active=False):
-        """Generate pseudo-legal knight moves for rotated board."""
-        knights = self.white_knights
-        all_pieces = self.all_pieces()
-        enemy_pieces = self.enemy_pieces()
+        # double push
+        double_push = ((pawns & self.RANK_2) << 16) & ~all_pieces
+        double_push &= ~(all_pieces << 8)  # must be empty in front
+        for to_sq in range(64):
+            if double_push & (1 << to_sq):
+                from_sq = to_sq - 16
+                if not active:
+                    yield Move(from_sq, to_sq, None, None, 'p', self.white_to_move)
 
-        while knights:
-            sq = (knights & -knights).bit_length() - 1  # get LSB index
-            knights &= knights - 1  # clear LSB
-            r, f = divmod(sq, 8)
-            for offset in self.KNIGHT_OFFSETS:
-                to_sq = sq + offset
-                if 0 <= to_sq < 64:
-                    tr, tf = divmod(to_sq, 8)
-                    if abs(tr - r) <= 2 and abs(tf - f) <= 2:
-                        if not (all_pieces & (1 << to_sq)):
-                            # Empty square — quiet move
-                            if not active:
-                                yield Move(sq, to_sq, None, None, 'n', self.white_to_move)
-                        elif enemy_pieces & (1 << to_sq):
-                            # Capture — figure out which piece
-                            yield Move(sq, to_sq, None, self.determine_capture(to_sq), 'n', self.white_to_move)
+        # captures
+        left_attack = ((pawns & ~0x0101010101010101) << 7) & (enemy_pieces | (1 << self.en_passant_square if self.en_passant_square is not None else 0))
+        right_attack = ((pawns & ~0x8080808080808080) << 9) & (enemy_pieces | (1 << self.en_passant_square if self.en_passant_square is not None else 0))
+        for cap_bb, shift in [(left_attack, 7), (right_attack, 9)]:
+            for to_sq in range(64):
+                if cap_bb & (1 << to_sq):
+                    from_sq = to_sq - shift
+                    is_ep = (self.en_passant_square is not None) and (to_sq == self.en_passant_square)
+                    capture_piece = None
+                    if is_ep:
+                        # EP capture: Captured piece is always a pawn, and it is determined by the move type.
+                        capture_piece = self.determine_capture(to_sq, is_en_passant=True)
+                    elif enemy_pieces & (1 << to_sq):
+                        capture_piece = self.determine_capture(to_sq)
+                    promo = 'qrbn' if (1 << to_sq) & self.RANK_8 else None
+                    if promo:
+                        for p in promo:
+                            yield Move(from_sq, to_sq, p, capture_piece, 'p', self.white_to_move)
+                    else:
+                        yield Move(from_sq, to_sq, None, capture_piece, 'p', self.white_to_move)
+
+    def masked_ray(self, sq, d, occupied):
+        ray = RAYS[sq][d]
+        blockers = ray & occupied
+        if blockers:
+            first_blocker = (blockers & -blockers).bit_length() - 1 if d in [N, E, NE, NW] else blockers.bit_length() - 1
+            ray &= ~(RAYS[first_blocker][d])
+        return ray
 
     def generate_sliding_moves(self, piece_bb, directions, piece, active=False):
-        """Generate pseudo-legal sliding moves for bishops, rooks, or queens."""
-        friendly_pieces = self.friendly_pieces()
-        enemy_pieces = self.enemy_pieces()
+        friendly = self.friendly_pieces()
+        enemy = self.enemy_pieces()
+        occupied = friendly | enemy
 
         while piece_bb:
-            sq = (piece_bb & -piece_bb).bit_length() - 1  # get LSB index
-            piece_bb &= piece_bb - 1  # clear LSB
-            
-            r, f = divmod(sq, 8)
+            sq = (piece_bb & -piece_bb).bit_length() - 1
+            piece_bb &= piece_bb - 1
 
-            for offset in directions:
-                to_sq = sq
+            for d in directions:
+                ray = self.masked_ray(sq, d, occupied)
 
-                while True:
-                    to_sq += offset
-                    if not (0 <= to_sq < 64):
-                        break
+                # Remove friendly squares
+                ray &= ~friendly
 
-                    tr, tf = divmod(to_sq, 8)
-
-                    # Check wraparound: horizontal or vertical/diagonal
-                    dr = tr - r
-                    df = tf - f
-
-                    if offset in self.BISHOP_OFFSETS and abs(dr) != abs(df):
-                        break  # diagonal wrap
-                    if offset in [-1, 1] and dr != 0:
-                        break  # horizontal wrap
-                    if offset in [-8, 8] and df != 0:
-                        break  # vertical wrap
-
-                    # Blocked by friendly piece
-                    if friendly_pieces & (1 << to_sq):
-                        break
-
-                    # Capture enemy
-                    if enemy_pieces & (1 << to_sq):
+                # Yield moves
+                while ray:
+                    to_sq = (ray & -ray).bit_length() - 1
+                    ray &= ray - 1
+                    if enemy & (1 << to_sq):
                         yield Move(sq, to_sq, None, self.determine_capture(to_sq), piece, self.white_to_move)
-                        break  # stop sliding after capture
+                    else:
+                        if not active:
+                            yield Move(sq, to_sq, None, None, piece, self.white_to_move)
 
-                    if not active:
-                        # Quiet move
-                        yield Move(sq, to_sq, None, None, piece, self.white_to_move)
+    def generate_piece_moves(self, piece_bb, attacks_table, piece_char, active=False):
+        friendly = self.friendly_pieces()
+        enemy = self.enemy_pieces()
+        while piece_bb:
+            sq = (piece_bb & -piece_bb).bit_length() - 1
+            piece_bb &= piece_bb - 1
+            for to_sq in range(64):
+                if attacks_table[sq] & (1 << to_sq) & ~friendly:
+                    capture = self.determine_capture(to_sq) if (enemy & (1 << to_sq)) else None
+                    if not active or capture:
+                        yield Move(sq, to_sq, None, capture, piece_char, self.white_to_move)
 
+    # def generate_king_moves(self, active=False):
+    #     king = self.white_kings
+    #     friendly = self.friendly_pieces()
+    #     enemy = self.enemy_pieces()
 
-    def generate_king_moves(self, active=False):
-        """Generate pseudo-legal king moves for rotated board."""
-        king = self.white_kings
-        all_pieces = self.all_pieces()
-        enemy_pieces = self.enemy_pieces()
+    #     while king:
+    #         sq = (king & -king).bit_length() - 1  # get LSB
+    #         king &= king - 1  # clear LSB
 
-        while king:
-            sq = (king & -king).bit_length() - 1  # get LSB index
-            king &= king - 1  # clear LSB
-            r, f = divmod(sq, 8)
-            for offset in self.KING_OFFSETS:
-                to_sq = sq + offset
-                if 0 <= to_sq < 64:
-                    tr, tf = divmod(to_sq, 8)
-                    # Must stay within 1 rank/file for adjacency
-                    if abs(tr - r) <= 1 and abs(tf - f) <= 1:
-                        if not (all_pieces & (1 << to_sq)):
-                            # Empty square → quiet move
-                            if not active:
-                                yield Move(sq, to_sq, None, None, 'k', self.white_to_move)
-                        elif enemy_pieces & (1 << to_sq):
-                            # Capture → determine piece type
-                            yield Move(sq, to_sq, None, self.determine_capture(to_sq), 'k', self.white_to_move)
+    #         attack_bb = KING_ATTACKS[sq] & ~friendly  # can't move to squares with friendly pieces
+
+    #         for to_sq in range(64):
+    #             if attack_bb & (1 << to_sq):
+    #                 capture_piece = self.determine_capture(to_sq) if (enemy & (1 << to_sq)) else None
+    #                 if not active:
+    #                     yield Move(sq, to_sq, None, capture_piece, 'k', self.white_to_move)
     
     def generate_castling_moves(self):
         """Generate white castling moves (assuming we only play as white)."""
@@ -718,72 +730,80 @@ class Board:
         return self.is_square_attacked(king_sq, not for_white)
 
     def is_square_attacked(self, sq, by_white=True):
-        all_pieces = self.all_pieces()
-
-        if by_white:
-            pawns = self.white_pawns
-            knights = self.white_knights
-            bishops = self.white_bishops
-            rooks = self.white_rooks
-            queens = self.white_queens
-            king = self.white_kings
-            pawn_attack_table = WHITE_PAWN_ATTACKS
-        else:
-            pawns = self.black_pawns
-            knights = self.black_knights
-            bishops = self.black_bishops
-            rooks = self.black_rooks
-            queens = self.black_queens
-            king = self.black_kings
-            pawn_attack_table = BLACK_PAWN_ATTACKS
-
-        # Pawn attacks
-        if pawns & pawn_attack_table[sq]:
+        # Pawns
+        pawns = self.white_pawns if by_white else self.black_pawns
+        pawn_attacks = WHITE_PAWN_ATTACKS if by_white else BLACK_PAWN_ATTACKS
+        if pawns & pawn_attacks[sq]:
             return True
 
-        # Knight attacks
+        # Knights
+        knights = self.white_knights if by_white else self.black_knights
         if knights & KNIGHT_ATTACKS[sq]:
             return True
 
-        # King attacks
+        # King
+        king = self.white_kings if by_white else self.black_kings
         if king & KING_ATTACKS[sq]:
             return True
 
         # Sliding pieces
-        attackers = [
-                (bishops | queens, self.BISHOP_OFFSETS),
-                (rooks   | queens, self.ROOK_OFFSETS),
-            ]
+        sliders = [
+            ('bishop', self.white_bishops | self.white_queens if by_white else self.black_bishops | self.black_queens, self.BISHOP_OFFSETS),
+            ('rook',   self.white_rooks   | self.white_queens if by_white else self.black_rooks   | self.black_queens, self.ROOK_OFFSETS),
+        ]
 
-        for bb, offsets in attackers:
-            for piece_sq in range(64):
-                if not (bb & (1 << piece_sq)):
+        all_pieces = self.all_pieces()
+
+        for piece_type, bb, offsets in sliders:
+            for from_sq in range(64):
+                if not (bb & (1 << from_sq)):
                     continue
-                r, f = divmod(piece_sq, 8)
                 for offset in offsets:
-                    tr, tf = r, f
+                    to_sq = from_sq
                     while True:
-                        tr += offset // 8
-                        tf += offset % 8
-                        if not (0 <= tr < 8 and 0 <= tf < 8):
+                        to_sq += offset
+                        if not (0 <= to_sq < 64):
                             break
-                        tsq = tr*8 + tf
-                        if tsq == sq:
-                            return True  # attacked
-                        if all_pieces & (1 << tsq):
-                            break  # blocked
-
+                        # check for wrap-around if necessary
+                        if piece_type == 'bishop' and abs((to_sq // 8) - (from_sq // 8)) != abs((to_sq % 8) - (from_sq % 8)):
+                            break
+                        if piece_type == 'rook':
+                            # horizontal or vertical wrap
+                            dr = (to_sq // 8) - (from_sq // 8)
+                            df = (to_sq % 8) - (from_sq % 8)
+                            if offset in [-1, 1] and dr != 0:
+                                break
+                            if offset in [-8, 8] and df != 0:
+                                break
+                        # blocked
+                        if all_pieces & (1 << to_sq):
+                            if to_sq == sq:
+                                return True
+                            break
+                        if to_sq == sq:
+                            return True
         return False
 
-    def determine_capture(self, sq):
-        for piece, bb in [('p', self.black_pawns),
-                        ('n', self.black_knights),
-                        ('b', self.black_bishops),
-                        ('r', self.black_rooks),
-                        ('q', self.black_queens),
-                        ('k', self.black_kings)]:
-            if bb & (1 << sq):
-                return piece
+    def determine_capture(self, to_sq, is_en_passant=False):
+        if is_en_passant:
+            return 'p' 
+
+        # Non-En Passant Capture: Check enemy piece bitboards directly at to_sq
+        sq_mask = 1 << to_sq
+        
+        if self.black_pawns & sq_mask:
+            return 'p'
+        if self.black_knights & sq_mask:
+            return 'n'
+        if self.black_bishops & sq_mask:
+            return 'b'
+        if self.black_rooks & sq_mask:
+            return 'r'
+        if self.black_queens & sq_mask:
+            return 'q'
+        if self.black_kings & sq_mask:
+            return 'k' # Should only happen after illegal move, but included for completeness
+
         return None
 
     def score_move(self, move):
@@ -807,7 +827,7 @@ class Board:
         for name, value in self.PIECE_VALUES.items():
             score += value * bin(getattr(self, "".join(["white_",self.PIECE_MAP[name],"s"]))).count('1')
             score -= value * bin(getattr(self, "".join(["black_",self.PIECE_MAP[name],"s"]))).count('1')
-        return score
+        return score * 100
             
     def evaluate_pawn_structure(self):
         score = 0
@@ -887,6 +907,9 @@ class Board:
     def print_board(self):
         """Print board in human-readable format (for debugging)"""
         board = ['.'] * 64
+        if not self.white_to_move:
+            self.rotate()
+            
         bb_map = [
             (self.white_pawns, 'P'),
             (self.white_knights, 'N'),
@@ -907,6 +930,10 @@ class Board:
                     board[i] = char
         for rank in range(7, -1, -1):
             print(' '.join(board[rank*8:(rank+1)*8]))
-            
+        
+        if not self.white_to_move:
+            self.rotate()
+        
         score = self.evaluate()
-        print(f"White?: {(self.white_to_move)} Plies: {self.plies_played} Moves: {self.moves_played} Score: {score} Check: {self.in_check()}")
+        print(f"Turn: {('W' if self.white_to_move else 'B')} Plies: {self.plies_played} Moves: {self.moves_played} Score: {score} Check: {self.in_check()}")
+        print(f"Fen: {self.get_fen()}")

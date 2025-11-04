@@ -14,25 +14,45 @@ for line in sys.stdin:
         continue
     if line.lower() in ["quit", "exit"]:
         break
-    if line.startswith("position fen "):
-        fen = line[len("position fen "):]
-        board.set_fen(fen)
-        board.print_board()
-    elif line.startswith("uci"):
-        print("pygone2.0\nuciok", flush=True)
-    elif line.startswith("ucinewgame"):
-            board = Board()
-            search.set_board(board)
-    elif line.startswith("isready"):
-        print("readyok", flush=True)
-    elif line.startswith("position startpos "):
+    
+    if line.startswith("position"):
         board = Board()
         
-        moves = line.split()
-        for move in moves[3:]:
-            board.uci_move(move)
-            
+        # Strip the "position " prefix
+        cmd = line[9:]
+
+        # Default to the starting position if nothing else is provided
+        if cmd.startswith("startpos"):
+            cmd = cmd[len("startpos"):]
+        elif cmd.startswith("fen"):
+            # Extract FEN before the "moves" keyword if present
+            fen_section = cmd[len("fen "):]
+            if " moves " in fen_section:
+                fen, moves_section = fen_section.split(" moves ", 1)
+            else:
+                fen, moves_section = fen_section, ""
+            board.set_fen(fen)
+            cmd = moves_section
+        else:
+            moves_section = ""
+
+        # Apply moves if given
+        if "moves" in cmd:
+            moves_section = cmd.split("moves ", 1)[1]
+
+        if moves_section:
+            moves = moves_section.split()
+            for move in moves:
+                board.uci_move(move)
+                
         search.set_board(board)
+    elif line.startswith("ucinewgame"):
+            board = Board()
+            search = Search(board)
+    elif line.startswith("uci"):
+        print("pygone2.0\nuciok", flush=True)
+    elif line.startswith("isready"):
+        print("readyok", flush=True)
     elif line.startswith("go "):
         tokens = line.split()
         wtime = btime = movestogo = None
@@ -78,10 +98,6 @@ for line in sys.stdin:
         move, score = search.iterative_search()
             
         print(f"bestmove {board.move_to_uci(move)}", flush=True)
-    elif line.startswith("go perft "):
-        perft = Perft(board)       
-        depth = int(line[len("go perft ")])
-        perft.run(depth)
     elif line.startswith('print'):
         board.print_board()
     elif line.startswith('fen'):

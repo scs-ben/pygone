@@ -1,5 +1,4 @@
 import math, time
-import numpy as np
 
 class TTEntry:
     __slots__ = ('key', 'score', 'depth', 'flag', 'move')
@@ -14,7 +13,7 @@ class TranspositionTable:
     def __init__(self, size_bytes=2_147_483_648):
         entry_size = 32  # approximate bytes per entry
         self.size = size_bytes // entry_size
-        self.table = np.empty(self.size, dtype=object)
+        self.table = [None] * self.size
 
     def index(self, zobrist_key):
         return zobrist_key % self.size
@@ -34,7 +33,8 @@ class TranspositionTable:
         return None
 
 class Search:
-    MATE_SCORE_UPPER = 27000
+    MATE_SCORE_UPPER = 270000
+    Q_MAX_DEPTH = 8
     
     def __init__(self, board, tt_size_bytes=2_147_483_648):
         self.board = board
@@ -63,6 +63,8 @@ class Search:
         start_time = time.time()
         best_move = None
         best_score = None
+        
+        self.nodes = 0
 
         for depth in range(1, 100):  # iterative deepening
             if self.time_up:
@@ -71,7 +73,7 @@ class Search:
             local_score = self.search(depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
 
             entry = self.tt.probe(self.board.hash)
-            if entry:
+            if entry and entry.move:
                 best_move = entry.move
                 best_score = local_score
 
@@ -104,7 +106,7 @@ class Search:
     def search(self, depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return self.board.evaluate()
+            return alpha
             
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
@@ -144,6 +146,7 @@ class Search:
             played_moves += 1
             
             score = -self.search(depth - 1, -beta, -alpha)
+            
             self.board.unmove()
 
             if score > best_score:
@@ -152,63 +155,82 @@ class Search:
             alpha = max(alpha, score)
             if alpha >= beta:
                 break  # beta cutoff
-
+            
         if not played_moves:
             return -self.MATE_SCORE_UPPER + depth if self.board.in_check() else 0
 
         # --- Store in TT ---
         if best_score <= alpha_orig:
             flag = 'UPPERBOUND'
+            # Note: Do NOT store best_move for UPPERBOUND as it's unreliable
+            tt_move = None 
         elif best_score >= beta:
             flag = 'LOWERBOUND'
+            # Store the move that caused the cutoff (Refutation Move)
+            tt_move = best_move 
         else:
             flag = 'EXACT'
+            # Store the best move found
+            tt_move = best_move
 
         if not self.time_up:
-            self.tt.store(self.board.hash, depth, best_score, flag, best_move)
+            # Pass the appropriate move (tt_move) to the store function
+            self.tt.store(self.board.hash, depth, best_score, flag, tt_move)
 
         return best_score
     
-    def q_search(self, alpha, beta):
+    def q_search(self, alpha, beta, q_depth=0):
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
         
-        stand_pat = self.board.evaluate()
+        if q_depth >= self.Q_MAX_DEPTH:
+            # Stop searching noisy moves and return the static evaluation
+            return self.board.evaluate()
+        
+        in_check = self.board.in_check()
+        
+        if not in_check:
+            stand_pat = self.board.evaluate()
+            if stand_pat >= beta:
+                return beta
+            if alpha < stand_pat:
+                alpha = stand_pat
+        else:
+            # If in check, stand_pat is irrelevant, alpha remains the score to beat
+            stand_pat = -float('inf')
         
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return stand_pat
+            return alpha
         
         # TT lookup
         entry = self.tt.probe(self.board.hash)
-        if entry and entry.depth == 0:  # q-search "depth"
-            if entry.flag == 'EXACT':
-                return entry.score
-            elif entry.flag == 'LOWERBOUND':
-                alpha = max(alpha, entry.score)
-            elif entry.flag == 'UPPERBOUND':
-                beta = min(beta, entry.score)
-            if alpha >= beta:
-                return entry.score
+        if entry and entry.depth == 0:
+            if entry.flag == 'EXACT': return entry.score
+            elif entry.flag == 'LOWERBOUND': alpha = max(alpha, entry.score)
+            elif entry.flag == 'UPPERBOUND': beta = min(beta, entry.score)
+            if alpha >= beta: return entry.score
 
         self.nodes += 1
         
-        if stand_pat >= beta:
+        alpha_orig = alpha
+        
+        if not in_check and stand_pat >= beta:
             return beta
-        if alpha < stand_pat:
-            alpha = stand_pat
 
-        for move in sorted(self.board.generate_pseudo_legal_moves(active=True), key=self.board.score_move, reverse=True):
-            if not move.capture and not move.promo:
-                continue
+        played_moves = 0
 
+        for move in sorted(self.board.generate_pseudo_legal_moves(active=not in_check), key=self.board.score_move, reverse=True):
             self.board.move_tuple(move)
             
             if self.board.in_check(False):
                 self.board.unmove()
                 continue
             
-            score = -self.q_search(-beta, -alpha)
+            played_moves += 1
+            
+            score = -self.q_search(-beta, -alpha, q_depth + 1)
+            
             self.board.unmove()
 
             if score >= beta:
@@ -219,9 +241,24 @@ class Search:
             if score > alpha:
                 alpha = score
 
-        # Store stand_pat result
+        if not played_moves:
+            return -self.MATE_SCORE_UPPER - q_depth if in_check else 0
+
+        # --- Store in TT ---
+        if alpha <= stand_pat: # If the best score is the stand-pat, or was not improved
+            flag = 'EXACT' # Treat stand-pat or slight improvement as exact in Q-Search
+            tt_move = None
+        # If the score was reduced from a previous TT value (rare/edge case for Q-search)
+        elif alpha <= alpha_orig: 
+            flag = 'UPPERBOUND'
+            tt_move = None
+        else:
+            flag = 'EXACT' # Or if alpha was improved
+            tt_move = None
+            
         if not self.time_up:
-            self.tt.store(self.board.hash, 0, alpha, 'EXACT', None)
+            # Note: TT for Q-search usually stores the stand_pat/final alpha
+            self.tt.store(self.board.hash, 0, alpha, flag, tt_move)
             
         return alpha
         
