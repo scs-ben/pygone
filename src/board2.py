@@ -320,11 +320,21 @@ class Board:
         self.push()
         self.halfmove_clock += 1
 
+        is_pawn = bool(self.white_pawns & (1 << from_sq))
+        is_king = bool(self.white_kings & (1 << from_sq))
+        
+        if is_pawn:
+            self.halfmove_clock = 0
+            if to_sq == self.en_passant_square and (from_sq == self.en_passant_square - 7 or from_sq == self.en_passant_square - 9):
+                    self.black_pawns &= ~(1 << (to_sq - 8))
+
+                    self.hash ^= Zobrist.PIECE_KEYS[Zobrist.PIECE_INDEX["black_pawns"]][to_sq - 8]
+
         # Determine which piece is moving (white always on bottom)
         for name in 'pawn knight bishop rook queen king'.split():
             bb_name = "".join(["white_",name,"s"])
 
-            if bb_name == "white_kings":
+            if is_king and bb_name == "white_kings":
                 # Kingside castling
                 if abs(to_sq - from_sq) == 2:
                     if to_sq > from_sq: 
@@ -409,9 +419,9 @@ class Board:
             if old_rights[i] != self.castling_rights[i]:
                 self.hash ^= Zobrist.CASTLING_KEYS[i]
 
-        # En-passant
-        if self.en_passant_square is not None:
-            self.hash ^= Zobrist.EP_KEYS[self.en_passant_square % 8]
+        if to_sq == self.en_passant_square:
+            #handle EP
+            self.en_passant_square = self.en_passant_square
         
         # Set new en-passant square for double pawn push
         from_rank = from_sq // 8
