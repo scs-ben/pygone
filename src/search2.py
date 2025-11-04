@@ -189,7 +189,7 @@ class Search:
         
         if q_depth >= self.Q_MAX_DEPTH:
             # Stop searching noisy moves and return the static evaluation
-            return alpha # self.board.evaluate()
+            return self.board.evaluate()
         
         in_check = self.board.in_check()
         
@@ -209,11 +209,15 @@ class Search:
         
         # TT lookup
         entry = self.tt.probe(self.board.hash)
-        if entry and entry.depth == 0:
-            if entry.flag == 'EXACT': return entry.score
-            elif entry.flag == 'LOWERBOUND': alpha = max(alpha, entry.score)
-            elif entry.flag == 'UPPERBOUND': beta = min(beta, entry.score)
-            if alpha >= beta: return entry.score
+        if entry and entry.depth == 0:  # q-search "depth"
+            if entry.flag == 'EXACT':
+                return entry.score
+            elif entry.flag == 'LOWERBOUND':
+                alpha = max(alpha, entry.score)
+            elif entry.flag == 'UPPERBOUND':
+                beta = min(beta, entry.score)
+            if alpha >= beta:
+                return entry.score
 
         self.nodes += 1
         
@@ -222,16 +226,12 @@ class Search:
         if not in_check and stand_pat >= beta:
             return beta
 
-        played_moves = 0
-
         for move in sorted(self.board.generate_pseudo_legal_moves(active=not in_check), key=self.board.score_move, reverse=True):
             self.board.move_tuple(move)
             
             if self.board.in_check(False):
                 self.board.unmove()
                 continue
-            
-            played_moves += 1
             
             score = -self.q_search(-beta, -alpha, q_depth + 1)
             
@@ -244,9 +244,6 @@ class Search:
                 return beta
             if score > alpha:
                 alpha = score
-
-        if not played_moves:
-            return -self.MATE_SCORE_UPPER - q_depth if in_check else 0
 
         # --- Store in TT ---
         if alpha <= stand_pat: # If the best score is the stand-pat, or was not improved
