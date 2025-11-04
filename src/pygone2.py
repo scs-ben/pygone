@@ -37,6 +37,7 @@ for line in sys.stdin:
         tokens = line.split()
         wtime = btime = movestogo = None
         depth = None
+        perft_depth = None
 
         i = 1
         while i < len(tokens):
@@ -52,8 +53,16 @@ for line in sys.stdin:
             elif tokens[i] == "depth":
                 depth = int(tokens[i+1])
                 i += 2
+            elif tokens[i] == "perft":
+                perft_depth = int(tokens[i+1])
+                i += 2
             else:
                 i += 1
+              
+        if perft_depth:
+            perft = Perft(board)
+            perft.run(perft_depth)
+            continue
               
         search.set_board(board)
           

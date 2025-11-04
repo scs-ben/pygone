@@ -277,8 +277,6 @@ class Board:
             
         promo = uci[4] if len(uci) == 5 else None
         
-        print(f"{uci} {from_sq} {to_sq}")
-        
         self.move(from_sq, to_sq, promo)
 
     def move(self, from_sq, to_sq, promo):
@@ -309,7 +307,6 @@ class Board:
                             rook_from = 0
                             rook_to = 2
 
-                    print(f"C {rook_from} {rook_to}")
                     # Move rook bitboard
                     rook_bb_name = "white_rooks"
                     rook_bb = getattr(self, rook_bb_name)

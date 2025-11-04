@@ -203,6 +203,11 @@ class Search:
                 continue
 
             self.board.move_tuple(move)
+            
+            if self.board.in_check(False):
+                self.board.unmove()
+                continue
+            
             score = -self.q_search(-beta, -alpha)
             self.board.unmove()
 
