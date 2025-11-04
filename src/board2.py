@@ -671,23 +671,6 @@ class Board:
                     capture = self.determine_capture(to_sq) if (enemy & (1 << to_sq)) else None
                     if not active or capture:
                         yield Move(sq, to_sq, None, capture, piece_char, self.white_to_move)
-
-    # def generate_king_moves(self, active=False):
-    #     king = self.white_kings
-    #     friendly = self.friendly_pieces()
-    #     enemy = self.enemy_pieces()
-
-    #     while king:
-    #         sq = (king & -king).bit_length() - 1  # get LSB
-    #         king &= king - 1  # clear LSB
-
-    #         attack_bb = KING_ATTACKS[sq] & ~friendly  # can't move to squares with friendly pieces
-
-    #         for to_sq in range(64):
-    #             if attack_bb & (1 << to_sq):
-    #                 capture_piece = self.determine_capture(to_sq) if (enemy & (1 << to_sq)) else None
-    #                 if not active:
-    #                     yield Move(sq, to_sq, None, capture_piece, 'k', self.white_to_move)
     
     def generate_castling_moves(self):
         """Generate white castling moves (assuming we only play as white)."""
@@ -715,11 +698,10 @@ class Board:
                     yield Move(kp1, kp3, None, None, 'k', self.white_to_move)
 
     def king_square(self, for_white=True):
-        """Return the square index of the king for the side to move (ours)."""
-        if for_white:
-            return self.white_kings.bit_length() - 1  # get index of single 1-bit
-        else:
-            return self.black_kings.bit_length() - 1  # get index of single 1-bit
+        """Return the square index of the king for the side to move."""
+        king_bb = self.white_kings if for_white else self.black_kings
+        # get the index of the single 1-bit (LSB)
+        return (king_bb & -king_bb).bit_length() - 1
 
     def in_check(self, for_white=True):
         """Return True if the side to move is in check."""
@@ -732,7 +714,7 @@ class Board:
     def is_square_attacked(self, sq, by_white=True):
         # Pawns
         pawns = self.white_pawns if by_white else self.black_pawns
-        pawn_attacks = WHITE_PAWN_ATTACKS if by_white else BLACK_PAWN_ATTACKS
+        pawn_attacks = BLACK_PAWN_ATTACKS if by_white else WHITE_PAWN_ATTACKS
         if pawns & pawn_attacks[sq]:
             return True
 
@@ -935,5 +917,5 @@ class Board:
             self.rotate()
         
         score = self.evaluate()
-        print(f"Turn: {('W' if self.white_to_move else 'B')} Plies: {self.plies_played} Moves: {self.moves_played} Score: {score} Check: {self.in_check()}")
+        print(f"Turn: {('W' if self.white_to_move else 'B')} Plies: {self.plies_played} Moves: {self.moves_played} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
         print(f"Fen: {self.get_fen()}")

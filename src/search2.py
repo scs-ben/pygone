@@ -34,7 +34,7 @@ class TranspositionTable:
 
 class Search:
     MATE_SCORE_UPPER = 270000
-    Q_MAX_DEPTH = 8
+    Q_MAX_DEPTH = 200
     
     def __init__(self, board, tt_size_bytes=2_147_483_648):
         self.board = board
@@ -70,12 +70,11 @@ class Search:
             if self.time_up:
                 break
 
-            local_score = self.search(depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
+            best_score = self.search(depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
 
             entry = self.tt.probe(self.board.hash)
             if entry and entry.move:
                 best_move = entry.move
-                best_score = local_score
 
             elapsed_time = time.time() - start_time
             nps = math.ceil(self.nodes / elapsed_time) if elapsed_time > 0 else 1
@@ -108,9 +107,18 @@ class Search:
             self.time_up = True
             return alpha
             
+        in_check = self.board.in_check()
+        
+        depth += in_check
+            
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
         
+        # --- Leaf node ---
+        if depth == 0:
+            return self.q_search(alpha, beta)
+        
+        # is_pv_node = beta > alpha + 1
         alpha_orig = alpha
 
         # --- TT lookup ---
@@ -127,10 +135,6 @@ class Search:
 
         self.nodes += 1
 
-        # --- Leaf node ---
-        if depth == 0:
-            return self.q_search(alpha, beta)
-
         best_score = -float('inf')
         best_move = None
 
@@ -138,11 +142,11 @@ class Search:
 
         for move in sorted(self.board.generate_pseudo_legal_moves(), key=self.board.score_move, reverse=True):
             self.board.move_tuple(move)
-            
+                      
             if self.board.in_check(False):
                 self.board.unmove()
                 continue
-            
+
             played_moves += 1
             
             score = -self.search(depth - 1, -beta, -alpha)
@@ -185,7 +189,7 @@ class Search:
         
         if q_depth >= self.Q_MAX_DEPTH:
             # Stop searching noisy moves and return the static evaluation
-            return self.board.evaluate()
+            return alpha # self.board.evaluate()
         
         in_check = self.board.in_check()
         

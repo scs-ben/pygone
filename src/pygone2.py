@@ -1,6 +1,10 @@
 #!/usr/bin/env pypy3
 import sys, time
 
+# TODO
+# position startpos moves b2b4 d7d5 c1b2 c8g4 g1f3 g4f3 g2f3 e7e6 b2g7 f8g7 h1g1 e8f8 g1g7 f8g7 f1h3 g7f8 h3e6 b8c6 e6d5 d8d5 b1c3 d5e5 b4b5 c6e7 h2h3 e5f6 d1b1 a8b8 b1b4 h7h5 b4c5 b7b6 c5c7 b8c8 c7a7 f6e6 a1c1 g8f6 c1d1 h8g8 e2e4 c8d8 c3e2 f6d7 a7c7 d8c8 c7f4 f8e8 f4h4 c8c2 h4h5 c2a2 d1c1 d7f6 e2c3 f6h5 c3a2 f7f6 c1c7 h5f4 c7e7 e6e7 d2d4 e7e6 d4d5 e6e5 e1d2 e5d4 d2c2 d4f2 c2b3 f2e3 b3a4 e3g1 a2b4 g1d1
+# this set up a position where the King tries to move into check
+
 from board2 import Board
 from search2 import Search
 from perft2 import Perft
