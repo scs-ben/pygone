@@ -105,7 +105,7 @@ class Search:
     def search(self, depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return alpha
+            return None
             
         in_check = self.board.in_check()
         
@@ -149,7 +149,14 @@ class Search:
 
             played_moves += 1
             
-            score = -self.search(depth - 1, -beta, -alpha)
+            score = self.search(depth - 1, -beta, -alpha)
+            
+            if not score:
+                self.time_up = True
+                self.board.unmove()
+                break
+            
+            score = -score
             
             self.board.unmove()
 
@@ -205,7 +212,7 @@ class Search:
         
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return alpha
+            return None
         
         # TT lookup
         entry = self.tt.probe(self.board.hash)
@@ -233,7 +240,14 @@ class Search:
                 self.board.unmove()
                 continue
             
-            score = -self.q_search(-beta, -alpha, q_depth + 1)
+            score = self.q_search(-beta, -alpha, q_depth + 1)
+            
+            if not score:
+                self.time_up = True
+                self.board.unmove()
+                break
+            
+            score = -score
             
             self.board.unmove()
 
