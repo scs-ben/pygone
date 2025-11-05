@@ -305,11 +305,9 @@ class Search:
                 return entry.score
         
         if not in_check and stand_pat >= beta:
-            return stand_pat
+            return beta
         
         alpha_orig = alpha
-        
-        alpha = max(alpha, stand_pat)
 
         for move in sorted(self.board.generate_pseudo_legal_moves(active=not in_check), key=self.board.score_move, reverse=True):
             self.board.move_tuple(move)
