@@ -34,6 +34,7 @@ class TranspositionTable:
 
 class Search:
     MATE_SCORE_UPPER = 270000
+    TIME_CUT = 1e8
     Q_MAX_DEPTH = 20
     
     def __init__(self, board, tt_size_bytes=2_147_483_648):
@@ -72,7 +73,7 @@ class Search:
 
             best_score = self.search(depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
 
-            if best_score >= -self.MATE_SCORE_UPPER:
+            if not self.time_up:
                 entry = self.tt.probe(self.board.hash)
                 if entry and entry.move:
                     best_move = entry.move
@@ -83,7 +84,7 @@ class Search:
                 uci_move = self.board.move_to_uci(best_move) if best_move else None
                 self.print_stats(str(depth), str(math.ceil(best_score)), str(math.ceil(elapsed_time * 1000)), str(self.nodes), str(nps), str(uci_move))
 
-            if best_score < -self.MATE_SCORE_UPPER or self.time_limit and time.time() >= self.end_time:
+            if self.time_up or self.time_limit and time.time() >= self.end_time:
                 self.time_up = True
                 break
             
@@ -117,7 +118,7 @@ class Search:
     def search(self, depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return -2 * self.MATE_SCORE_UPPER
+            return -self.TIME_CUT
             
         in_check = self.board.in_check()
         
@@ -228,8 +229,7 @@ class Search:
             
             # score = self.search(depth - 1, -beta, -alpha)
             
-            if score < -self.MATE_SCORE_UPPER:
-                self.time_up = True
+            if self.time_up:
                 self.board.unmove()
                 break
             
@@ -268,7 +268,7 @@ class Search:
     def q_search(self, alpha, beta, q_depth=0):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return -2 * self.MATE_SCORE_UPPER
+            return -self.TIME_CUT
         
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
@@ -319,8 +319,7 @@ class Search:
             
             score = -self.q_search(-beta, -alpha, q_depth + 1)
             
-            if score < -self.MATE_SCORE_UPPER:
-                self.time_up = True
+            if self.time_up:
                 self.board.unmove()
                 break
             
