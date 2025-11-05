@@ -91,8 +91,10 @@ for line in sys.stdin:
         search.set_board(board)
           
         if depth:
+            search.set_time_limit(1e8)
             search.set_depth(depth)
         else:
+            search.set_depth(50)
             side_time = (wtime if board.white_to_move else btime) / 1000
             
             move_time = max(2.2, side_time / 28)
@@ -100,8 +102,13 @@ for line in sys.stdin:
             search.set_time_limit(move_time)
             
         move, score = search.iterative_search()
+        
+        if not move:
+            search.set_depth(1)
+            move, score = search.iterative_search()
             
-        print(f"bestmove {board.move_to_uci(move)}", flush=True)
+        if move:
+            print(f"bestmove {board.move_to_uci(move)}", flush=True)
     elif line.startswith('print'):
         board.print_board()
     elif line.startswith('fen'):
