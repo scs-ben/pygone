@@ -72,17 +72,18 @@ class Search:
 
             best_score = self.search(depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
 
-            entry = self.tt.probe(self.board.hash)
-            if entry and entry.move:
-                best_move = entry.move
+            if best_score >= -self.MATE_SCORE_UPPER:
+                entry = self.tt.probe(self.board.hash)
+                if entry and entry.move:
+                    best_move = entry.move
 
-            elapsed_time = time.time() - start_time
-            nps = math.ceil(self.nodes / elapsed_time) if elapsed_time > 0 else 1
+                elapsed_time = time.time() - start_time
+                nps = math.ceil(self.nodes / elapsed_time) if elapsed_time > 0 else 1
 
-            uci_move = self.board.move_to_uci(best_move) if best_move else None
-            self.print_stats(str(depth), str(math.ceil(best_score)), str(math.ceil(elapsed_time * 1000)), str(self.nodes), str(nps), str(uci_move))
+                uci_move = self.board.move_to_uci(best_move) if best_move else None
+                self.print_stats(str(depth), str(math.ceil(best_score)), str(math.ceil(elapsed_time * 1000)), str(self.nodes), str(nps), str(uci_move))
 
-            if self.time_limit and time.time() >= self.end_time:
+            if best_score < -self.MATE_SCORE_UPPER or self.time_limit and time.time() >= self.end_time:
                 self.time_up = True
                 break
             
