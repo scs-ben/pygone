@@ -34,7 +34,7 @@ class TranspositionTable:
 
 class Search:
     MATE_SCORE_UPPER = 270000
-    Q_MAX_DEPTH = 200
+    Q_MAX_DEPTH = 20
     
     def __init__(self, board, tt_size_bytes=2_147_483_648):
         self.board = board
@@ -66,7 +66,7 @@ class Search:
         
         self.nodes = 0
 
-        for depth in range(1, 100):  # iterative deepening
+        for depth in range(1, self.depth + 1):  # iterative deepening
             if self.time_up:
                 break
 
@@ -102,10 +102,21 @@ class Search:
             
         return count >= 3
 
+    def has_sufficient_material(self):
+        """
+        board: object with bitboards like board.white_pawns, board.white_knights, etc.
+        is_white: whether to check for white or black
+        """
+        pawns  = bin(self.board.white_pawns).count('1')
+        minors = bin(self.board.white_knights).count('1') + bin(self.board.white_bishops).count('1')
+        majors = bin(self.board.white_rooks).count('1') + bin(self.board.white_queens).count('1')
+
+        return pawns > 0 or minors + majors >= 2
+
     def search(self, depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return None
+            return -2 * self.MATE_SCORE_UPPER
             
         in_check = self.board.in_check()
         
@@ -118,9 +129,11 @@ class Search:
         if depth == 0:
             return self.q_search(alpha, beta)
         
-        # is_pv_node = beta > alpha + 1
+        is_pv_node = beta > alpha + 1
         alpha_orig = alpha
 
+        self.nodes += 1
+        
         # --- TT lookup ---
         entry = self.tt.probe(self.board.hash)
         if entry and entry.depth >= depth:
@@ -133,7 +146,55 @@ class Search:
             if alpha >= beta:
                 return entry.score
 
-        self.nodes += 1
+        if not is_pv_node and not in_check:
+            stand_pat = self.board.evaluate()
+            
+            # Futility pruning (low eval)
+            if depth <= 2 and stand_pat + 120 * depth <= alpha:
+                return stand_pat
+
+            # Razor pruning (high eval)
+            if depth <= 3 and stand_pat >= beta - 120 * depth:
+                return stand_pat
+
+        if not is_pv_node and not in_check and depth <= 5:
+            cut_boundary = alpha - (385 * depth)
+            if stand_pat <= cut_boundary:
+                if depth <= 2:
+                    return self.q_search(alpha, alpha + 1, 200)
+
+                local_score = self.q_search(cut_boundary, cut_boundary + 1, 200)
+
+                if local_score <= cut_boundary:
+                    return local_score
+
+        # Null move pruning (only when safe)
+        if (
+            not is_pv_node
+            and not in_check
+            and depth >= 3
+            and self.has_sufficient_material()
+        ):
+            reduction = 3 if depth < 6 else 4  # typical reduction
+            self.board.nullmove()
+
+            # skip if nullmove leaves us in check (can happen in some custom rulesets)
+            if not self.board.in_check(False):
+                null_score = -self.search(depth - reduction - 1, -beta, -beta + 1)
+
+                if null_score >= beta:
+                    self.board.unmove()
+                    return beta
+                
+                self.board.unmove()
+
+        if not is_pv_node and not in_check and entry and entry.move and entry.depth >= depth and abs(entry.score) < self.MATE_SCORE_UPPER:
+            self.board.move_tuple(entry.move)
+            local_score = -self.search(depth - 1, -beta, -alpha)
+            self.board.unmove()
+
+            if local_score >= beta:
+                return beta
 
         best_score = -float('inf')
         best_move = None
@@ -149,14 +210,27 @@ class Search:
 
             played_moves += 1
             
-            score = self.search(depth - 1, -beta, -alpha)
+            is_quiet = not move.capture and not move.promo
+
+            r_depth = 1
+            if is_quiet and depth > 2 and played_moves > 1:
+                r_depth = max(3, math.ceil(math.sqrt(depth-1) + math.sqrt(played_moves-1)))
+
+            if r_depth != 1:
+                score = -self.search(depth - r_depth, -alpha-1, -alpha)
+
+            if (r_depth != 1 and score > alpha) or (r_depth == 1 and not(is_pv_node and played_moves == 1)):
+                score = -self.search(depth - 1, -alpha-1, -alpha)
+
+            if is_pv_node and (played_moves == 1 or score > alpha):
+                score = -self.search(depth - 1, -beta, -alpha)
             
-            if not score:
+            # score = self.search(depth - 1, -beta, -alpha)
+            
+            if score < -self.MATE_SCORE_UPPER:
                 self.time_up = True
                 self.board.unmove()
                 break
-            
-            score = -score
             
             self.board.unmove()
 
@@ -191,14 +265,20 @@ class Search:
         return best_score
     
     def q_search(self, alpha, beta, q_depth=0):
+        if self.time_up or (self.time_limit and time.time() >= self.end_time):
+            self.time_up = True
+            return -2 * self.MATE_SCORE_UPPER
+        
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
         
-        if q_depth >= self.Q_MAX_DEPTH:
-            # Stop searching noisy moves and return the static evaluation
-            return self.board.evaluate()
+        # if q_depth >= self.Q_MAX_DEPTH:
+        #     # Stop searching noisy moves and return the static evaluation
+        #     return self.board.evaluate()
         
         in_check = self.board.in_check()
+        
+        stand_pat = self.board.evaluate()
         
         if not in_check:
             stand_pat = self.board.evaluate()
@@ -210,9 +290,7 @@ class Search:
             # If in check, stand_pat is irrelevant, alpha remains the score to beat
             stand_pat = -float('inf')
         
-        if self.time_up or (self.time_limit and time.time() >= self.end_time):
-            self.time_up = True
-            return None
+        self.nodes += 1
         
         # TT lookup
         entry = self.tt.probe(self.board.hash)
@@ -225,13 +303,13 @@ class Search:
                 beta = min(beta, entry.score)
             if alpha >= beta:
                 return entry.score
-
-        self.nodes += 1
+        
+        if not in_check and stand_pat >= beta:
+            return stand_pat
         
         alpha_orig = alpha
         
-        if not in_check and stand_pat >= beta:
-            return beta
+        alpha = max(alpha, stand_pat)
 
         for move in sorted(self.board.generate_pseudo_legal_moves(active=not in_check), key=self.board.score_move, reverse=True):
             self.board.move_tuple(move)
@@ -240,14 +318,12 @@ class Search:
                 self.board.unmove()
                 continue
             
-            score = self.q_search(-beta, -alpha, q_depth + 1)
+            score = -self.q_search(-beta, -alpha, q_depth + 1)
             
-            if not score:
+            if score < -self.MATE_SCORE_UPPER:
                 self.time_up = True
                 self.board.unmove()
                 break
-            
-            score = -score
             
             self.board.unmove()
 
