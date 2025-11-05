@@ -18,7 +18,7 @@ main_code = main_file.read_text()
 # --- replace each import with the corresponding file contents ---
 for module_name, module_path in imports_to_inline:
     if not module_path.exists():
-        print(f"⚠️  Skipping {module_name} — {module_path} not found")
+        print(f"Skipping {module_name} — {module_path} not found")
         continue
 
     module_code = module_path.read_text().strip()
@@ -43,7 +43,9 @@ minified = python_minifier.minify(
     rename_locals=False,      # shrink local variables inside functions/classes
     rename_globals=False,    # leave module-level globals/constants intact
     combine_imports=True,
-    hoist_literals=False
+    hoist_literals=False,
+    remove_annotations=True,
+    remove_literal_statements=True
 )
 
 with open("pygone-mini.py", "w") as f:

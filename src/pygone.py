@@ -1,115 +1,112 @@
 #!/usr/bin/env pypy3
-import sys, time
-from search import Search
+import sys
 from board import Board
+from search import Search
+# from perft import Perft
 
-def print_to_terminal(print_string):
-    print(print_string, flush=True)
+board = Board()
+search = Search(board)
 
-# def fen_to_board_state(fen):
-#     # Convert FEN into your engine's 120-square board representation.
-#     # Returns the board_state string and metadata (side, castling, ep).
-#     parts = fen.split()
-#     placement, side, castling, ep = parts[0], parts[1], parts[2], parts[3]
+for line in sys.stdin:
+    line = line.strip()
+    if line == "":
+        continue
+    if line.lower() == "quit":
+        break
+    
+    if line.startswith("position"):
+        board = Board()
+        
+        # Strip the "position " prefix
+        cmd = line[9:]
 
-#     # build 120-square board with sentinels (-1 border)
-#     board = [' '] * 120
-#     rows = placement.split('/')
+        # Default to the starting position if nothing else is provided
+        if cmd.startswith("startpos"):
+            cmd = cmd[len("startpos"):]
+        # elif cmd.startswith("fen"):
+        #     board = Board()
+        #     search = Search(board)
+        #     # Extract FEN before the "moves" keyword if present
+        #     fen_section = cmd[len("fen "):]
+        #     if " moves " in fen_section:
+        #         fen, moves_section = fen_section.split(" moves ", 1)
+        #     else:
+        #         fen, moves_section = fen_section, ""
+        #     board.set_fen(fen)
+        #     cmd = moves_section
+        else:
+            moves_section = ""
 
-#     # The top of the board is rank 8 → index 21
-#     for rank_idx, row in enumerate(rows):
-#         file_idx = 0
-#         rank_start = 21 + rank_idx * 10
-#         for ch in row:
-#             if ch.isdigit():
-#                 file_idx += int(ch)
-#             else:
-#                 board[rank_start + file_idx] = ch
-#                 file_idx += 1
+        # Apply moves if given
+        if "moves" in cmd:
+            moves_section = cmd.split("moves ", 1)[1]
 
-#     # Fill sentinels (outer border with '.')
-#     for i in range(120):
-#         if i < 20 or i >= 100 or i % 10 in (0, 9):
-#             board[i] = '.'
-#         elif board[i] == ' ':
-#             board[i] = '-'
-
-#     board_state = ''.join(board)
-#     return board_state, side, castling, ep
-
-def main():
-    game_board = Board()
-    searcher = Search()
-
-    while 1:
-        try:
-            line = input()
-            if line == "quit":
-                sys.exit()
-            elif line == "uci":
-                print_to_terminal("pygone 1.6.6\nuciok")
-            elif line == "ucinewgame":
-                game_board = Board()
-                searcher.reset()
-            elif line == "isready":
-                print_to_terminal("readyok")
-            # elif line.startswith("position fen"):
-            #     parts = line.split() 
-            #     fen = " ".join(parts[2:])
+        if moves_section:
+            moves = moves_section.split()
+            for move in moves:
+                board.uci_move(move)
                 
-            #     game_board.board_state, side, castling, ep = fen_to_board_state(fen)
-            #     game_board.en_passant = ep if ep != '-' else None
-            #     game_board.white_to_move = (side == 'w')
-            #     game_board.played_move_count = 0 if game_board.white_to_move else 1
+        search.set_board(board)
+    elif line.lower() == "ucinewgame":
+            board = Board()
+            search = Search(board)
+    elif line.lower() == "uci":
+        print("pygone2.0\nuciok", flush=True)
+    elif line.startswith("isready"):
+        print("readyok", flush=True)
+    elif line.startswith("go "):
+        tokens = line.split()
+        wtime = btime = movestogo = None
+        depth = None
+        # perft_depth = None
 
-            #     # if you track castling rights as [KQ, kq]
-            #     game_board.white_castling = ['K' in castling, 'Q' in castling]
-            #     game_board.black_castling = ['k' in castling, 'q' in castling]
-                
-            # elif line.startswith("print"):
-            #     for row in range(12):
-            #         position = row * 10
-            #         print(game_board.board_state[position:position+10])
-            #     print(game_board.played_move_count, game_board.in_check(game_board.played_move_count % 2 == 0))
-            elif line.startswith("position"):
-                moves = line.split()
-                game_board = Board()
-                for position_move in moves[3:]:
-                    game_board = game_board.make_move(position_move)
-            elif line.startswith("go"):
-                searcher.v_depth = 30
-                move_time = 1e8
-                is_white = game_board.played_move_count % 2 == 0
-
-                args = line.split()
-                for key, arg in enumerate(args):
-                    if arg == 'wtime' and is_white or arg == 'btime' and not is_white:
-                        move_time = int(args[key + 1]) / 1e3
-                    # depth input can be commented out to save space since engine will be run on time
-                    elif arg == 'depth':
-                        searcher.v_depth = int(args[key + 1])
-
-                searcher.critical_time = time.time() + max(0.75, move_time - 1)
-                move_time = max(2.2, move_time / 28)
-
-                searcher.end_time = time.time() + move_time
-                
-                searcher.critical_time = min(searcher.end_time, searcher.critical_time)
-                
-                searcher.v_nodes = 0
-
-                s_move = None
-
-                for v_depth, s_move, best_score in searcher.iterative_search(game_board):
-                    if v_depth >= searcher.v_depth or time.time() >= searcher.end_time:
-                        break
-
-                print_to_terminal(f"bestmove {str(s_move)}")
-
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit()
-        except Exception as exc:
-            print_to_terminal(exc)
-            raise
-
-main()
+        i = 1
+        while i < len(tokens):
+            if tokens[i] == "wtime":
+                wtime = int(tokens[i+1])
+                i += 2
+            elif tokens[i] == "btime":
+                btime = int(tokens[i+1])
+                i += 2
+            # elif tokens[i] == "movestogo":
+            #     movestogo = int(tokens[i+1])
+            #     i += 2
+            # elif tokens[i] == "depth":
+            #     depth = int(tokens[i+1])
+            #     i += 2
+            # elif tokens[i] == "perft":
+            #     perft_depth = int(tokens[i+1])
+            #     i += 2
+            else:
+                i += 1
+              
+        # if perft_depth:
+        #     perft = Perft(board)
+        #     perft.run(perft_depth)
+        #     continue
+              
+        search.set_board(board)
+          
+        if depth:
+            search.set_time_limit(1e8)
+            search.set_depth(depth)
+        else:
+            search.set_depth(50)
+            side_time = (wtime if board.white_to_move else btime) / 1000
+            
+            move_time = max(2.2, side_time / 28)
+            
+            search.set_time_limit(move_time)
+            
+        move, score = search.iterative_search()
+        
+        if not move:
+            search.set_depth(1)
+            move, score = search.iterative_search()
+            
+        if move:
+            print(f"bestmove {board.move_to_uci(move)}", flush=True)
+    # elif line.startswith('print'):
+    #     board.print_board()
+    # elif line.startswith('fen'):
+    #     print(board.get_fen(), flush=True)
