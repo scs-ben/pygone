@@ -10,6 +10,7 @@ combined_file = Path("pygone-combined.py")
 imports_to_inline = [
     ("search", Path("search.py")),
     ("board", Path("board.py")),
+    ("perft", Path("perft.py")),
 ]
 
 # --- read main file ---
