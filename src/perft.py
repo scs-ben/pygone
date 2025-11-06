@@ -111,4 +111,4 @@ class Perft:
         nodes = self.perft_divide(depth)
         elapsed = time.time() - t0
 
-        print(f"\nDepth {depth}: {nodes} nodes in {elapsed:.2f}s ({nodes/elapsed:.0f} NPS)")
+        print(f"Depth {depth}: {nodes} nodes in {elapsed:.2f}s ({nodes/elapsed:.0f} NPS)")
