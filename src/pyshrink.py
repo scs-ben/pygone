@@ -39,15 +39,15 @@ combined_file.write_text(main_code)
 with open("pygone-combined.py") as f:
     code = f.read()
 
-minified = python_minifier.minify(
-    code,
-    rename_locals=True,      # shrink local variables inside functions/classes
-    rename_globals=False,    # leave module-level globals/constants intact
-    combine_imports=True,
-    hoist_literals=False,
-    remove_annotations=True,
-    remove_literal_statements=True
-)
+# minified = python_minifier.minify(
+#     code,
+#     rename_locals=True,      # shrink local variables inside functions/classes
+#     rename_globals=False,    # leave module-level globals/constants intact
+#     combine_imports=True,
+#     hoist_literals=False,
+#     remove_annotations=True,
+#     remove_literal_statements=True
+# )
 
-with open("pygone-mini.py", "w") as f:
-    f.write(minified)
+# with open("pygone-mini.py", "w") as f:
+#     f.write(minified)

@@ -13,10 +13,8 @@ class Perft:
         self.total_checks = 0
 
     def perft(self, depth):
-        """
-        Bitboard-based perft. Returns (total_nodes, captures, checks).
-        Captures/Checks are counted for moves *into* this position if depth is 0.
-        """
+        # Bitboard-based perft. Returns (total_nodes, captures, checks).
+        # Captures/Checks are counted for moves *into* this position if depth is 0.
         if depth == 0:
             # Base case: Returns 1 node, 0 captures, 0 checks
             return 1, 0, 0 
@@ -65,7 +63,7 @@ class Perft:
         return nodes, captures, checks
 
     def perft_divide(self, depth):
-        """Perft divide for debugging: prints per-move counts."""
+        # Perft divide for debugging: prints per-move counts.
         self.total_captures = 0
         self.total_checks = 0
         total_nodes = 0
