@@ -188,7 +188,7 @@ replacements = {
     "rook_from": "o1",
     "rook_to": "o2",
     "king_square": "o3",
-    "index": "o4",
+    "tt_index": "o4",
     "probe": "o5",
     "store": "o6",
     "seconds": "o7",

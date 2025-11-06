@@ -15,18 +15,18 @@ class TranspositionTable:
         self.size = size_bytes // entry_size
         self.table = [None] * self.size
 
-    def index(self, zobrist_key):
+    def tt_index(self, zobrist_key):
         return zobrist_key % self.size
 
     def store(self, key, s_depth, g_score, flag, t_move):
-        idx = self.index(key)
+        idx = self.tt_index(key)
         entry = self.table[idx]
         # Replace if empty or shallower than current
         if entry is None or entry.s_depth <= s_depth:
             self.table[idx] = TTEntry(key, g_score, s_depth, flag, t_move)
 
     def probe(self, key):
-        idx = self.index(key)
+        idx = self.tt_index(key)
         entry = self.table[idx]
         if entry is not None and entry.key == key:
             return entry
