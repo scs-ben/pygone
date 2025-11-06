@@ -2,9 +2,7 @@
 import time
 
 # Updated Perft Class (Focus on the Perft method changes)
-class Perft:
-    START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-    
+class Perft:    
     # Initialize counters to 0, but they are now only used for the final result aggregation
     def __init__(self, board):
         self.board = board
@@ -23,18 +21,12 @@ class Perft:
         captures = 0
         checks = 0
         
-        for move in self.board.generate_pseudo_legal_moves():
-            is_capture = move.capture
+        for move in self.board.gen_legal_moves():
+            is_capture = move[3]
             
-            self.board.move_tuple(move)
+            self.board.make_move(move)
             
-            # 1. Legal check (Must NOT be in check *after* the move for the side whose turn it is now, 
-            # which is the original side's opponent)
-            if self.board.in_check(False): # 'False' means checking if the side who just moved is in check
-                self.board.unmove()
-                continue
-            
-            is_check = self.board.in_check() # Check if the *opponent* is in check
+            is_check = self.board.in_check()
             
             # Recursive call
             sub_nodes, sub_captures, sub_checks = self.perft(depth - 1)
@@ -58,7 +50,7 @@ class Perft:
                 if is_check:
                     checks += 1
                 
-            self.board.unmove()
+            self.board.unmake_move()
 
         return nodes, captures, checks
 
@@ -68,14 +60,10 @@ class Perft:
         self.total_checks = 0
         total_nodes = 0
 
-        for move in self.board.generate_pseudo_legal_moves():
-            is_capture = move.capture
+        for move in self.board.gen_legal_moves():
+            is_capture = move[3]
             
-            self.board.move_tuple(move)
-            
-            if self.board.in_check(False):
-                self.board.unmove()
-                continue
+            self.board.make_move(move)
             
             is_check = self.board.in_check()
             
@@ -96,7 +84,7 @@ class Perft:
             self.total_captures += cap_count
             self.total_checks += check_count
             
-            self.board.unmove()
+            self.board.unmake_move()
 
         print(f"Total nodes: {total_nodes} Captures: {self.total_captures} Checks: {self.total_checks}")
         return total_nodes
@@ -109,6 +97,6 @@ class Perft:
         t0 = time.time()
         # perft_divide aggregates the results into instance variables and returns total nodes
         nodes = self.perft_divide(depth)
-        elapsed = time.time() - t0
+        elapsed = max(1, time.time() - t0)
 
         print(f"Depth {depth}: {nodes} nodes in {elapsed:.2f}s ({nodes/elapsed:.0f} NPS)")

@@ -1,113 +1,64 @@
 #!/usr/bin/env pypy3
-import sys
-from board import Board
+import sys, time
 from search import Search
-from perft import Perft
+from board import Board
 
-board = Board()
-search = Search(board)
+def print_to_terminal(print_string):
+    print(print_string, flush=True)
 
-for line in sys.stdin:
-    line = line.strip()
-    if line == "":
-        continue
-    if line.lower() in ("stop", "quit"):
-        break
-    
-    if line.startswith("position"):
-        board = Board()
-        
-        # Strip the "position " prefix
-        cmd = line[9:]
+def main():
+    game_board = Board()
+    searcher = Search(game_board)
 
-        # Default to the starting position if nothing else is provided
-        if cmd.startswith("startpos"):
-            cmd = cmd[len("startpos"):]
-            moves_section = ""
-        elif cmd.startswith("fen"):
-            search = Search(board)
-            # Extract FEN before the "moves" keyword if present
-            fen_section = cmd[len("fen "):]
-            if " moves " in fen_section:
-                fen, moves_section = fen_section.split(" moves ", 1)
-            else:
-                fen, moves_section = fen_section, ""
-            board.set_fen(fen)
-            cmd = moves_section
-        else:
-            moves_section = ""
-
-        # Apply moves if given
-        if "moves" in cmd:
-            moves_section = cmd.split("moves ", 1)[1]
-
-        if moves_section:
-            input_moves = moves_section.split()
-            for s_move in input_moves:
-                board.uci_move(s_move)
+    while 1:
+        # try:
+        line = input()
+        if line == "quit":
+            sys.exit()
+        elif line == "uci":
+            print_to_terminal("pygone2.0\nuciok")
+        elif line == "ucinewgame":
+            game_board = Board()
+            searcher = Search(game_board)
+        elif line == "isready":
+            print_to_terminal("readyok")
+        elif line.startswith("position"):
+            moves = line.split()
+            
+            for position_move in moves[3:]:
+                from_sq = game_board.algebraic_to_sq(position_move[:2])
+                to_sq = game_board.algebraic_to_sq(position_move[2:4])
+                promo = position_move[4] if len(position_move) == 5 else None
                 
-        search.set_board(board)
-    elif line.lower() == "ucinewgame":
-            board = Board()
-            search = Search(board)
-    elif line.lower() == "uci":
-        print("pygone2.0\nuciok", flush=True)
-    elif line.startswith("isready"):
-        print("readyok", flush=True)
-    elif line.startswith("go "):
-        tokens = line.split()
-        w_time = b_time = None
-        movestogo = None
-        s_depth = None
-        perft_depth = None
+                game_board.make_move((from_sq, to_sq, promo, None, None))
+        elif line.startswith("go"):
+            move_time = 1e8
+            is_white = game_board.white_to_move
+            v_depth = 0
+            
+            args = line.split()
+            for key, arg in enumerate(args):
+                if arg == 'wtime' and is_white or arg == 'btime' and not is_white:
+                    side_time = int(args[key + 1]) / 1e3
+                # depth input can be commented out to save space since engine will be run on time
+                elif arg == 'depth':
+                    v_depth = int(args[key + 1])
 
-        i = 1
-        while i < len(tokens):
-            if tokens[i] == "wtime":
-                w_time = int(tokens[i+1])
-                i += 2
-            elif tokens[i] == "btime":
-                b_time = int(tokens[i+1])
-                i += 2
-            elif tokens[i] == "movestogo":
-                movestogo = int(tokens[i+1])
-                i += 2
-            elif tokens[i] == "depth":
-                s_depth = int(tokens[i+1])
-                i += 2
-            elif tokens[i] == "perft":
-                perft_depth = int(tokens[i+1])
-                i += 2
+            if v_depth > 0:
+                searcher.set_time_limit(1e8)
+                searcher.set_depth(v_depth)
             else:
-                i += 1
-              
-        if perft_depth:
-            perft = Perft(board)
-            perft.run(perft_depth)
-            continue
-              
-        search.set_board(board)
-          
-        if s_depth:
-            search.set_time_limit(1e8)
-            search.set_depth(s_depth)
-        else:
-            search.set_depth(50)
-            side_time = (w_time if board.white_to_move else b_time) / 1000
-            
-            move_time = side_time / 20
-            
-            search.set_time_limit(move_time)
-            
-        t_move, score = search.iterative_search()
-        
-        if not t_move:
-            search.set_depth(1)
-            t_move, score = search.iterative_search()
-            
-        if t_move:
-            print(f"bestmove {board.move_to_uci(t_move)}", flush=True)
-    elif line.startswith('print'):
-        board.print_board()
-    # elif line.startswith('fen'):
-    #     print(board.get_fen(), flush=True)
+                searcher.set_depth(50)
+                
+                move_time = side_time / 20
+                
+                searcher.set_time_limit(move_time)
+
+            t_move, _ = searcher.iterative_search()
+
+            print_to_terminal(f"bestmove {str(game_board.move_to_uci(t_move))}")
+        # except Exception as exc:
+        #     print_to_terminal(exc)
+        #     raise
+
+main()

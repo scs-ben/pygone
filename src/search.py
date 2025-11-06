@@ -44,13 +44,13 @@ class Search:
         self.end_time = None
         self.time_up = False
         self.s_depth = 50
-        self.killer_moves = [[None, None] for _ in range(64)]
-        self.history_table = [[0] * 64 for _ in range(64)]
+        # self.killer_moves = [[None, None] for _ in range(64)]
+        # self.history_table = [[0] * 64 for _ in range(64)]
 
-    def clear_tables(self):
-        """Called at the start of a new top-level search."""
-        self.killer_moves = [[None, None] for _ in range(64)]
-        self.history_table = [[0] * 64 for _ in range(64)]
+    # def clear_tables(self):
+    #     """Called at the start of a new top-level search."""
+    #     self.killer_moves = [[None, None] for _ in range(64)]
+    #     self.history_table = [[0] * 64 for _ in range(64)]
 
     def set_time_limit(self, seconds):
         self.time_limit = seconds
@@ -66,41 +66,41 @@ class Search:
     def print_stats(self, s_depth, g_score, time, s_nodes, nps, pv):
         print(f"info depth {s_depth} score cp {g_score} time {time} nodes {s_nodes} nps {nps} pv {pv}", flush=True)
 
-    def score_killer_move(self, t_move, ply, tt_move):
-        # 1. Transposition Table Move (Highest Priority)
-        if tt_move and t_move == tt_move:
-            return 9000000  # Highest possible score
+    # def score_killer_move(self, t_move, ply, tt_move):
+    #     # 1. Transposition Table Move (Highest Priority)
+    #     if tt_move and t_move == tt_move:
+    #         return 9000000  # Highest possible score
 
-        # 2. Promotions
-        if t_move.promo:
-            # Use a high score, prioritizing Queen
-            return 8000000 + self.board.PIECE_VALUES[t_move.promo] * 10
+    #     # 2. Promotions
+    #     if t_move[2]:
+    #         # Use a high score, prioritizing Queen
+    #         return 8000000 + self.board.PIECE_VALUES[t_move[2]] * 10
         
-        # 3. Captures (MVV-LVA - Your existing logic)
-        if t_move.capture:
-            # NOTE: Your board needs a PIECE_VALUES property
-            # Consider using a higher base score for captures than for quiet moves
-            victim_value = self.board.PIECE_VALUES[t_move.capture]
-            attacker_value = self.board.PIECE_VALUES[t_move.piece]
-            # Simple scaling to keep this range between 7M and 8M
-            return 7000000 + 10 * victim_value - attacker_value
-            # *For maximum strength, this should be replaced by Static Exchange Evaluation (SEE)*
+    #     # 3. Captures (MVV-LVA - Your existing logic)
+    #     if t_move[3]:
+    #         # NOTE: Your board needs a PIECE_VALUES property
+    #         # Consider using a higher base score for captures than for quiet moves
+    #         victim_value = self.board.PIECE_VALUES[t_move[3]]
+    #         attacker_value = self.board.PIECE_VALUES[t_move[4]]
+    #         # Simple scaling to keep this range between 7M and 8M
+    #         return 7000000 + 10 * victim_value - attacker_value
+    #         # *For maximum strength, this should be replaced by Static Exchange Evaluation (SEE)*
         
-        # --- Quiet Moves (Lower Priority) ---
+    #     # --- Quiet Moves (Lower Priority) ---
         
-        # 4. Killer Moves
-        if t_move == self.killer_moves[ply][0]:
-            return 600000  # High score for primary killer
-        if t_move == self.killer_moves[ply][1]:
-            return 500000  # Slightly lower for secondary killer
+    #     # 4. Killer Moves
+    #     if t_move == self.killer_moves[ply][0]:
+    #         return 600000  # High score for primary killer
+    #     if t_move == self.killer_moves[ply][1]:
+    #         return 500000  # Slightly lower for secondary killer
 
-        # 5. History Heuristic
-        # Assuming move provides from_sq and to_sq indices (0-63)
-        from_sq_idx = t_move.from_sq
-        to_sq_idx = t_move.to_sq
+    #     # 5. History Heuristic
+    #     # Assuming move provides from_sq and to_sq indices (0-63)
+    #     from_sq_idx = t_move[0]
+    #     to_sq_idx = t_move[1]
         
-        # History scores are typically much smaller, e.g., max 10000.
-        return self.history_table[from_sq_idx][to_sq_idx]
+    #     # History scores are typically much smaller, e.g., max 10000.
+    #     return self.history_table[from_sq_idx][to_sq_idx]
 
     def iterative_search(self):
         start_time = time.time()
@@ -108,7 +108,7 @@ class Search:
         best_score = None
         
         self.s_nodes = 0
-        self.clear_tables()
+        # self.clear_tables()
 
         for s_depth in range(1, self.s_depth + 1):  # iterative deepening
             if self.time_up:
@@ -144,23 +144,12 @@ class Search:
     def threefold(self):
         count = 1
         
-        for entry in self.board.history:
+        for entry in self.board.stack:
             count += entry[-1] == self.board.hash
             if count >= 3:
                 return True
             
         return False
-
-    def has_sufficient_material(self):
-        """
-        board: object with bitboards like board.white_pawns, board.white_knights, etc.
-        is_white: whether to check for white or black
-        """
-        pawns  = bin(self.board.white_pawns).count('1')
-        minors = bin(self.board.white_knights).count('1') + bin(self.board.white_bishops).count('1')
-        majors = bin(self.board.white_rooks).count('1') + bin(self.board.white_queens).count('1')
-
-        return pawns > 0 or minors + majors >= 2
 
     def search(self, s_depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER, ply=0):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
@@ -217,30 +206,29 @@ class Search:
                 if local_score <= cut_boundary:
                     return local_score
 
-        # Null move pruning (only when safe)
-        if (
-            not is_pv_node
-            and not in_check
-            and s_depth >= 3
-            and self.has_sufficient_material()
-        ):
-            reduction = 2 + s_depth / 6 # typical reduction
-            self.board.nullmove()
+        # # Null move pruning (only when safe)
+        # if (
+        #     not is_pv_node
+        #     and not in_check
+        #     and s_depth >= 3
+        #     and self.has_sufficient_material()
+        # ):
+        #     reduction = 2 + s_depth / 6 # typical reduction
+        #     self.board.nullmove()
 
-            # skip if nullmove leaves us in check (can happen in some custom rulesets)
-            if not self.board.in_check(False):
-                null_score = -self.search(s_depth - reduction - 1, -beta, -beta + 1)
+        #     # skip if nullmove leaves us in check (can happen in some custom rulesets)
+        #     if not self.board.in_check(False):
+        #         null_score = -self.search(s_depth - reduction - 1, -beta, -beta + 1)
 
-                if null_score >= beta:
-                    self.board.unmove()
-                    return beta
+        #         self.board.unmake_move()
                 
-                self.board.unmove()
+        #         if null_score >= beta:
+        #             return beta
 
         if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
-            self.board.move_tuple(entry.t_move)
+            self.board.make_move(entry.t_move)
             local_score = -self.search(s_depth - 1, -beta, -alpha)
-            self.board.unmove()
+            self.board.unmake_move()
 
             if local_score >= beta:
                 return beta
@@ -250,26 +238,23 @@ class Search:
 
         played_moves = 0
         
-        all_moves = list(sorted(self.board.generate_pseudo_legal_moves(), key=self.board.score_move, reverse=True))
+        # all_moves = list(sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True))
         
-        scored_moves = []
-        for t_move in all_moves:
-             # Pass the current ply and the tt_move
-             g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
-             scored_moves.append((g_score, t_move))
+        # scored_moves = []
+        # for t_move in all_moves:
+        #      # Pass the current ply and the tt_move
+        #      g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
+        #      scored_moves.append((g_score, t_move))
              
-        sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
+        # sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
 
-        for g_score, t_move in sorted_moves:
-            self.board.move_tuple(t_move)
-                      
-            if self.board.in_check(False):
-                self.board.unmove()
-                continue
+        # for g_score, t_move in sorted_moves:
+        for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
+            self.board.make_move(t_move)
 
             played_moves += 1
             
-            is_quiet = not t_move.capture and not t_move.promo
+            is_quiet = not t_move[3] and not t_move[2]
 
             reduction = 1
             if is_quiet and s_depth >= 3 and played_moves > 3:
@@ -285,30 +270,29 @@ class Search:
             
             # g_score = -self.search(s_depth - 1, -beta, -alpha)
             
-            if self.time_up:
-                self.board.unmove()
-                break
+            self.board.unmake_move()
             
-            self.board.unmove()
+            if self.time_up:
+                break
 
             if g_score > best_score:
                 best_score = g_score
                 best_move = t_move
             alpha = max(alpha, g_score)
             
-            if alpha >= beta:
-                if is_quiet:
-                    # Update Killer Heuristic
-                    self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
-                    self.killer_moves[ply][0] = t_move                      # New killer in slot 0
+            # if alpha >= beta:
+            #     if is_quiet:
+            #         # Update Killer Heuristic
+            #         self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
+            #         self.killer_moves[ply][0] = t_move                      # New killer in slot 0
                     
-                    # Update History Heuristic (e.g., add 1 to the score)
-                    from_sq_idx = t_move.from_sq
-                    to_sq_idx = t_move.to_sq
-                    # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
-                    self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
-                    # Limit the score to prevent overflow/bias (e.g., max 10000)
-                break  # beta cutoff
+            #         # Update History Heuristic (e.g., add 1 to the score)
+            #         from_sq_idx = t_move[0]
+            #         to_sq_idx = t_move[1]
+            #         # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
+            #         self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
+            #         # Limit the score to prevent overflow/bias (e.g., max 10000)
+            #     break  # beta cutoff
             
         if not played_moves:
             return -self.MATE_SCORE_UPPER + s_depth if self.board.in_check() else 0
@@ -346,7 +330,6 @@ class Search:
         stand_pat = self.board.evaluate()
         
         if not in_check:
-            stand_pat = self.board.evaluate()
             if stand_pat >= beta:
                 return beta
             if alpha < stand_pat:
@@ -374,20 +357,15 @@ class Search:
         
         alpha_orig = alpha
 
-        for t_move in sorted(self.board.generate_pseudo_legal_moves(active=not in_check), key=self.board.score_move, reverse=True):
-            self.board.move_tuple(t_move)
-            
-            if self.board.in_check(False):
-                self.board.unmove()
-                continue
-            
+        for t_move in sorted(self.board.gen_legal_moves(active=not in_check), key=self.board.score_move, reverse=True):
+            self.board.make_move(t_move)
+                      
             g_score = -self.q_search(-beta, -alpha, q_depth + 1)
             
-            if self.time_up:
-                self.board.unmove()
-                break
+            self.board.unmake_move()
             
-            self.board.unmove()
+            if self.time_up:
+                break
 
             if g_score >= beta:
                 # Store cutoff in TT
