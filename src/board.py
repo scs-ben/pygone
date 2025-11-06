@@ -509,27 +509,27 @@ class Board:
     #         + self.passed_pawns(True) - self.passed_pawns(False)
     #     )
 
-    # def king_safety(self, white):
-    #     k = self.king_square(white)
-    #     file = k % 8
-    #     rank = k // 8
+    def king_safety(self, white):
+        k = self.king_square(white)
+        file = k % 8
+        rank = k // 8
 
-    #     direction = 1 if white else -1
-    #     bb = 0 if white else 6
-    #     castle = 1 if white else 4
+        direction = 1 if white else -1
+        bb = 0 if white else 6
+        castle = 1 if white else 4
 
-    #     shield = 0
-    #     # squares in front of king (rank+1)
-    #     for df in (-1, 0, 1):
-    #         f = file + df
-    #         if 0 <= f < 8:
-    #             sq = (rank + direction) * 8 + f
-    #             if self.P[bb] & get_bit(sq):  # white pawns
-    #                 shield += 10
-    #     # bonus for castling
-    #     if self.castle & castle == 0 and self.castle & (castle * 2) == 0:
-    #         shield += 15
-    #     return shield
+        shield = 0
+        # squares in front of king (rank+1)
+        for df in (-1, 0, 1):
+            f = file + df
+            if 0 <= f < 8:
+                sq = (rank + direction) * 8 + f
+                if self.P[bb] & get_bit(sq):  # white pawns
+                    shield += 10
+        # bonus for castling
+        if self.castle & castle == 0 and self.castle & (castle * 2) == 0:
+            shield += 15
+        return shield
 
     # def eval_king_safety(self):
     #     return self.king_safety(True) - self.king_safety(False)
@@ -550,7 +550,7 @@ class Board:
         return score
 
     def evaluate(self):
-        score  = self.eval_material()
+        score = (self.eval_material() + (self.king_safety(True) - self.king_safety(False)))
         # score += self.eval_pawn_structure()
         # score += self.eval_king_safety()
 

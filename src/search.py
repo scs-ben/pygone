@@ -184,27 +184,27 @@ class Search:
             if alpha >= beta:
                 return alpha # if entry.flag == 'UPPERBOUND' else beta
 
-        if not is_pv_node and not in_check:
-            stand_pat = self.board.evaluate()
+        # if not is_pv_node and not in_check:
+        #     stand_pat = self.board.evaluate()
             
-            # Futility pruning (low eval)
-            if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
-                return stand_pat
+        #     # Futility pruning (low eval)
+        #     if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
+        #         return stand_pat
 
-            # Razor pruning (high eval)
-            if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
-                return stand_pat
+        #     # Razor pruning (high eval)
+        #     if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
+        #         return stand_pat
 
-        if not is_pv_node and not in_check and s_depth <= 5:
-            cut_boundary = alpha - (150 * s_depth)
-            if stand_pat <= cut_boundary:
-                if s_depth <= 2:
-                    return self.q_search(alpha, alpha + 1)
+        # if not is_pv_node and not in_check and s_depth <= 5:
+        #     cut_boundary = alpha - (150 * s_depth)
+        #     if stand_pat <= cut_boundary:
+        #         if s_depth <= 2:
+        #             return self.q_search(alpha, alpha + 1)
 
-                local_score = self.q_search(cut_boundary, cut_boundary + 1)
+        #         local_score = self.q_search(cut_boundary, cut_boundary + 1)
 
-                if local_score <= cut_boundary:
-                    return local_score
+        #         if local_score <= cut_boundary:
+        #             return local_score
 
         # # Null move pruning (only when safe)
         # if (
@@ -225,13 +225,13 @@ class Search:
         #         if null_score >= beta:
         #             return beta
 
-        if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
-            self.board.make_move(entry.t_move)
-            local_score = -self.search(s_depth - 1, -beta, -alpha)
-            self.board.unmake_move()
+        # if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
+        #     self.board.make_move(entry.t_move)
+        #     local_score = -self.search(s_depth - 1, -beta, -alpha)
+        #     self.board.unmake_move()
 
-            if local_score >= beta:
-                return beta
+        #     if local_score >= beta:
+        #         return beta
 
         best_score = -float('inf')
         best_move = None
