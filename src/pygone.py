@@ -2,7 +2,7 @@
 import sys
 from board import Board
 from search import Search
-# from perft import Perft
+from perft import Perft
 
 board = Board()
 search = Search(board)
@@ -23,6 +23,7 @@ for line in sys.stdin:
         # Default to the starting position if nothing else is provided
         if cmd.startswith("startpos"):
             cmd = cmd[len("startpos"):]
+            moves_section = ""
         elif cmd.startswith("fen"):
             search = Search(board)
             # Extract FEN before the "moves" keyword if present
@@ -94,7 +95,9 @@ for line in sys.stdin:
             search.set_depth(50)
             side_time = (w_time if board.white_to_move else b_time) / 1000
             
-            move_time = max(2.2, side_time / 28)
+            move_time = side_time / 20
+            
+            print(move_time)
             
             search.set_time_limit(move_time)
             
