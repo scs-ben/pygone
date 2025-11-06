@@ -163,14 +163,14 @@ class Board:
         self.init_hash()
         self.history = []
 
-    def move_to_uci(self, move):
-        if move.white_to_move:
-            return self.INDEX_TO_SQUARE[move.from_sq] + self.INDEX_TO_SQUARE[move.to_sq] + (move.promo or '')
+    def move_to_uci(self, s_move):
+        if s_move.white_to_move:
+            return self.INDEX_TO_SQUARE[s_move.from_sq] + self.INDEX_TO_SQUARE[s_move.to_sq] + (s_move.promo or '')
         else:
-            return self.BLACK_INDEX_TO_SQUARE[move.from_sq] + self.BLACK_INDEX_TO_SQUARE[move.to_sq] + (move.promo or '')
+            return self.BLACK_INDEX_TO_SQUARE[s_move.from_sq] + self.BLACK_INDEX_TO_SQUARE[s_move.to_sq] + (s_move.promo or '')
 
-    def move_tuple(self, move):
-        self.move(move.from_sq, move.to_sq, move.promo)
+    def move_tuple(self, t_move):
+        self.do_move(t_move.from_sq, t_move.to_sq, t_move.promo)
 
     def uci_move(self, uci):
         """Apply a move in UCI format (e2e4, g7g8q)"""
@@ -183,9 +183,9 @@ class Board:
             
         promo = uci[4] if len(uci) == 5 else None
         
-        self.move(from_sq, to_sq, promo)
+        self.do_move(from_sq, to_sq, promo)
 
-    def move(self, from_sq, to_sq, promo):
+    def do_move(self, from_sq, to_sq, promo):
         """Apply a move with incremental hash update."""
         # Save current state for undo
         self.push()
@@ -449,8 +449,7 @@ class Board:
         yield from self.generate_piece_moves(self.white_knights, KNIGHT_ATTACKS, 'n', active=active)
 
         if not active:
-            for move in self.generate_castling_moves():
-                yield move
+            yield from self.generate_castling_moves()
 
         # King
         yield from self.generate_piece_moves(self.white_kings, KING_ATTACKS, 'k', active=active)
@@ -669,15 +668,15 @@ class Board:
 
         return None
 
-    def score_move(self, move):
-        score = 0
-        if move.capture:
+    def score_move(self, t_move):
+        g_score = 0
+        if t_move.capture:
             # MVV-LVA: Most valuable victim - least valuable attacker
-            score += self.PIECE_VALUES[move.capture] - self.PIECE_VALUES[move.piece] / 10
-        if move.promo:
+            g_score += self.PIECE_VALUES[t_move.capture] - self.PIECE_VALUES[t_move.piece] / 10
+        if t_move.promo:
             # Promote to queen highest
-            score += self.PIECE_VALUES[move.promo] * 10
-        return score
+            g_score += self.PIECE_VALUES[t_move.promo] * 10
+        return g_score
      
     def is_endgame(self):
         # A simple endgame definition: low count of major pieces
@@ -703,17 +702,15 @@ class Board:
                  self.eval_center_control())
             
     def evaluate_material(self):
-        score = 0
+        g_score = 0
         for name, value in self.PIECE_VALUES.items():
-            score += value * bin(getattr(self, "".join(["white_",self.PIECE_MAP[name],"s"]))).count('1')
-            score -= value * bin(getattr(self, "".join(["black_",self.PIECE_MAP[name],"s"]))).count('1')
+            g_score += value * bin(getattr(self, "".join(["white_",self.PIECE_MAP[name],"s"]))).count('1')
+            g_score -= value * bin(getattr(self, "".join(["black_",self.PIECE_MAP[name],"s"]))).count('1')
             
-        # print(f"material score {score}")
-            
-        return score
+        return g_score
             
     def evaluate_pawn_structure(self):
-        score = 0
+        g_score = 0
         is_endgame = self.is_endgame()
         
         for file in range(8):
@@ -723,17 +720,17 @@ class Board:
             
             # Doubled pawns
             if bin(white_file).count('1') > 1:
-                score -= 25
+                g_score -= 25
             if bin(black_file).count('1') > 1:
-                score += 25
+                g_score += 25
             
             # Isolated pawns
             left = file_mask << 1 if file < 7 else 0
             right = file_mask >> 1 if file > 0 else 0
             if white_file and not (self.white_pawns & (left | right)):
-                score -= 15
+                g_score -= 15
             if black_file and not (self.black_pawns & (left | right)):
-                score += 15
+                g_score += 15
                 
             black_adj_pawns = 0
             if file > 0: black_adj_pawns |= self.black_pawns & (0x0101010101010101 << (file - 1))
@@ -755,7 +752,7 @@ class Board:
                         
                         # Scaling: (pawn_rank_idx - 1) gives 6 for R7, 1 for R2.
                         bonus = (pawn_rank_idx - 1) * (pawn_rank_idx - 1) * 3 
-                        score += min(bonus, 250)
+                        g_score += min(bonus, 250)
                         
             # 2. Black Passed Pawn (Check for NO white pawns on same file OR adjacent files IN FRONT)
             if black_file and not white_file:
@@ -774,12 +771,12 @@ class Board:
                         scaling_factor = 7 - most_advanced_rank_idx 
                         
                         penalty = scaling_factor * scaling_factor * 3
-                        score -= min(penalty, 250) # DEDUCT THE PENALTY
+                        g_score -= min(penalty, 250) # DEDUCT THE PENALTY
         
-        return score
+        return g_score
     
     def eval_development(self):
-        score = 0
+        g_score = 0
         white_developed_minors = 0
         black_developed_minors = 0
         
@@ -790,7 +787,7 @@ class Board:
         for sq_idx, bitboard in zip(white_start_squares, white_pieces):
             if not bitboard & (1 << sq_idx):
                 # Piece has moved from its starting square
-                score += 15 # Increased development bonus (e.g., 15 CP)
+                g_score += 15 # Increased development bonus (e.g., 15 CP)
                 white_developed_minors += 1
 
         # Black Minor Pieces
@@ -799,7 +796,7 @@ class Board:
 
         for sq_idx, bitboard in zip(black_start_squares, black_pieces):
             if not bitboard & (1 << sq_idx):
-                score -= 15 # Increased development penalty for Black's lack of development
+                g_score -= 15 # Increased development penalty for Black's lack of development
                 black_developed_minors += 1 # Count for penalty calculation
         
         # --- QUEEN DEVELOPMENT PENALTY ---
@@ -810,21 +807,21 @@ class Board:
             # Queen has moved off D1
             if white_developed_minors < 2:
                 # High penalty if Queen moves before at least two minors
-                score -= 40
+                g_score -= 40
             elif white_developed_minors < 4:
                 # Medium penalty if Queen moves before all minors
-                score -= 20
+                g_score -= 20
         
         # 2. Black Queen Penalty
         black_queen_start_sq = 59 # D8
         if not self.black_queens & (1 << black_queen_start_sq):
             # Queen has moved off D8
             if black_developed_minors < 2:
-                score += 40
+                g_score += 40
             elif black_developed_minors < 4:
-                score += 20
+                g_score += 20
                 
-        return score
+        return g_score
     
     def eval_center_control(self):
         white_control = 0
@@ -837,7 +834,7 @@ class Board:
         return 4 * (white_control - black_control)
     
     def evaluate_king_position(self):
-        score = 0
+        g_score = 0
         
         # Find king square
         king_sq = self.king_square()
@@ -851,13 +848,13 @@ class Board:
                 if 0 <= f <= 7:
                     shield_mask |= (1 << ((k_rank + 1) * 8 + f))
         pawns_in_shield = bin(self.white_pawns & shield_mask).count('1')
-        score += 10 * pawns_in_shield  # each pawn in shield gives small bonus
+        g_score += 10 * pawns_in_shield  # each pawn in shield gives small bonus
         
         if not self.is_endgame():
             # Only apply pawn shield and general safety in the middlegame
-            return score # Return the middlegame safety score
+            return g_score # Return the middlegame safety g_score
 
-        score = 0
+        g_score = 0
         for side in (True, False):
             king_sq = self.king_square(side) # Assuming you have a way to find this
             
@@ -868,188 +865,188 @@ class Board:
             dist = abs(k_rank - center_rank) + abs(k_file - center_file)
             
             # Bonus for lower distance (closer to the center)
-            score += (14 - dist) * (5 if side else -5)
+            g_score += (14 - dist) * (5 if side else -5)
             
-        return score
+        return g_score
     
     def evaluate_mobility(self): 
-        score = 0 
+        g_score = 0 
         
         # Generate moves for all white pieces (pseudo-legal) 
-        moves = list(self.generate_pseudo_legal_moves()) 
-        score += len(moves) # 1 point per pseudo-legal move 
+        l_moves = list(self.generate_pseudo_legal_moves()) 
+        g_score += len(l_moves) # 1 point per pseudo-legal move 
         
         # Optionally subtract black mobility 
         # Generate moves for black by rotating board 
         self.rotate() 
         self.white_to_move = not self.white_to_move
-        moves = list(self.generate_pseudo_legal_moves())
-        score -= len(moves) 
+        l_moves = list(self.generate_pseudo_legal_moves())
+        g_score -= len(l_moves) 
         self.rotate() # rotate back
         self.white_to_move = not self.white_to_move
         
-        return score
+        return g_score
 
-    # def set_fen(self, fen=None):
-    #     """Set the board position from a FEN string. Defaults to starting position."""
-    #     fen = fen or self.START_FEN
-    #     parts = fen.split()
-    #     placement = parts[0]
-    #     side = parts[1]
-    #     castling = parts[2]
-    #     ep = parts[3]
+    def set_fen(self, fen=None):
+        """Set the board position from a FEN string. Defaults to starting position."""
+        fen = fen or self.START_FEN
+        parts = fen.split()
+        placement = parts[0]
+        side = parts[1]
+        castling = parts[2]
+        ep = parts[3]
 
-    #     # Reset all bitboards
-    #     self.white_pawns   = 0
-    #     self.white_knights = 0
-    #     self.white_bishops = 0
-    #     self.white_rooks   = 0
-    #     self.white_queens  = 0
-    #     self.white_kings   = 0
-    #     self.black_pawns   = 0
-    #     self.black_knights = 0
-    #     self.black_bishops = 0
-    #     self.black_rooks   = 0
-    #     self.black_queens  = 0
-    #     self.black_kings   = 0
+        # Reset all bitboards
+        self.white_pawns   = 0
+        self.white_knights = 0
+        self.white_bishops = 0
+        self.white_rooks   = 0
+        self.white_queens  = 0
+        self.white_kings   = 0
+        self.black_pawns   = 0
+        self.black_knights = 0
+        self.black_bishops = 0
+        self.black_rooks   = 0
+        self.black_queens  = 0
+        self.black_kings   = 0
 
-    #     # Map piece chars to bitboards
-    #     piece_map = {
-    #         'P': 'white_pawns',   'N': 'white_knights', 'B': 'white_bishops',
-    #         'R': 'white_rooks',   'Q': 'white_queens',  'K': 'white_kings',
-    #         'p': 'black_pawns',   'n': 'black_knights', 'b': 'black_bishops',
-    #         'r': 'black_rooks',   'q': 'black_queens',  'k': 'black_kings'
-    #     }
+        # Map piece chars to bitboards
+        piece_map = {
+            'P': 'white_pawns',   'N': 'white_knights', 'B': 'white_bishops',
+            'R': 'white_rooks',   'Q': 'white_queens',  'K': 'white_kings',
+            'p': 'black_pawns',   'n': 'black_knights', 'b': 'black_bishops',
+            'r': 'black_rooks',   'q': 'black_queens',  'k': 'black_kings'
+        }
 
-    #     rank_idx = 7
-    #     for row in placement.split('/'):
-    #         file_idx = 0
-    #         for ch in row:
-    #             if ch.isdigit():
-    #                 file_idx += int(ch)
-    #             else:
-    #                 sq = rank_idx * 8 + file_idx
-    #                 setattr(self, piece_map[ch], getattr(self, piece_map[ch]) | (1 << sq))
-    #                 file_idx += 1
-    #         rank_idx -= 1
+        rank_idx = 7
+        for row in placement.split('/'):
+            file_idx = 0
+            for ch in row:
+                if ch.isdigit():
+                    file_idx += int(ch)
+                else:
+                    sq = rank_idx * 8 + file_idx
+                    setattr(self, piece_map[ch], getattr(self, piece_map[ch]) | (1 << sq))
+                    file_idx += 1
+            rank_idx -= 1
 
-    #     # Side to move
-    #     self.white_to_move = (side == 'w')
+        # Side to move
+        self.white_to_move = (side == 'w')
 
-    #     # Castling rights
-    #     self.castling_rights = [
-    #         'K' in castling,  # White kingside
-    #         'Q' in castling,  # White queenside
-    #         'k' in castling,  # Black kingside
-    #         'q' in castling   # Black queenside
-    #     ]
+        # Castling rights
+        self.castling_rights = [
+            'K' in castling,  # White kingside
+            'Q' in castling,  # White queenside
+            'k' in castling,  # Black kingside
+            'q' in castling   # Black queenside
+        ]
 
-    #     # En passant square
-    #     self.en_passant_square = None if ep == '-' else self.SQUARES[ep]
+        # En passant square
+        self.en_passant_square = None if ep == '-' else self.SQUARES[ep]
 
 
-    #     # Reset move counters
-    #     self.plies_played = 0
-    #     self.moves_played = 0
-    #     self.halfmove_clock = int(parts[4]) if len(parts) > 4 else 0
+        # Reset move counters
+        self.plies_played = 0
+        self.moves_played = 0
+        self.halfmove_clock = int(parts[4]) if len(parts) > 4 else 0
         
-    #     if not self.white_to_move:
-    #         self.rotate()
+        if not self.white_to_move:
+            self.rotate()
 
-    # def get_fen(self):
-    #     """Return the FEN string representing the current board state."""
+    def get_fen(self):
+        """Return the FEN string representing the current board state."""
         
-    #     if not self.white_to_move:
-    #         self.rotate()
+        if not self.white_to_move:
+            self.rotate()
         
-    #     # Reverse mapping of bitboards to piece characters
-    #     bitboard_map = {
-    #         'white_pawns': 'P',   'white_knights': 'N', 'white_bishops': 'B',
-    #         'white_rooks': 'R',   'white_queens': 'Q',  'white_kings': 'K',
-    #         'black_pawns': 'p',   'black_knights': 'n', 'black_bishops': 'b',
-    #         'black_rooks': 'r',   'black_queens': 'q',  'black_kings': 'k'
-    #     }
+        # Reverse mapping of bitboards to piece characters
+        bitboard_map = {
+            'white_pawns': 'P',   'white_knights': 'N', 'white_bishops': 'B',
+            'white_rooks': 'R',   'white_queens': 'Q',  'white_kings': 'K',
+            'black_pawns': 'p',   'black_knights': 'n', 'black_bishops': 'b',
+            'black_rooks': 'r',   'black_queens': 'q',  'black_kings': 'k'
+        }
 
-    #     rows = []
-    #     for rank in range(7, -1, -1):  # rank 8 to 1
-    #         row = ''
-    #         empty = 0
-    #         for file in range(8):  # file a to h
-    #             sq = rank * 8 + file
-    #             piece_found = False
-    #             for bb_attr, piece_char in bitboard_map.items():
-    #                 if getattr(self, bb_attr) & (1 << sq):
-    #                     if empty > 0:
-    #                         row += str(empty)
-    #                         empty = 0
-    #                     row += piece_char
-    #                     piece_found = True
-    #                     break
-    #             if not piece_found:
-    #                 empty += 1
-    #         if empty > 0:
-    #             row += str(empty)
-    #         rows.append(row)
+        rows = []
+        for rank in range(7, -1, -1):  # rank 8 to 1
+            row = ''
+            empty = 0
+            for file in range(8):  # file a to h
+                sq = rank * 8 + file
+                piece_found = False
+                for bb_attr, piece_char in bitboard_map.items():
+                    if getattr(self, bb_attr) & (1 << sq):
+                        if empty > 0:
+                            row += str(empty)
+                            empty = 0
+                        row += piece_char
+                        piece_found = True
+                        break
+                if not piece_found:
+                    empty += 1
+            if empty > 0:
+                row += str(empty)
+            rows.append(row)
         
-    #     placement = '/'.join(rows)
+        placement = '/'.join(rows)
 
-    #     # Side to move
-    #     side = 'w' if self.white_to_move else 'b'
+        # Side to move
+        side = 'w' if self.white_to_move else 'b'
 
-    #     # Castling rights
-    #     castling = ''
-    #     castling += 'K' if self.castling_rights[0] else ''
-    #     castling += 'Q' if self.castling_rights[1] else ''
-    #     castling += 'k' if self.castling_rights[2] else ''
-    #     castling += 'q' if self.castling_rights[3] else ''
-    #     if castling == '':
-    #         castling = '-'
+        # Castling rights
+        castling = ''
+        castling += 'K' if self.castling_rights[0] else ''
+        castling += 'Q' if self.castling_rights[1] else ''
+        castling += 'k' if self.castling_rights[2] else ''
+        castling += 'q' if self.castling_rights[3] else ''
+        if castling == '':
+            castling = '-'
 
-    #     # En passant square
-    #     ep = '-' if self.en_passant_square is None else self.INDEX_TO_SQUARE[self.en_passant_square]
+        # En passant square
+        ep = '-' if self.en_passant_square is None else self.INDEX_TO_SQUARE[self.en_passant_square]
 
-    #     # Halfmove clock
-    #     halfmove = str(self.halfmove_clock)
+        # Halfmove clock
+        halfmove = str(self.halfmove_clock)
 
-    #     # Fullmove number
-    #     fullmove = str((self.plies_played // 2) + 1)
+        # Fullmove number
+        fullmove = str((self.plies_played // 2) + 1)
 
-    #     if not self.white_to_move:
-    #         self.rotate()
+        if not self.white_to_move:
+            self.rotate()
 
-    #     return f"{placement} {side} {castling} {ep} {halfmove} {fullmove}"
+        return f"{placement} {side} {castling} {ep} {halfmove} {fullmove}"
 
-    # def print_board(self):
-    #     """Print board in human-readable format (for debugging)"""
-    #     board = ['.'] * 64
-    #     if not self.white_to_move:
-    #         self.rotate()
+    def print_board(self):
+        """Print board in human-readable format (for debugging)"""
+        board = ['.'] * 64
+        if not self.white_to_move:
+            self.rotate()
             
-    #     bb_map = [
-    #         (self.white_pawns, 'P'),
-    #         (self.white_knights, 'N'),
-    #         (self.white_bishops, 'B'),
-    #         (self.white_rooks, 'R'),
-    #         (self.white_queens, 'Q'),
-    #         (self.white_kings, 'K'),
-    #         (self.black_pawns, 'p'),
-    #         (self.black_knights, 'n'),
-    #         (self.black_bishops, 'b'),
-    #         (self.black_rooks, 'r'),
-    #         (self.black_queens, 'q'),
-    #         (self.black_kings, 'k')
-    #     ]
-    #     for bb, char in bb_map:
-    #         for i in range(64):
-    #             if bb & (1 << i):
-    #                 board[i] = char
-    #     for rank in range(7, -1, -1):
-    #         print(' '.join(board[rank*8:(rank+1)*8]))
+        bb_map = [
+            (self.white_pawns, 'P'),
+            (self.white_knights, 'N'),
+            (self.white_bishops, 'B'),
+            (self.white_rooks, 'R'),
+            (self.white_queens, 'Q'),
+            (self.white_kings, 'K'),
+            (self.black_pawns, 'p'),
+            (self.black_knights, 'n'),
+            (self.black_bishops, 'b'),
+            (self.black_rooks, 'r'),
+            (self.black_queens, 'q'),
+            (self.black_kings, 'k')
+        ]
+        for bb, char in bb_map:
+            for i in range(64):
+                if bb & (1 << i):
+                    board[i] = char
+        for rank in range(7, -1, -1):
+            print(' '.join(board[rank*8:(rank+1)*8]))
         
-    #     if not self.white_to_move:
-    #         self.rotate()
+        if not self.white_to_move:
+            self.rotate()
         
-    #     score = self.evaluate()
-    #     print(f"Turn: {('W' if self.white_to_move else 'B')} Plies: {self.plies_played} Moves: {self.moves_played} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
-    #     print(f"Fen: {self.get_fen()}")
+        score = self.evaluate()
+        print(f"Turn: {('W' if self.white_to_move else 'B')} Plies: {self.plies_played} Moves: {self.moves_played} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
+        print(f"Fen: {self.get_fen()}")
         
