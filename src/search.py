@@ -134,6 +134,10 @@ class Search:
             if s_depth >= self.s_depth:
                 break
 
+        best_score = self.search(1, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
+        entry = self.tt.probe(self.board.hash)
+        best_move = entry.t_move
+
         # When time expires, return the best move/eval found
         return best_move, best_score
 
@@ -313,17 +317,15 @@ class Search:
         if best_score <= alpha_orig:
             flag = 'UPPERBOUND'
             # Note: Do NOT store best_move for UPPERBOUND as it's unreliable
-            # tt_move = None 
+            tt_move = None 
         elif best_score >= beta:
             flag = 'LOWERBOUND'
             # Store the move that caused the cutoff (Refutation Move)
-            # tt_move = best_move 
+            tt_move = best_move 
         else:
             flag = 'EXACT'
             # Store the best move found
-            # tt_move = best_move
-            
-        tt_move = best_move if best_move else entry.move
+            tt_move = best_move
 
         if not self.time_up:
             # Pass the appropriate move (tt_move) to the store function

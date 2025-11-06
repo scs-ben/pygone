@@ -97,8 +97,6 @@ for line in sys.stdin:
             
             move_time = side_time / 20
             
-            print(move_time)
-            
             search.set_time_limit(move_time)
             
         t_move, score = search.iterative_search()
