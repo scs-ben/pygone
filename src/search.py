@@ -181,7 +181,7 @@ class Search:
         
         # --- TT lookup ---
         entry = self.tt.probe(self.board.hash)
-        if entry and entry.s_depth >= s_depth:
+        if entry and entry.s_depth >= s_depth and s_depth > 1:
             if entry.flag == 'EXACT':
                 return entry.g_score
             elif entry.flag == 'LOWERBOUND':
@@ -191,7 +191,7 @@ class Search:
             if alpha >= beta:
                 return alpha # if entry.flag == 'UPPERBOUND' else beta
 
-        if not is_pv_node and not in_check:
+        if not is_pv_node and not in_check and s_depth > 1:
             stand_pat = self.board.evaluate()
             
             # Futility pruning (low eval)
@@ -202,7 +202,7 @@ class Search:
             if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
                 return stand_pat
 
-        if not is_pv_node and not in_check and s_depth <= 5:
+        if not is_pv_node and not in_check and s_depth <= 5 and s_depth > 1:
             cut_boundary = alpha - (150 * s_depth)
             if stand_pat <= cut_boundary:
                 if s_depth <= 2:
@@ -233,7 +233,7 @@ class Search:
                 
                 self.board.unmove()
 
-        if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
+        if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER and s_depth > 1:
             self.board.move_tuple(entry.t_move)
             local_score = -self.search(s_depth - 1, -beta, -alpha)
             self.board.unmove()
