@@ -82,6 +82,7 @@ class Board:
     def __init__(self, fen = None):
         # piece bitboards: WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK
         self.P = [0]*12
+        self.piece_map = [-1] * 64
         self.white_to_move = True
         self.castle = 0  # bits: wk(1), wq(2), bk(4), bq(8)
         self.ep = -1
@@ -147,6 +148,8 @@ class Board:
                              'p':6,'n':7,'b':8,'r':9,'q':10,'k':11}
                 idx = piece_map[ch]
                 self.P[idx] |= get_bit(sq)
+                self.piece_map[sq] = idx # (0-11)
+                
                 sq += 1
         self.white_to_move = (parts[1] == 'w')
         self.castle = 0
@@ -167,15 +170,24 @@ class Board:
         
         if mv[3] or mv[4] == 'p':
             self.halfmove_clock = 0
-            
         
         us = self.white_to_move
+        
+        self.hash ^= SIDE_KEY
+
+        if self.ep != -1:
+            self.hash ^= EP_KEYS[self.ep & 7]
+
+        old_castle = self.castle
+        self.hash ^= CASTLING_KEYS[old_castle]
+
         # find moving piece type
         from_mask = get_bit(frm); to_mask = get_bit(to)
         moved_piece = None
         for p in range(6):
             idx = self.side_index(us,p)
             if self.P[idx] & from_mask:
+                self.hash ^= PIECE_KEYS[idx][frm]
                 moved_piece = p; self.P[idx] ^= from_mask; break
         # capture (including en-passant)
         captured = False
@@ -190,19 +202,26 @@ class Board:
             else:
                 cap_sq = to + 8
             # remove enemy pawn
+            self.hash ^= PIECE_KEYS[self.side_index(not us, 0)][cap_sq]
             self.P[self.side_index(not us, 0)] ^= get_bit(cap_sq)
         else:
             # capture any piece on 'to'
             for p in range(6):
                 idx = self.side_index(not us, p)
                 if self.P[idx] & to_mask:
+                    self.hash ^= PIECE_KEYS[idx][to]
                     self.P[idx] ^= to_mask; captured = True; break
+            
         # place moved piece (promotion?)
         if promo:
             prom_map = {'q':4,'r':3,'b':2,'n':1}
+            prom_idx = self.side_index(us, prom_map[promo])
             self.P[self.side_index(us, prom_map[promo])] |= to_mask
+            self.hash ^= PIECE_KEYS[prom_idx][to]
         else:
+            final_idx = self.side_index(us, moved_piece)
             self.P[self.side_index(us, moved_piece)] |= to_mask
+            self.hash ^= PIECE_KEYS[final_idx][to]
         # update castle rights if king/rook moved or captured
         if moved_piece == 5:
             if us: self.castle &= ~3
@@ -219,58 +238,96 @@ class Board:
             if to == 7: self.castle &= ~1
             if to == 56: self.castle &= ~8
             if to == 63: self.castle &= ~4
+        
         # handle castling rook move
         # white king-side: e1(4)->g1(6) move rook h1->f1
         if moved_piece==5 and us and frm==4 and to==6:
+            # HASH OUT: Rook at h1 (7)
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][7]
+            # HASH IN: Rook at f1 (5)
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][5]
             self.P[self.side_index(us,3)] ^= get_bit(7); self.P[self.side_index(us,3)] |= get_bit(5)
         # white queen-side
         if moved_piece==5 and us and frm==4 and to==2:
+            # HASH OUT: Rook at a1 (0)
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][0]
+            # HASH IN: Rook at d1 (3)
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][3]
             self.P[self.side_index(us,3)] ^= get_bit(0); self.P[self.side_index(us,3)] |= get_bit(3)
         # black castling
         if moved_piece==5 and (not us) and frm==60 and to==62:
+            # HASH OUT: Rook at h8 (63)
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][63] # Note: use 'us' index (idx=3)
+            # HASH IN: Rook at f8 (61)
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][61] # Note: use 'us' index (idx=3)
             self.P[self.side_index(us,3)] ^= get_bit(63); self.P[self.side_index(us,3)] |= get_bit(61)
         if moved_piece==5 and (not us) and frm==60 and to==58:
+            # HASH OUT: Rook at a8 (56)
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][56] # Note: use 'us' index (idx=3)
+            # HASH IN: Rook at d8 (59)
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][59] # Note: use 'us' index (idx=3)
             self.P[self.side_index(us,3)] ^= get_bit(56); self.P[self.side_index(us,3)] |= get_bit(59)
+            
+        self.hash ^= CASTLING_KEYS[self.castle]
+        
         # en-passant target update
         if moved_piece == 0 and abs(to - frm) == 16:
             # pawn double push
             self.ep = (frm + to)//2
         else:
             self.ep = -1
+        
+        if self.ep != -1:
+            self.hash ^= EP_KEYS[self.ep & 7]
+            
         # switch side
         self.white_to_move = not self.white_to_move
-        
-        self.compute_hash()
 
     def nullmove(self):
+        # Save state including current hash
         self.stack.append((self.P[:], self.white_to_move, self.castle, self.ep, self.halfmove_clock, self.hash))
         
         self.halfmove_clock += 1
         
+        # --- INCREMENTAL HASHING FOR NULLMOVE ---
+        
+        # 1. XOR OUT Side Key (turn always flips)
+        self.hash ^= SIDE_KEY
+        
+        # 2. XOR OUT OLD EP Key (EP square is always cleared)
+        if self.ep != -1:
+            self.hash ^= EP_KEYS[self.ep & 7]
+            
         self.ep = -1 
         
+        # 3. Apply state changes
         self.white_to_move = not self.white_to_move
-        
-        self.compute_hash()
 
     def unmake_move(self):
         if not self.stack: return
+        # The saved hash is restored directly
         P, wtm, castle, ep, hc, hash = self.stack.pop()
-        self.P = P
+        self.P = P # Restores all pieces
         self.white_to_move = wtm
         self.castle = castle
         self.ep = ep
         self.halfmove_clock = hc
-        self.hash = hash
+        self.hash = hash # Restores the hash
 
     # attack detection
     def attacked(self, sq, by_white):
         occ = self.all_occupied()
+        # Pre-calculate Attacker Bitboards for Sliding Pieces
+        r_q_attacker_bb = self.P[self.side_index(by_white, 3)] | self.P[self.side_index(by_white, 4)]
+        b_q_attacker_bb = self.P[self.side_index(by_white, 2)] | self.P[self.side_index(by_white, 4)]
+        
         # pawn
         if by_white:
-            if PAWN_ATK_WHITE[sq] & self.P[self.side_index(True,0)]: return True
+            if PAWN_ATK_BLACK[sq] & self.P[self.side_index(True, 0)]: 
+                return True
         else:
-            if PAWN_ATK_BLACK[sq] & self.P[self.side_index(False,0)]: return True
+            if PAWN_ATK_WHITE[sq] & self.P[self.side_index(False, 0)]: 
+                return True
         # knight
         if KNIGHT_ATK[sq] & self.P[self.side_index(by_white,1)]: return True
         # king
@@ -286,11 +343,14 @@ class Board:
                 if d == W and ns%8 == 7: break
                 s = ns
                 m = get_bit(s)
-                if m & occ:
-                    # stopped on piece
-                    if m & (self.P[self.side_index(by_white,3)] | self.P[self.side_index(by_white,4)]):
-                        return True
+                
+                if m & r_q_attacker_bb: # Is this an attacking Rook or Queen?
+                    return True
+                    
+                if m & occ: # Is this ANY piece (blocking the ray)?
                     break
+                    
+        # sliding: bishop/queen for diagonals
         for d in DIRS_BISHOP:
             s = sq
             while True:
@@ -301,10 +361,13 @@ class Board:
                 if d in (NW,SW) and ns%8 == 7: break
                 s = ns
                 m = get_bit(s)
-                if m & occ:
-                    if m & (self.P[self.side_index(by_white,2)] | self.P[self.side_index(by_white,4)]):
-                        return True
+                
+                if m & b_q_attacker_bb: # Is this an attacking Bishop or Queen?
+                    return True
+                    
+                if m & occ: # Is this ANY piece (blocking the ray)?
                     break
+                    
         return False
 
     def king_square(self, white):
@@ -325,7 +388,7 @@ class Board:
         moves = []
         for mv in self.gen_pseudo_legal():
             self.make_move(mv)
-            if not self.in_check():
+            if not self.in_check(False):
                 if not active or mv[3]:
                     moves.append(mv)
             self.unmake_move()
@@ -597,11 +660,8 @@ class Board:
         return g_score
 
     def piece_on(self, sq):
-        m = 1 << sq
-        for idx, bb in enumerate(self.P):
-            if bb & m:
-                return IDX_TO_PIECE[idx]   # always lowercase
-        return None
+        idx = self.piece_map[sq]
+        return IDX_TO_PIECE[idx] if idx != -1 else None
 
     def algebraic_to_sq(self, s:str):
         return FILES.index(s[0]) + 8*int(s[1])-8
@@ -615,3 +675,99 @@ class Board:
         if promo:
             return base + promo.lower()
         return base
+    
+    def get_fen(self):
+        # --- 1. Piece Placement (Part 1 of FEN) ---
+        fen_rows = []
+        piece_chars = ['P','N','B','R','Q','K', 'p','n','b','r','q','k']
+        
+        # Iterate over ranks from 8 down to 1 (r=7 down to 0)
+        for r in range(7, -1, -1):
+            fen_row = ""
+            empty_count = 0
+            
+            # Iterate over files from a to h (f=0 to 7)
+            for f in range(8):
+                sq = r * 8 + f
+                bit = get_bit(sq)
+                piece_found = False
+                
+                # Check for a piece on the current square
+                for idx, char in enumerate(piece_chars):
+                    if self.P[idx] & bit:
+                        if empty_count > 0:
+                            fen_row += str(empty_count)
+                            empty_count = 0
+                        fen_row += char
+                        piece_found = True
+                        break
+                
+                if not piece_found:
+                    empty_count += 1
+            
+            # Add final empty count if the row ends with empty squares
+            if empty_count > 0:
+                fen_row += str(empty_count)
+                
+            fen_rows.append(fen_row)
+            
+        fen_placement = "/".join(fen_rows)
+        
+        # --- 2. Side to Move (Part 2 of FEN) ---
+        fen_turn = 'w' if self.white_to_move else 'b'
+        
+        # --- 3. Castling Rights (Part 3 of FEN) ---
+        fen_castle = ""
+        if self.castle & 1: fen_castle += 'K' # White King-side
+        if self.castle & 2: fen_castle += 'Q' # White Queen-side
+        if self.castle & 4: fen_castle += 'k' # Black King-side
+        if self.castle & 8: fen_castle += 'q' # Black Queen-side
+        
+        if not fen_castle:
+            fen_castle = '-'
+            
+        # --- 4. En-Passant Target Square (Part 4 of FEN) ---
+        if self.ep == -1:
+            fen_ep = '-'
+        else:
+            # Assumes you have a method to convert square index to algebraic notation
+            fen_ep = self.sq_to_algebraic(self.ep)
+            
+        # --- 5. Halfmove and Fullmove Clocks (Parts 5 & 6 of FEN) ---
+        # These were not in your set_fen, so we default to standard values.
+        # You may need to replace these with actual attribute lookups if you track them.
+        fen_halfmove = str(self.halfmove_clock) if hasattr(self, 'halfmove_clock') else '0'
+        fen_fullmove = str(self.fullmove_number) if hasattr(self, 'fullmove_number') else '1'
+
+        # --- Combine all parts ---
+        fen = " ".join([fen_placement, fen_turn, fen_castle, fen_ep, fen_halfmove, fen_fullmove])
+        return fen
+    
+    def print_board(self):
+        """Print board in human-readable format (for debugging)"""
+        board = ['.'] * 64
+            
+        bb_map = [
+            (self.P[0], 'P'),
+            (self.P[1], 'N'),
+            (self.P[2], 'B'),
+            (self.P[3], 'R'),
+            (self.P[4], 'Q'),
+            (self.P[5], 'K'),
+            (self.P[6], 'p'),
+            (self.P[7], 'n'),
+            (self.P[8], 'b'),
+            (self.P[9], 'r'),
+            (self.P[10], 'q'),
+            (self.P[11], 'k')
+        ]
+        for bb, char in bb_map:
+            for i in range(64):
+                if bb & (1 << i):
+                    board[i] = char
+        for rank in range(7, -1, -1):
+            print(' '.join(board[rank*8:(rank+1)*8]))
+        
+        score = self.evaluate()
+        print(f"Turn: {('W' if self.white_to_move else 'B')} 50c: {self.halfmove_clock} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
+        print(f"Fen: {self.get_fen()}")

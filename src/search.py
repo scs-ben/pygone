@@ -193,93 +193,93 @@ class Search:
                 entry.flag == 'UPPERBOUND' and entry.g_score <= alpha:
                     return entry.g_score
 
-        if not is_pv_node and not in_check:
-            stand_pat = self.board.evaluate()
+        # if not is_pv_node and not in_check:
+        #     stand_pat = self.board.evaluate()
             
-            # Futility pruning (low eval)
-            if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
-                return stand_pat
+        #     # Futility pruning (low eval)
+        #     if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
+        #         return stand_pat
 
-            # Razor pruning (high eval)
-            if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
-                return stand_pat
+        #     # Razor pruning (high eval)
+        #     if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
+        #         return stand_pat
 
-        if not is_pv_node and not in_check and s_depth <= 5:
-            cut_boundary = alpha - (150 * s_depth)
-            if stand_pat <= cut_boundary:
-                if s_depth <= 2:
-                    return self.q_search(alpha, alpha + 1)
+        # if not is_pv_node and not in_check and s_depth <= 5:
+        #     cut_boundary = alpha - (150 * s_depth)
+        #     if stand_pat <= cut_boundary:
+        #         if s_depth <= 2:
+        #             return self.q_search(alpha, alpha + 1)
 
-                local_score = self.q_search(cut_boundary, cut_boundary + 1)
+        #         local_score = self.q_search(cut_boundary, cut_boundary + 1)
 
-                if local_score <= cut_boundary:
-                    return local_score
+        #         if local_score <= cut_boundary:
+        #             return local_score
 
         # Null move pruning (only when safe)
-        if (
-            not is_pv_node
-            and not in_check
-            and s_depth >= 3
-            and self.has_sufficient_material()
-        ):
-            reduction = 2 + s_depth / 6 # typical reduction
-            self.board.nullmove()
+        # if (
+        #     not is_pv_node
+        #     and not in_check
+        #     and s_depth >= 3
+        #     and self.has_sufficient_material()
+        # ):
+        #     reduction = 2 + s_depth / 6 # typical reduction
+        #     self.board.nullmove()
 
-            # skip if nullmove leaves us in check (can happen in some custom rulesets)
-            if not self.board.in_check(False):
-                null_score = -self.search(s_depth - reduction - 1, -beta, -beta + 1)
+        #     # skip if nullmove leaves us in check (can happen in some custom rulesets)
+        #     if not self.board.in_check(False):
+        #         null_score = -self.search(s_depth - reduction - 1, -beta, -beta + 1)
 
-                self.board.unmake_move()
+        #         self.board.unmake_move()
                 
-                if null_score >= beta:
-                    return beta
-            else:
-                self.board.unmake_move()
+        #         if null_score >= beta:
+        #             return beta
+        #     else:
+        #         self.board.unmake_move()
 
-        if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
-            self.board.make_move(entry.t_move)
-            local_score = -self.search(s_depth - 1, -beta, -alpha)
-            self.board.unmake_move()
+        # if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
+        #     self.board.make_move(entry.t_move)
+        #     local_score = -self.search(s_depth - 1, -beta, -alpha)
+        #     self.board.unmake_move()
 
-            if local_score >= beta:
-                return beta
+        #     if local_score >= beta:
+        #         return beta
 
         best_score = -float('inf')
         best_move = None
 
         played_moves = 0
         
-        all_moves = list(sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True))
+        # all_moves = list(sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True))
         
-        scored_moves = []
-        for t_move in all_moves:
-             # Pass the current ply and the tt_move
-             g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
-             scored_moves.append((g_score, t_move))
+        # scored_moves = []
+        # for t_move in all_moves:
+        #      # Pass the current ply and the tt_move
+        #      g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
+        #      scored_moves.append((g_score, t_move))
              
-        sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
+        # sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
 
-        for g_score, t_move in sorted_moves:
-        # for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
+        # for g_score, t_move in sorted_moves:
+        for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
             self.board.make_move(t_move)
 
             played_moves += 1
             
-            is_quiet = not t_move[3] and not t_move[2]
+            # is_quiet = not t_move[3] and not t_move[2]
 
-            reduction = 1
-            if is_quiet and s_depth >= 3 and played_moves > 3:
-                reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
+            # reduction = 1
+            # if is_quiet and s_depth >= 3 and played_moves > 3:
+            #     reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
 
-            if reduction > 0:
-                g_score = -self.search(s_depth - reduction, -alpha-1, -alpha, ply + 1)
+            # if reduction > 0:
+            #     g_score = -self.search(s_depth - reduction, -alpha-1, -alpha, ply + 1)
 
-            if g_score > alpha:
-                g_score = -self.search(s_depth - 1, -alpha-1, -alpha, ply + 1)
-                if is_pv_node and g_score > alpha:
-                    g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            # if g_score > alpha:
+            #     g_score = -self.search(s_depth - 1, -alpha-1, -alpha, ply + 1)
+            #     if is_pv_node and g_score > alpha:
+            #         g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
             
-            # g_score = -self.search(s_depth - 1, -beta, -alpha)
+            g_score = -self.search(s_depth - 1, -beta, -alpha)
             
             self.board.unmake_move()
             
@@ -299,19 +299,19 @@ class Search:
                     if alpha >= beta:
                         break
             
-            if alpha >= beta:
-                if is_quiet:
-                    # Update Killer Heuristic
-                    self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
-                    self.killer_moves[ply][0] = t_move                      # New killer in slot 0
+            # if alpha >= beta:
+            #     if is_quiet:
+            #         # Update Killer Heuristic
+            #         self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
+            #         self.killer_moves[ply][0] = t_move                      # New killer in slot 0
                     
-                    # Update History Heuristic (e.g., add 1 to the score)
-                    from_sq_idx = t_move[0]
-                    to_sq_idx = t_move[1]
-                    # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
-                    self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
-                    # Limit the score to prevent overflow/bias (e.g., max 10000)
-                break  # beta cutoff
+            #         # Update History Heuristic (e.g., add 1 to the score)
+            #         from_sq_idx = t_move[0]
+            #         to_sq_idx = t_move[1]
+            #         # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
+            #         self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
+            #         # Limit the score to prevent overflow/bias (e.g., max 10000)
+            #     break  # beta cutoff
             
         if not played_moves:
             return -self.MATE_SCORE_UPPER + s_depth if self.board.in_check() else 0
