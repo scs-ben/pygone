@@ -541,7 +541,7 @@ class Board:
             count = (pawns & mask).bit_count()
             if count > 1:
                 score -= (count - 1) * 15
-        return score / 1.5
+        return score
     
     def isolated_pawns(self, pawns):
         score = 0
@@ -552,7 +552,7 @@ class Board:
                 right = (mask << 1) & 0xFEFEFEFEFEFEFEFE
                 if (pawns & (left | right)) == 0:
                     score -= 15
-        return score / 1.5
+        return score
 
     def passed_pawns(self, white):
         wp = self.P[0]
@@ -575,7 +575,7 @@ class Board:
                     score += (rank * 10 + 20)  # stronger closer to promotion
                 else:
                     score += ((7-rank) * 10 + 20)
-        return score / 2
+        return score
 
     def eval_pawn_structure(self):
         wp =  self.P[0]
@@ -634,7 +634,7 @@ class Board:
         if (self.castle & castle_mask_q_side) == 0:
             shield -= 5 # Queenside is often less critical
             
-        return shield / 1.25
+        return shield
 
     # def eval_king_safety(self):
     #     return self.king_safety(True) - self.king_safety(False)
