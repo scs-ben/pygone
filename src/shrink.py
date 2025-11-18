@@ -161,7 +161,7 @@ replacements = {
     "generate_sliding_moves": "h9",
     "generate_pseudo_legal_moves": "ha",
     "generate_piece_moves": "hb",
-    "generate_castling_moves": "hc",
+    "generate_castling_moves": "hc1",
     "generate_pawn_moves": "hd",
     "move_tuple": "he",
     "clear_tables": "hf",

@@ -312,9 +312,9 @@ class Search:
             #         self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
             #         # Limit the score to prevent overflow/bias (e.g., max 10000)
             #     break  # beta cutoff
-            
+        
         if not played_moves:
-            return -self.MATE_SCORE_UPPER + s_depth if self.board.in_check() else 0
+            return -self.MATE_SCORE_UPPER + ply if in_check else 0
 
         # --- Store in TT ---
         if best_score <= alpha_orig:
@@ -331,6 +331,10 @@ class Search:
             # tt_move = best_move
 
         if not self.time_up:
+            if best_score > self.MATE_SCORE_UPPER - 1000:
+                best_score += ply # Adjust TT score for current ply depth
+            elif best_score < -self.MATE_SCORE_UPPER + 1000:
+                best_score -= ply # Adjust TT score for current ply depth
             # Pass the appropriate move (tt_move) to the store function
             self.tt.store(self.board.hash, s_depth, best_score, flag, best_move)
 
@@ -348,11 +352,23 @@ class Search:
         
         stand_pat = self.board.evaluate()
         
+        if not in_check and stand_pat >= beta:
+            return beta
+        if not in_check and alpha < stand_pat:
+            alpha = stand_pat
+        
         if not in_check:
-            if stand_pat >= beta:
-                return beta
-            if alpha < stand_pat:
-                alpha = stand_pat
+            # We need the value of the most valuable piece (typically Queen, around 900-1000)
+            # Use a slightly smaller value for safety margin (e.g., Q value - 100)
+            MAX_GAIN = self.board.PIECE_VALUES['q'] # Assuming 'q' is the key for Queen value
+            
+            # If (current best static eval) + (max possible material gain) is still less than alpha, prune.
+            if stand_pat + MAX_GAIN <= alpha:
+                return alpha
+            
+            # Optional: Small check for very deep Q-search
+            if q_depth > 5 and stand_pat + 200 <= alpha: # 200 is small futility margin
+                return alpha
         else:
             # If in check, stand_pat is irrelevant, alpha remains the score to beat
             stand_pat = -float('inf')
@@ -361,7 +377,7 @@ class Search:
         
         # TT lookup
         entry = self.tt.probe(self.board.hash)
-        if entry and entry.s_depth == 0:  # q-search "s_depth"
+        if entry and entry.t_move:
             if entry.flag == 'EXACT' or \
                 entry.flag == 'LOWERBOUND' and entry.g_score >= beta or \
                 entry.flag == 'UPPERBOUND' and entry.g_score <= alpha:
@@ -370,7 +386,7 @@ class Search:
         if not in_check and stand_pat >= beta:
             return stand_pat
 
-        for t_move in sorted(self.board.gen_legal_moves(active=not in_check), key=self.board.score_move, reverse=True):
+        for t_move in sorted(self.board.gen_legal_moves(not in_check), key=self.board.score_move, reverse=True):
             self.board.make_move(t_move)
                       
             g_score = -self.q_search(-beta, -alpha, q_depth + 1)

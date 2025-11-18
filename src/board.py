@@ -389,9 +389,19 @@ class Board:
         moves = []
         for mv in self.gen_pseudo_legal():
             self.make_move(mv)
+            # Check for legality (King is not in check after move)
             if not self.in_check(False):
-                if not active or mv[3]:
+                
+                # --- Move Filtering Logic ---
+                if active:
+                    # For Quiescence Search (when not in check):
+                    # Only accept CAPTURES (mv[3] is not None) OR PROMOTIONS (mv[2] is not None/empty)
+                    if mv[3] or mv[2]:
+                        moves.append(mv)
+                else:
+                    # For main Alpha-Beta Search: Accept ALL legal moves
                     moves.append(mv)
+                    
             self.unmake_move()
         return moves
 
@@ -531,7 +541,7 @@ class Board:
             count = (pawns & mask).bit_count()
             if count > 1:
                 score -= (count - 1) * 15
-        return score
+        return score / 1.5
     
     def isolated_pawns(self, pawns):
         score = 0
@@ -542,7 +552,7 @@ class Board:
                 right = (mask << 1) & 0xFEFEFEFEFEFEFEFE
                 if (pawns & (left | right)) == 0:
                     score -= 15
-        return score
+        return score / 1.5
 
     def passed_pawns(self, white):
         wp = self.P[0]
@@ -565,11 +575,12 @@ class Board:
                     score += (rank * 10 + 20)  # stronger closer to promotion
                 else:
                     score += ((7-rank) * 10 + 20)
-        return score
+        return score / 2
 
     def eval_pawn_structure(self):
         wp =  self.P[0]
         bp =  self.P[6]
+        
         return (
             self.doubled_pawns(wp) - self.doubled_pawns(bp)
             + self.isolated_pawns(wp) - self.isolated_pawns(bp)
@@ -623,7 +634,7 @@ class Board:
         if (self.castle & castle_mask_q_side) == 0:
             shield -= 5 # Queenside is often less critical
             
-        return shield
+        return shield / 1.25
 
     # def eval_king_safety(self):
     #     return self.king_safety(True) - self.king_safety(False)
