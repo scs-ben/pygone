@@ -10,6 +10,18 @@ FILES = "abcdefgh"
 RANKS = "12345678"
 IDX_TO_PIECE = ['p','n','b','r','q','k','p','n','b','r','q','k']
 
+UNIFIED_PST = [
+    -50,-40,-30,-30,-30,-30,-40,-50, # Rank 1/8
+    -40,-20, 0, 0, 0, 0,-20,-40,
+    -30, 0, 10, 15, 15, 10, 0,-30,
+    -30, 5, 15, 20, 20, 15, 5,-30, # Center ranks
+    -30, 5, 15, 20, 20, 15, 5,-30,
+    -30, 0, 10, 15, 15, 10, 0,-30,
+    -40,-20, 0, 0, 0, 0,-20,-40,
+    -50,-40,-30,-30,-30,-30,-40,-50 # Rank 8/1
+]
+PST_WEIGHTS = [1, 3, 2, 1, 1, 4]
+
 # --- utilities -------------------------------------------------------------
 def get_bit(s): return 1 << s
 def pop_lsb(bb):
@@ -657,7 +669,40 @@ class Board:
     def evaluate(self):
         score = (self.eval_material() + (self.king_safety(True) - self.king_safety(False)))
         score += self.eval_pawn_structure()
-        # score += self.eval_king_safety()
+        
+        # Loop 12 times: White Pawns (0) to Black King (11)
+        for i in range(12): 
+            # T: Piece Type Index (0-5)
+            piece = i % 6 
+            
+            # W: Weight based on the piece type
+            weight = PST_WEIGHTS[piece] 
+            
+            # C: Color factor (1 for White, -1 for Black)
+            color = 1 if i < 6 else -1 
+            
+            # B: Copy of the Bitboard for the current piece type
+            bb = self.P[i] 
+            
+            # --- Internal Loop: Iterating over set bits (squares) ---
+            
+            # Loop while the bitboard B has set bits
+            while bb:
+                # S: Square Index (Find the Least Significant Bit)
+                # This bit hack finds the index of the LSB (e.g., using b.bit_length() - 1 
+                # or a compiler intrinsic like __builtin_ctz if you were in C).
+                # The most common Python implementation for a 64-bit board is this sequence:
+                idx = (bb & -bb).bit_length() - 1 
+                
+                # Clear the LSB (bb &= bb - 1) is the standard fastest way to pop a bit.
+                bb &= bb - 1 
+                
+                # D: PST Index. Mirror for Black pieces (C == -1). 
+                # S^56 flips the rank (0 -> 56, 1 -> 57, etc.)
+                D = idx if color == 1 else idx ^ 56
+                
+                # Add/subtract the weighted score
+                score += UNIFIED_PST[D] * weight * color
 
         return score if self.white_to_move else -score
 
