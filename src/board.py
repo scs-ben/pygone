@@ -87,7 +87,7 @@ class Board:
         'b': 330,
         'r': 500,
         'q': 900,
-        'k': 32000
+        'k': 0
     }
     
     START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
