@@ -9,23 +9,14 @@ import random
 FILES = "abcdefgh"
 RANKS = "12345678"
 IDX_TO_PIECE = ['p','n','b','r','q','k','p','n','b','r','q','k']
-# START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 # --- utilities -------------------------------------------------------------
-MASK = [(1 << i) for i in range(64)]
 def get_bit(s): return 1 << s
-def lsb_index(bb):
-    return (bb & -bb).bit_length() - 1
 def pop_lsb(bb):
     lsb = bb & -bb
     idx = lsb.bit_length() - 1
     return bb ^ lsb, idx
-
-# --- board constants ------------------------------------------------------
-AFILE = 0x0101010101010101
-HFILE = 0x8080808080808080
-RANK1 = 0xFF
-RANK8 = RANK1 << (7*8)
 
 # direction offsets in square index (used for ray walking)
 N, S, E, W, NE, NW, SE, SW = 8, -8, 1, -1, 9, 7, -7, -9
@@ -97,11 +88,11 @@ class Board:
         self.halfmove_clock = 0
         # state stack for unmake
         self.stack = []
-        self.P = [65280, 66, 36, 129, 8, 16, 71776119061217280, 4755801206503243776, 2594073385365405696, 9295429630892703744, 576460752303423488, 1152921504606846976]
-        # if fen:
-        #     self.set_fen(fen)
-        # else:
-        #     self.set_fen(START_FEN)
+        # self.P = [65280, 66, 36, 129, 8, 16, 71776119061217280, 4755801206503243776, 2594073385365405696, 9295429630892703744, 576460752303423488, 1152921504606846976]
+        if fen:
+            self.set_fen(fen)
+        else:
+            self.set_fen(START_FEN)
 
         self.compute_hash()
 
@@ -144,27 +135,27 @@ class Board:
     def side_index(self, white, piece_idx):
         return piece_idx if white else piece_idx+6
 
-    # def set_fen(self, fen):
-    #     parts = fen.split()
-    #     rows = parts[0].split('/')
-    #     self.P = [0]*12
-    #     for r, row in enumerate(rows):
-    #         sq = (7-r)*8
-    #         for ch in row:
-    #             if ch.isdigit(): sq += int(ch); continue
-    #             piece_map = {'P':0,'N':1,'B':2,'R':3,'Q':4,'K':5,
-    #                          'p':6,'n':7,'b':8,'r':9,'q':10,'k':11}
-    #             idx = piece_map[ch]
-    #             self.P[idx] |= get_bit(sq)
-    #             sq += 1
-    #     self.white_to_move = (parts[1] == 'w')
-    #     self.castle = 0
-    #     if 'K' in parts[2]: self.castle |= 1
-    #     if 'Q' in parts[2]: self.castle |= 2
-    #     if 'k' in parts[2]: self.castle |= 4
-    #     if 'q' in parts[2]: self.castle |= 8
-    #     self.ep = -1 if parts[3] == '-' else self.algebraic_to_sq(parts[3])
-    #     # ignore halfmove/fullmove counters
+    def set_fen(self, fen):
+        parts = fen.split()
+        rows = parts[0].split('/')
+        self.P = [0]*12
+        for r, row in enumerate(rows):
+            sq = (7-r)*8
+            for ch in row:
+                if ch.isdigit(): sq += int(ch); continue
+                piece_map = {'P':0,'N':1,'B':2,'R':3,'Q':4,'K':5,
+                             'p':6,'n':7,'b':8,'r':9,'q':10,'k':11}
+                idx = piece_map[ch]
+                self.P[idx] |= get_bit(sq)
+                sq += 1
+        self.white_to_move = (parts[1] == 'w')
+        self.castle = 0
+        if 'K' in parts[2]: self.castle |= 1
+        if 'Q' in parts[2]: self.castle |= 2
+        if 'k' in parts[2]: self.castle |= 4
+        if 'q' in parts[2]: self.castle |= 8
+        self.ep = -1 if parts[3] == '-' else self.algebraic_to_sq(parts[3])
+        # ignore halfmove/fullmove counters
 
     # make/unmake minimal for legality checking
     def make_move(self, mv):
@@ -247,6 +238,17 @@ class Board:
         else:
             self.ep = -1
         # switch side
+        self.white_to_move = not self.white_to_move
+        
+        self.compute_hash()
+
+    def nullmove(self):
+        self.stack.append((self.P[:], self.white_to_move, self.castle, self.ep, self.halfmove_clock, self.hash))
+        
+        self.halfmove_clock += 1
+        
+        self.ep = -1 
+        
         self.white_to_move = not self.white_to_move
         
         self.compute_hash()
@@ -434,80 +436,81 @@ class Board:
                     if m & their: break
         # king
         ksq = self.king_square(us)
-        for t_bb in (KING_ATK[ksq] & ~our,):
-            bb = t_bb
-            while bb:
-                bb, t = pop_lsb(bb)
-                yield (ksq,t,None,  self.piece_on(t), 'k')
-        # castling (basic tests: empty squares + not attacked)
-        if us:
-            # white king e1=4
-            if (self.castle & 1) and not (occ & (get_bit(5)|get_bit(6))):
-                # ensure no squares attacked f1/e1/g1
-                if not self.attacked(4, False) and not self.attacked(5,False) and not self.attacked(6,False):
-                    yield (4,6,None, None, 'k')
-            if (self.castle & 2) and not (occ & (get_bit(1)|get_bit(2)|get_bit(3))):
-                if not self.attacked(4,False) and not self.attacked(3,False) and not self.attacked(2,False):
-                    yield (4,2,None, None, 'k')
-        else:
-            if (self.castle & 4) and not (occ & (get_bit(61)|get_bit(62))):
-                if not self.attacked(60, True) and not self.attacked(61,True) and not self.attacked(62,True):
-                    yield (60,62,None, None, 'k')
-            if (self.castle & 8) and not (occ & (get_bit(57)|get_bit(58)|get_bit(59))):
-                if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
-                    yield (60,58,None, None, 'k')
+        if 0 <= ksq < 64:
+            for t_bb in (KING_ATK[ksq] & ~our,):
+                bb = t_bb
+                while bb:
+                    bb, t = pop_lsb(bb)
+                    yield (ksq,t,None,  self.piece_on(t), 'k')
+            # castling (basic tests: empty squares + not attacked)
+            if us:
+                # white king e1=4
+                if (self.castle & 1) and not (occ & (get_bit(5)|get_bit(6))):
+                    # ensure no squares attacked f1/e1/g1
+                    if not self.attacked(4, False) and not self.attacked(5,False) and not self.attacked(6,False):
+                        yield (4,6,None, None, 'k')
+                if (self.castle & 2) and not (occ & (get_bit(1)|get_bit(2)|get_bit(3))):
+                    if not self.attacked(4,False) and not self.attacked(3,False) and not self.attacked(2,False):
+                        yield (4,2,None, None, 'k')
+            else:
+                if (self.castle & 4) and not (occ & (get_bit(61)|get_bit(62))):
+                    if not self.attacked(60, True) and not self.attacked(61,True) and not self.attacked(62,True):
+                        yield (60,62,None, None, 'k')
+                if (self.castle & 8) and not (occ & (get_bit(57)|get_bit(58)|get_bit(59))):
+                    if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
+                        yield (60,58,None, None, 'k')
 
-    # def doubled_pawns(self, pawns):
-    #     score = 0
-    #     for file in range(8):
-    #         mask = 0x0101010101010101 << file
-    #         count = (pawns & mask).bit_count()
-    #         if count > 1:
-    #             score -= (count - 1) * 15
-    #     return score
+    def doubled_pawns(self, pawns):
+        score = 0
+        for file in range(8):
+            mask = 0x0101010101010101 << file
+            count = (pawns & mask).bit_count()
+            if count > 1:
+                score -= (count - 1) * 15
+        return score
     
-    # def isolated_pawns(self, pawns):
-    #     score = 0
-    #     for file in range(8):
-    #         mask = 0x0101010101010101 << file
-    #         if pawns & mask:
-    #             left = (mask >> 1) & 0x7F7F7F7F7F7F7F7F
-    #             right = (mask << 1) & 0xFEFEFEFEFEFEFEFE
-    #             if (pawns & (left | right)) == 0:
-    #                 score -= 15
-    #     return score
+    def isolated_pawns(self, pawns):
+        score = 0
+        for file in range(8):
+            mask = 0x0101010101010101 << file
+            if pawns & mask:
+                left = (mask >> 1) & 0x7F7F7F7F7F7F7F7F
+                right = (mask << 1) & 0xFEFEFEFEFEFEFEFE
+                if (pawns & (left | right)) == 0:
+                    score -= 15
+        return score
 
-    # def passed_pawns(self, white):
-    #     wp = self.P[0]
-    #     bp = self.P[6]
-    #     score = 0
-    #     bb = wp if white else bp
-    #     ebb = bp if white else wp
-    #     while bb:
-    #         bb, sq = pop_lsb(bb)
-    #         file = sq % 8
-    #         rank = sq // 8
-    #         mask = 0
-    #         for f in (file-1, file, file+1):
-    #             if 0 <= f < 8:
-    #                 r_range = range(rank+1, 8) if white else range(0, rank)
-    #                 for r in r_range:
-    #                     mask |= get_bit(r*8 + f)
-    #         if ebb & mask == 0:
-    #             if white:
-    #                 score += (rank * 10 + 20)  # stronger closer to promotion
-    #             else:
-    #                 score += ((7-rank) * 10 + 20)
-    #     return score
+    def passed_pawns(self, white):
+        wp = self.P[0]
+        bp = self.P[6]
+        score = 0
+        bb = wp if white else bp
+        ebb = bp if white else wp
+        while bb:
+            bb, sq = pop_lsb(bb)
+            file = sq % 8
+            rank = sq // 8
+            mask = 0
+            for f in (file-1, file, file+1):
+                if 0 <= f < 8:
+                    r_range = range(rank+1, 8) if white else range(0, rank)
+                    for r in r_range:
+                        mask |= get_bit(r*8 + f)
+            if ebb & mask == 0:
+                if white:
+                    score += (rank * 10 + 20)  # stronger closer to promotion
+                else:
+                    score += ((7-rank) * 10 + 20)
+        return score
 
-    # def eval_pawn_structure(self):
-    #     wp =  self.P[0]
-    #     bp =  self.P[6]
-    #     return (
-    #         self.doubled_pawns(wp) - self.doubled_pawns(bp)
-    #         + self.isolated_pawns(wp) - self.isolated_pawns(bp)
-    #         + self.passed_pawns(True) - self.passed_pawns(False)
-    #     )
+    def eval_pawn_structure(self):
+        wp =  self.P[0]
+        bp =  self.P[6]
+        return (
+            self.doubled_pawns(wp) - self.doubled_pawns(bp)
+            + self.isolated_pawns(wp) - self.isolated_pawns(bp)
+            + self.passed_pawns(True) - self.passed_pawns(False)
+        )
 
     def king_safety(self, white):
         k = self.king_square(white)
@@ -515,20 +518,47 @@ class Board:
         rank = k // 8
 
         direction = 1 if white else -1
-        bb = 0 if white else 6
-        castle = 1 if white else 4
+        bb = 0 if white else 6 # Pawn bitboard index
+        
+        # Castle masks: 1 = White K-side, 2 = White Q-side, 4 = Black K-side, 8 = Black Q-side
+        castle_mask_k_side = 1 if white else 4 # Mask for King-side castle
+        castle_mask_q_side = 2 if white else 8 # Mask for Queen-side castle
 
         shield = 0
-        # squares in front of king (rank+1)
+        
+        # 1. Pawn Shield Calculation (FIXED for boundary errors)
+        # squares in front of king (rank + direction)
         for df in (-1, 0, 1):
             f = file + df
-            if 0 <= f < 8:
-                sq = (rank + direction) * 8 + f
-                if self.P[bb] & get_bit(sq):  # white pawns
-                    shield += 10
-        # bonus for castling
-        if self.castle & castle == 0 and self.castle & (castle * 2) == 0:
+            r = rank + direction # Calculate the new rank
+
+            # Ensure both file (f) and rank (r) are ON THE BOARD (0-7)
+            if 0 <= f < 8 and 0 <= r < 8:
+                sq = r * 8 + f
+                
+                # Check for friendly pawns in the protective zone
+                if self.P[bb] & get_bit(sq):  
+                    shield += 10 # Bonus for a pawn shield
+                    
+        # 2. King Location/Castling Bonuses
+        
+        # A. Bonus for having successfully castled (King on g1/g8 or c1/c8)
+        # This is a strong proxy for safety, rewarding a closed King position.
+        if (white and k in (6, 2)) or (not white and k in (62, 58)):
             shield += 15
+            
+        # B. Penalty for lost castling rights (Using the castle masks)
+        # If the side *cannot* castle, it usually means the king has moved or 
+        # a rook was captured/moved, leading to potential danger.
+        
+        # Check if Kingside castling rights are LOST (mask & self.castle == 0)
+        if (self.castle & castle_mask_k_side) == 0:
+            shield -= 10
+            
+        # Check if Queenside castling rights are LOST
+        if (self.castle & castle_mask_q_side) == 0:
+            shield -= 5 # Queenside is often less critical
+            
         return shield
 
     # def eval_king_safety(self):
@@ -551,7 +581,7 @@ class Board:
 
     def evaluate(self):
         score = (self.eval_material() + (self.king_safety(True) - self.king_safety(False)))
-        # score += self.eval_pawn_structure()
+        score += self.eval_pawn_structure()
         # score += self.eval_king_safety()
 
         return score if self.white_to_move else -score
