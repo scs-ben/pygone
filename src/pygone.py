@@ -46,6 +46,8 @@ def main():
                     game_board.make_move((from_sq, to_sq, promo, None, None))
                 
             elif line.startswith("position"):
+                game_board.set_fen(game_board.START_FEN)
+                
                 moves = line.split()
                 
                 for position_move in moves[3:]:

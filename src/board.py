@@ -9,7 +9,6 @@ import random
 FILES = "abcdefgh"
 RANKS = "12345678"
 IDX_TO_PIECE = ['p','n','b','r','q','k','p','n','b','r','q','k']
-START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 # --- utilities -------------------------------------------------------------
 def get_bit(s): return 1 << s
@@ -79,6 +78,8 @@ class Board:
         'k': 0
     }
     
+    START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    
     def __init__(self, fen = None):
         # piece bitboards: WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK
         self.P = [0]*12
@@ -93,7 +94,7 @@ class Board:
         if fen:
             self.set_fen(fen)
         else:
-            self.set_fen(START_FEN)
+            self.set_fen(self.START_FEN)
 
         self.compute_hash()
 
@@ -731,7 +732,7 @@ class Board:
             fen_ep = '-'
         else:
             # Assumes you have a method to convert square index to algebraic notation
-            fen_ep = self.sq_to_algebraic(self.ep)
+            fen_ep = self.sq_to_uci(self.ep)
             
         # --- 5. Halfmove and Fullmove Clocks (Parts 5 & 6 of FEN) ---
         # These were not in your set_fen, so we default to standard values.
