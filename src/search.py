@@ -109,6 +109,13 @@ class Search:
         self.s_nodes = 0
         self.clear_tables()
 
+        all_moves = self.board.gen_legal_moves()
+        if not all_moves:
+            # Position is Checkmate or Stalemate. Handle this outside the search loop.
+            return None, self.board.evaluate() # Or a known terminal score
+        
+        best_move = all_moves[0]
+
         for s_depth in range(1, self.s_depth + 1):  # iterative deepening
             if self.time_up:
                 break
@@ -249,6 +256,8 @@ class Search:
         
         all_moves = list(sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True))
         
+        best_move = entry.t_move if entry and entry.t_move else all_moves[0]
+        
         scored_moves = []
         for t_move in all_moves:
              # Pass the current ply and the tt_move
@@ -326,7 +335,7 @@ class Search:
             # Store the best move found
             # tt_move = best_move
 
-        if not self.time_up:
+        if not self.time_up and best_move:
             # Pass the appropriate move (tt_move) to the store function
             self.tt.store(self.board.hash, s_depth, best_score, flag, best_move)
 

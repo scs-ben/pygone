@@ -87,7 +87,7 @@ class Board:
         'b': 330,
         'r': 500,
         'q': 900,
-        'k': 0
+        'k': 32000
     }
     
     START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -702,7 +702,7 @@ class Board:
                 D = idx if color == 1 else idx ^ 56
                 
                 # Add/subtract the weighted score
-                score += UNIFIED_PST[D] * weight * color
+                score += UNIFIED_PST[D] * weight * color / 1.25
 
         return score if self.white_to_move else -score
 
