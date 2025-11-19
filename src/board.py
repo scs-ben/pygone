@@ -178,11 +178,6 @@ class Board:
         # save state
         self.stack.append((self.P[:], self.piece_map[:], self.white_to_move, self.castle, self.ep, self.halfmove_clock, self.hash))
         
-        self.halfmove_clock += 1
-        
-        if mv[3] or mv[4] == 'p':
-            self.halfmove_clock = 0
-        
         us = self.white_to_move
         
         self.hash ^= SIDE_KEY
@@ -206,6 +201,7 @@ class Board:
         if moved_piece is None:
             # sanity
             return
+        
         # en-passant capture
         if moved_piece == 0 and to == self.ep:
             captured = True
@@ -224,7 +220,13 @@ class Board:
                 if self.P[idx] & to_mask:
                     self.hash ^= PIECE_KEYS[idx][to]
                     self.P[idx] ^= to_mask; self.piece_map[to] = -1; captured = True; break
-            
+        
+        # Update halfmove clock, base clearing on actual board updates
+        self.halfmove_clock += 1
+        
+        if captured or moved_piece == 0:
+            self.halfmove_clock = 0
+        
         # place moved piece (promotion?)
         if promo:
             prom_map = {'q':4,'r':3,'b':2,'n':1}

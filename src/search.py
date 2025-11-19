@@ -259,31 +259,31 @@ class Search:
 
         played_moves = 0
         
-        # all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
+        all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
         
-        # if not all_moves:
-        #     # Position is Checkmate or Stalemate. Handle this outside the search loop.
-        #     return self.board.evaluate()
+        if not all_moves:
+            # Position is Checkmate or Stalemate. Handle this outside the search loop.
+            return self.board.evaluate()
         
-        # best_move = entry.t_move if entry and entry.t_move else all_moves[0]
+        best_move = entry.t_move if entry and entry.t_move else all_moves[0]
         
-        # scored_moves = []
-        # for t_move in all_moves:
-        #      # Pass the current ply and the tt_move
-        #      g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
-        #      scored_moves.append((g_score, t_move))
+        scored_moves = []
+        for t_move in all_moves:
+             # Pass the current ply and the tt_move
+             g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
+             scored_moves.append((g_score, t_move))
              
-        # sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
+        sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
 
         s_depth += in_check
 
-        # for g_score, t_move in sorted_moves:
+        for g_score, t_move in sorted_moves:
         # for t_move in all_moves:
-        for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
+        # for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
             self.board.make_move(t_move)
 
             played_moves += 1
-            # is_quiet = not t_move[3] and not t_move[2]
+            is_quiet = not t_move[3] and not t_move[2]
             
             # 1. Determine Search Depth (Default is full depth)
             # current_depth = s_depth - 1
@@ -330,21 +330,18 @@ class Search:
                     alpha = g_score
                     
                     if alpha >= beta:
+                        if is_quiet:
+                            # Update Killer Heuristic
+                            self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
+                            self.killer_moves[ply][0] = t_move                      # New killer in slot 0
+                            
+                            # Update History Heuristic (e.g., add 1 to the score)
+                            from_sq_idx = t_move[0]
+                            to_sq_idx = t_move[1]
+                            # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
+                            self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
+                            # Limit the score to prevent overflow/bias (e.g., max 10000)
                         break
-            
-            # if alpha >= beta:
-            #     if is_quiet:
-            #         # Update Killer Heuristic
-            #         self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
-            #         self.killer_moves[ply][0] = t_move                      # New killer in slot 0
-                    
-            #         # Update History Heuristic (e.g., add 1 to the score)
-            #         from_sq_idx = t_move[0]
-            #         to_sq_idx = t_move[1]
-            #         # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
-            #         self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
-            #         # Limit the score to prevent overflow/bias (e.g., max 10000)
-            #     break  # beta cutoff
         
         if not played_moves:
             return -self.MATE_SCORE_UPPER + ply if in_check else 0
