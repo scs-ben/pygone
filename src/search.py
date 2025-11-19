@@ -10,9 +10,9 @@ class TTEntry:
         self.t_move = t_move
 
 class TranspositionTable:
-    def __init__(self, size_bytes=2_147_483_648):
+    def __init__(self):
         entry_size = 32  # approximate bytes per entry
-        self.size = size_bytes // entry_size
+        self.size = 2_147_483_648 // entry_size
         self.table = [None] * self.size
 
     def tt_index(self, zobrist_key):
@@ -21,11 +21,18 @@ class TranspositionTable:
     def store(self, key, s_depth, g_score, flag, t_move):
         idx = self.tt_index(key)
         entry = self.table[idx]
-        # Replace if empty or shallower than current
-        if entry is None or entry.s_depth <= s_depth:
-            self.table[idx] = TTEntry(key, g_score, s_depth, flag, t_move)
+        
+        # New, safer replacement criteria:
+        if entry is None or \
+           entry.key != key or \
+           entry.s_depth < s_depth or \
+           (entry.s_depth == s_depth and flag == 'EXACT'):
+           
+           # If the position already exists but is shallower, or if the new score is EXACT
+           # at the same depth, replace it.
+           self.table[idx] = TTEntry(key, g_score, s_depth, flag, t_move)
 
-    def probe(self, key):
+    def probe(self, key, ply, MATE_SCORE_UPPER): # Must pass MATE_SCORE_UPPER
         idx = self.tt_index(key)
         entry = self.table[idx]
         if entry is not None and entry.key == key:
@@ -34,12 +41,12 @@ class TranspositionTable:
 
 class Search:
     MATE_SCORE_UPPER = 32000
-    TIME_CUT = 1e8
+    TIME_CUT = 0
     
-    def __init__(self, board, tt_size_bytes=2_147_483_648):
+    def __init__(self, board):
         self.board = board
         self.s_nodes = 0
-        self.tt = TranspositionTable(size_bytes=tt_size_bytes)
+        self.tt = TranspositionTable()
         self.time_limit = None      # seconds
         self.end_time = None
         self.time_up = False
@@ -120,29 +127,25 @@ class Search:
             if self.time_up:
                 break
 
-            best_score = self.search(s_depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
+            current_score = self.search(s_depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
 
-            if not self.time_up:
-                entry = self.tt.probe(self.board.hash)
-                if entry and entry.t_move:
-                    best_move = entry.t_move
-
-                elapsed_time = time.time() - start_time
-                nps = math.ceil(self.s_nodes / elapsed_time) if elapsed_time > 0 else 1
-
-                uci_move = self.board.move_to_uci(best_move) if best_move else None
-                self.print_stats(str(s_depth), str(math.ceil(best_score)), str(math.ceil(elapsed_time * 1000)), str(self.s_nodes), str(nps), str(uci_move))
-
-            if self.time_up or self.time_limit and time.time() >= self.end_time:
-                self.time_up = True
+            if self.time_up:
                 break
+            
+            best_score = current_score
+            
+            entry = self.tt.probe(self.board.hash, 1, self.MATE_SCORE_UPPER)
+            if entry and entry.t_move:
+                best_move = entry.t_move
+
+            elapsed_time = time.time() - start_time
+            nps = math.ceil(self.s_nodes / elapsed_time) if elapsed_time > 0 else 1
+
+            uci_move = self.board.move_to_uci(best_move) if best_move else None
+            self.print_stats(str(s_depth), str(math.ceil(best_score)), str(math.ceil(elapsed_time * 1000)), str(self.s_nodes), str(nps), str(uci_move))
             
             if s_depth >= self.s_depth:
                 break
-
-        best_score = self.search(1, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
-        entry = self.tt.probe(self.board.hash)
-        best_move = entry.t_move
 
         # When time expires, return the best move/eval found
         return best_move, best_score
@@ -174,9 +177,6 @@ class Search:
             self.time_up = True
             return -self.TIME_CUT
             
-        in_check = self.board.in_check()
-        
-        s_depth += in_check
             
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
@@ -191,100 +191,124 @@ class Search:
         self.s_nodes += 1
         
         # --- TT lookup ---
-        entry = self.tt.probe(self.board.hash)
-        if entry and entry.s_depth >= s_depth and entry.t_move and not is_pv_node:
+        entry = self.tt.probe(self.board.hash, ply, self.MATE_SCORE_UPPER)
+        if entry and entry.s_depth >= s_depth and not is_pv_node:
             if entry.flag == 'EXACT' or \
                 entry.flag == 'LOWERBOUND' and entry.g_score >= beta or \
                 entry.flag == 'UPPERBOUND' and entry.g_score <= alpha:
                     return entry.g_score
 
-        if not is_pv_node and not in_check:
-            stand_pat = self.board.evaluate()
-            
-            # Futility pruning (low eval)
-            if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
-                return stand_pat
+        in_check = self.board.in_check()
+        stand_pat = self.board.evaluate()
 
-            # Razor pruning (high eval)
-            if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
-                return stand_pat
+        # if not is_pv_node and not in_check:
+        #     # Futility pruning (low eval)
+        #     if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
+        #         return stand_pat
 
-        if not is_pv_node and not in_check and s_depth <= 5:
-            cut_boundary = alpha - (150 * s_depth)
-            if stand_pat <= cut_boundary:
-                if s_depth <= 2:
-                    return self.q_search(alpha, alpha + 1)
+        #     # Razor pruning (high eval)
+        #     if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
+        #         return stand_pat
 
-                local_score = self.q_search(cut_boundary, cut_boundary + 1)
+        # if not is_pv_node and not in_check and s_depth <= 5:
+        #     cut_boundary = alpha - (150 * s_depth)
+        #     if stand_pat <= cut_boundary:
+        #         if s_depth <= 2:
+        #             return self.q_search(alpha, alpha + 1)
 
-                if local_score <= cut_boundary:
-                    return local_score
+        #         local_score = self.q_search(cut_boundary, cut_boundary + 1)
 
-        # Null move pruning (only when safe)
-        if (
-            not is_pv_node
-            and not in_check
-            and s_depth >= 3
-            and self.has_sufficient_material()
-        ):
-            reduction = 2 + s_depth / 6 # typical reduction
-            self.board.nullmove()
+        #         if local_score <= cut_boundary:
+        #             return local_score
 
-            # skip if nullmove leaves us in check (can happen in some custom rulesets)
-            if not self.board.in_check(False): # Check for null move legality
-                null_score = -self.search(s_depth - reduction - 1, -beta, -beta + 1, ply + 1) # Note ply+1 added
+        # # Null move pruning (only when safe)
+        # if (
+        #     not is_pv_node
+        #     and not in_check
+        #     and s_depth >= 3
+        #     and self.has_sufficient_material()
+        # ):
+        #     reduction = 2 + s_depth // 6 # typical reduction
+        #     self.board.nullmove()
 
-                # If the null move proves a cutoff, return immediately (beta cutoff)
-                if null_score >= beta:
-                    self.board.unmake_move() # Unmake before returning
-                    return beta
+        #     # skip if nullmove leaves us in check (can happen in some custom rulesets)
+        #     if not self.board.in_check(False): # Check for null move legality
+        #         null_score = -self.search(s_depth - reduction - 1, -beta, -beta + 1, ply + 1) # Note ply+1 added
 
-            self.board.unmake_move() # Guaranteed unmake for all other cases
+        #         # If the null move proves a cutoff, return immediately (beta cutoff)
+        #         if null_score >= beta:
+        #             self.board.unmake_move() # Unmake before returning
+        #             return beta
 
-        if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
-            self.board.make_move(entry.t_move)
-            local_score = -self.search(s_depth - 1, -beta, -alpha)
-            self.board.unmake_move()
+        #     self.board.unmake_move() # Guaranteed unmake for all other cases
 
-            if local_score >= beta:
-                return beta
+        # if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
+        #     self.board.make_move(entry.t_move)
+        #     local_score = -self.search(s_depth - 1, -beta, -alpha)
+        #     self.board.unmake_move()
+
+        #     if local_score >= beta:
+        #         return beta
 
         best_score = -float('inf')
         best_move = None
 
         played_moves = 0
         
-        all_moves = list(sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True))
+        # all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
         
-        best_move = entry.t_move if entry and entry.t_move else all_moves[0]
+        # if not all_moves:
+        #     # Position is Checkmate or Stalemate. Handle this outside the search loop.
+        #     return self.board.evaluate()
         
-        scored_moves = []
-        for t_move in all_moves:
-             # Pass the current ply and the tt_move
-             g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
-             scored_moves.append((g_score, t_move))
+        # best_move = entry.t_move if entry and entry.t_move else all_moves[0]
+        
+        # scored_moves = []
+        # for t_move in all_moves:
+        #      # Pass the current ply and the tt_move
+        #      g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
+        #      scored_moves.append((g_score, t_move))
              
-        sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
+        # sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
 
-        for g_score, t_move in sorted_moves:
-        # for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
+        s_depth += in_check
+
+        # for g_score, t_move in sorted_moves:
+        # for t_move in all_moves:
+        for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
             self.board.make_move(t_move)
 
             played_moves += 1
+            # is_quiet = not t_move[3] and not t_move[2]
             
-            is_quiet = not t_move[3] and not t_move[2]
+            # 1. Determine Search Depth (Default is full depth)
+            # current_depth = s_depth - 1
+            # reduction = 0
 
-            reduction = 1
-            if is_quiet and s_depth >= 3 and played_moves > 3:
-                reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
+            # Apply LMR (LMR is only safe if it's NOT the PV move, NOT in check, and a quiet move)
+            # if is_quiet and s_depth >= 3 and played_moves > 3:
+            #      reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
+            #      current_depth = s_depth - 1 - reduction
 
-            if reduction > 0:
-                g_score = -self.search(s_depth - reduction, -alpha-1, -alpha, ply + 1)
+            # # 2. Perform Primary Search (PVS: use a narrow window -alpha-1 for all but the first move)
+            # if played_moves == 1:
+            #     # First move: Full window search (to find the PV)
+            #     g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            # else:
+            #     # PVS Search (Narrow window, potentially reduced depth)
+            #     g_score = -self.search(current_depth, -alpha - 1, -alpha, ply + 1)
 
-            if g_score > alpha:
-                g_score = -self.search(s_depth - 1, -alpha-1, -alpha, ply + 1)
-                if is_pv_node and g_score > alpha:
-                    g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            #     # 3. LMR Re-search (if reduced search beat alpha)
+            #     if reduction > 0 and g_score > alpha:
+            #         # Re-search at full depth (s_depth - 1) but still with the narrow window
+            #         g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+
+            #     # 4. PV Re-search (if the move beat the current alpha)
+            #     if g_score > alpha and g_score < beta:
+            #         # Re-search with full window [alpha, beta]
+            #         g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            
+            g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
             
             self.board.unmake_move()
             
@@ -304,19 +328,19 @@ class Search:
                     if alpha >= beta:
                         break
             
-            if alpha >= beta:
-                if is_quiet:
-                    # Update Killer Heuristic
-                    self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
-                    self.killer_moves[ply][0] = t_move                      # New killer in slot 0
+            # if alpha >= beta:
+            #     if is_quiet:
+            #         # Update Killer Heuristic
+            #         self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
+            #         self.killer_moves[ply][0] = t_move                      # New killer in slot 0
                     
-                    # Update History Heuristic (e.g., add 1 to the score)
-                    from_sq_idx = t_move[0]
-                    to_sq_idx = t_move[1]
-                    # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
-                    self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
-                    # Limit the score to prevent overflow/bias (e.g., max 10000)
-                break  # beta cutoff
+            #         # Update History Heuristic (e.g., add 1 to the score)
+            #         from_sq_idx = t_move[0]
+            #         to_sq_idx = t_move[1]
+            #         # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
+            #         self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
+            #         # Limit the score to prevent overflow/bias (e.g., max 10000)
+            #     break  # beta cutoff
         
         if not played_moves:
             return -self.MATE_SCORE_UPPER + ply if in_check else 0
@@ -335,9 +359,10 @@ class Search:
             # Store the best move found
             # tt_move = best_move
 
-        if not self.time_up and best_move:
+        if not self.time_up:
+            tt_move = best_move if flag != 'UPPERBOUND' else None
             # Pass the appropriate move (tt_move) to the store function
-            self.tt.store(self.board.hash, s_depth, best_score, flag, best_move)
+            self.tt.store(self.board.hash, s_depth, best_score, flag, tt_move)
 
         return best_score
     
@@ -361,27 +386,27 @@ class Search:
         if not in_check and alpha < stand_pat:
             alpha = stand_pat
         
-        if not in_check:
-            # We need the value of the most valuable piece (typically Queen, around 900-1000)
-            # Use a slightly smaller value for safety margin (e.g., Q value - 100)
-            MAX_GAIN = self.board.PIECE_VALUES['q'] # Assuming 'q' is the key for Queen value
+        # if not in_check:
+        #     # We need the value of the most valuable piece (typically Queen, around 900-1000)
+        #     # Use a slightly smaller value for safety margin (e.g., Q value - 100)
+        #     MAX_GAIN = self.board.PIECE_VALUES['q'] # Assuming 'q' is the key for Queen value
             
-            # If (current best static eval) + (max possible material gain) is still less than alpha, prune.
-            if stand_pat + MAX_GAIN <= alpha:
-                return alpha
+        #     # If (current best static eval) + (max possible material gain) is still less than alpha, prune.
+        #     if stand_pat + MAX_GAIN <= alpha:
+        #         return alpha
             
-            # Optional: Small check for very deep Q-search
-            if q_depth > 5 and stand_pat + 200 <= alpha: # 200 is small futility margin
-                return alpha
-        else:
-            # If in check, stand_pat is irrelevant, alpha remains the score to beat
-            stand_pat = -float('inf')
+        #     # Optional: Small check for very deep Q-search
+        #     if q_depth > 5 and stand_pat + 200 <= alpha: # 200 is small futility margin
+        #         return alpha
+        # else:
+        #     # If in check, stand_pat is irrelevant, alpha remains the score to beat
+        #     stand_pat = -float('inf')
         
         self.s_nodes += 1
         
         # TT lookup
-        entry = self.tt.probe(self.board.hash)
-        if entry and entry.t_move:
+        entry = self.tt.probe(self.board.hash, q_depth, self.MATE_SCORE_UPPER)
+        if entry and entry.s_depth == 0:
             if entry.flag == 'EXACT' or \
                 entry.flag == 'LOWERBOUND' and entry.g_score >= beta or \
                 entry.flag == 'UPPERBOUND' and entry.g_score <= alpha:

@@ -23,6 +23,28 @@ def main():
                 searcher = Search(game_board)
             elif line == "isready":
                 print_to_terminal("readyok")
+            elif line == "unit":
+                b = Board()
+                orig_hash = b.hash
+                mv = b.gen_legal_moves()[0]   # some legal move
+                b.make_move(mv)
+                b.unmake_move()
+
+                assert b.hash == orig_hash, "Zobrist mismatch after make/unmake"
+
+                # 2) Compute from scratch vs incremental
+                b = Board()
+                orig_hash = b.compute_hash()
+                # do a sequence of moves
+                moves = b.gen_legal_moves()[:4]
+                for m in moves:
+                    b.make_move(m)
+                    b.unmake_move()
+                # now compute from scratch and compare
+                h_inc = b.hash
+                h_scratch = b.compute_hash()
+                
+                assert h_inc == h_scratch, "Incremental != recompute"
             elif line.startswith("position fen"):
                 cmd = line[9:]
                 
@@ -46,7 +68,7 @@ def main():
                     game_board.make_move((from_sq, to_sq, promo, None, None))
                 
             elif line.startswith("position"):
-                game_board.set_fen(game_board.START_FEN)
+                game_board = Board()
                 
                 moves = line.split()
                 
@@ -56,6 +78,8 @@ def main():
                     promo = position_move[4] if len(position_move) == 5 else None
                     
                     game_board.make_move((from_sq, to_sq, promo, None, None))
+                    
+                searcher.set_board(game_board)
             elif line.startswith("go"):
                 move_time = 1e8
                 is_white = game_board.white_to_move

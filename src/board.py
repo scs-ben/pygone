@@ -108,8 +108,6 @@ class Board:
         else:
             self.set_fen(self.START_FEN)
 
-        self.compute_hash()
-
     def compute_hash(self):
         h = 0
 
@@ -172,12 +170,13 @@ class Board:
         if 'q' in parts[2]: self.castle |= 8
         self.ep = -1 if parts[3] == '-' else self.algebraic_to_sq(parts[3])
         # ignore halfmove/fullmove counters
+        self.compute_hash()
 
     # make/unmake minimal for legality checking
     def make_move(self, mv):
         frm, to, promo, _, _ = mv
         # save state
-        self.stack.append((self.P[:], self.white_to_move, self.castle, self.ep, self.halfmove_clock, self.hash))
+        self.stack.append((self.P[:], self.piece_map[:], self.white_to_move, self.castle, self.ep, self.halfmove_clock, self.hash))
         
         self.halfmove_clock += 1
         
@@ -201,7 +200,7 @@ class Board:
             idx = self.side_index(us,p)
             if self.P[idx] & from_mask:
                 self.hash ^= PIECE_KEYS[idx][frm]
-                moved_piece = p; self.P[idx] ^= from_mask; break
+                moved_piece = p; self.P[idx] ^= from_mask; self.piece_map[frm] = -1; break
         # capture (including en-passant)
         captured = False
         if moved_piece is None:
@@ -217,13 +216,14 @@ class Board:
             # remove enemy pawn
             self.hash ^= PIECE_KEYS[self.side_index(not us, 0)][cap_sq]
             self.P[self.side_index(not us, 0)] ^= get_bit(cap_sq)
+            self.piece_map[cap_sq] = -1
         else:
             # capture any piece on 'to'
             for p in range(6):
                 idx = self.side_index(not us, p)
                 if self.P[idx] & to_mask:
                     self.hash ^= PIECE_KEYS[idx][to]
-                    self.P[idx] ^= to_mask; captured = True; break
+                    self.P[idx] ^= to_mask; self.piece_map[to] = -1; captured = True; break
             
         # place moved piece (promotion?)
         if promo:
@@ -231,10 +231,12 @@ class Board:
             prom_idx = self.side_index(us, prom_map[promo])
             self.P[self.side_index(us, prom_map[promo])] |= to_mask
             self.hash ^= PIECE_KEYS[prom_idx][to]
+            self.piece_map[to] = prom_idx
         else:
             final_idx = self.side_index(us, moved_piece)
             self.P[self.side_index(us, moved_piece)] |= to_mask
             self.hash ^= PIECE_KEYS[final_idx][to]
+            self.piece_map[to] = final_idx
         # update castle rights if king/rook moved or captured
         if moved_piece == 5:
             if us: self.castle &= ~3
@@ -255,11 +257,10 @@ class Board:
         # handle castling rook move
         # white king-side: e1(4)->g1(6) move rook h1->f1
         if moved_piece==5 and us and frm==4 and to==6:
-            # HASH OUT: Rook at h1 (7)
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][7]
-            # HASH IN: Rook at f1 (5)
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][5]
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][7]; self.hash ^= PIECE_KEYS[self.side_index(us,3)][5]
             self.P[self.side_index(us,3)] ^= get_bit(7); self.P[self.side_index(us,3)] |= get_bit(5)
+            self.piece_map[7] = -1; self.piece_map[5] = self.side_index(us,3) 
+            
         # white queen-side
         if moved_piece==5 and us and frm==4 and to==2:
             # HASH OUT: Rook at a1 (0)
@@ -267,6 +268,7 @@ class Board:
             # HASH IN: Rook at d1 (3)
             self.hash ^= PIECE_KEYS[self.side_index(us,3)][3]
             self.P[self.side_index(us,3)] ^= get_bit(0); self.P[self.side_index(us,3)] |= get_bit(3)
+            self.piece_map[0] = -1; self.piece_map[3] = self.side_index(us,3) 
         # black castling
         if moved_piece==5 and (not us) and frm==60 and to==62:
             # HASH OUT: Rook at h8 (63)
@@ -274,12 +276,14 @@ class Board:
             # HASH IN: Rook at f8 (61)
             self.hash ^= PIECE_KEYS[self.side_index(us,3)][61] # Note: use 'us' index (idx=3)
             self.P[self.side_index(us,3)] ^= get_bit(63); self.P[self.side_index(us,3)] |= get_bit(61)
+            self.piece_map[63] = -1; self.piece_map[61] = self.side_index(us,3) 
         if moved_piece==5 and (not us) and frm==60 and to==58:
             # HASH OUT: Rook at a8 (56)
             self.hash ^= PIECE_KEYS[self.side_index(us,3)][56] # Note: use 'us' index (idx=3)
             # HASH IN: Rook at d8 (59)
             self.hash ^= PIECE_KEYS[self.side_index(us,3)][59] # Note: use 'us' index (idx=3)
             self.P[self.side_index(us,3)] ^= get_bit(56); self.P[self.side_index(us,3)] |= get_bit(59)
+            self.piece_map[56] = -1; self.piece_map[59] = self.side_index(us,3) 
             
         self.hash ^= CASTLING_KEYS[self.castle]
         
@@ -298,7 +302,7 @@ class Board:
 
     def nullmove(self):
         # Save state including current hash
-        self.stack.append((self.P[:], self.white_to_move, self.castle, self.ep, self.halfmove_clock, self.hash))
+        self.stack.append((self.P[:], self.piece_map[:], self.white_to_move, self.castle, self.ep, self.halfmove_clock, self.hash))
         
         self.halfmove_clock += 1
         
@@ -319,8 +323,9 @@ class Board:
     def unmake_move(self):
         if not self.stack: return
         # The saved hash is restored directly
-        P, wtm, castle, ep, hc, hash = self.stack.pop()
+        P, piece_map, wtm, castle, ep, hc, hash = self.stack.pop()
         self.P = P # Restores all pieces
+        self.piece_map = piece_map
         self.white_to_move = wtm
         self.castle = castle
         self.ep = ep
@@ -553,7 +558,7 @@ class Board:
             count = (pawns & mask).bit_count()
             if count > 1:
                 score -= (count - 1) * 15
-        return score
+        return score / 10
     
     def isolated_pawns(self, pawns):
         score = 0
@@ -564,7 +569,7 @@ class Board:
                 right = (mask << 1) & 0xFEFEFEFEFEFEFEFE
                 if (pawns & (left | right)) == 0:
                     score -= 15
-        return score
+        return score / 10
 
     def passed_pawns(self, white):
         wp = self.P[0]
@@ -587,7 +592,7 @@ class Board:
                     score += (rank * 10 + 20)  # stronger closer to promotion
                 else:
                     score += ((7-rank) * 10 + 20)
-        return score
+        return score / 10
 
     def eval_pawn_structure(self):
         wp =  self.P[0]
@@ -666,9 +671,8 @@ class Board:
                 score -= val * cnt
         return score
 
-    def evaluate(self):
-        score = (self.eval_material() + (self.king_safety(True) - self.king_safety(False)))
-        score += self.eval_pawn_structure()
+    def eval_position(self):
+        score = 0
         
         # Loop 12 times: White Pawns (0) to Black King (11)
         for i in range(12): 
@@ -679,7 +683,7 @@ class Board:
             weight = PST_WEIGHTS[piece] 
             
             # C: Color factor (1 for White, -1 for Black)
-            color = 1 if i < 6 else -1 
+            color = 1 if i < 6 else -1
             
             # B: Copy of the Bitboard for the current piece type
             bb = self.P[i] 
@@ -702,7 +706,23 @@ class Board:
                 D = idx if color == 1 else idx ^ 56
                 
                 # Add/subtract the weighted score
-                score += UNIFIED_PST[D] * weight * color / 1.25
+                score += UNIFIED_PST[D] * weight * color
+                
+        return score / 10
+
+    def evaluate(self):
+        score = self.eval_material()
+        score += self.king_safety(True) - self.king_safety(False)
+        
+        wp =  self.P[0]
+        bp =  self.P[6]
+        
+        
+        score += self.doubled_pawns(wp) - self.doubled_pawns(bp)
+        score += self.isolated_pawns(wp) - self.isolated_pawns(bp)
+        score += self.passed_pawns(True) - self.passed_pawns(False)
+        
+        score += self.eval_position()
 
         return score if self.white_to_move else -score
 
