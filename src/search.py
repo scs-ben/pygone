@@ -36,6 +36,10 @@ class TranspositionTable:
         idx = self.tt_index(key)
         entry = self.table[idx]
         if entry is not None and entry.key == key:
+            if entry.g_score > MATE_SCORE_UPPER - 1000:
+                entry.g_score -= ply 
+            elif entry.g_score < -MATE_SCORE_UPPER + 1000:
+                entry.g_score += ply 
             return entry
         return None
 
@@ -361,6 +365,10 @@ class Search:
 
         if not self.time_up:
             tt_move = best_move if flag != 'UPPERBOUND' else None
+            if best_score > self.MATE_SCORE_UPPER - 1000:
+                best_score += ply # Store the score AS IF it were found at the root (ply 0)
+            elif best_score < -self.MATE_SCORE_UPPER + 1000:
+                best_score -= ply # Store the score AS IF it were found at the root (ply 0)
             # Pass the appropriate move (tt_move) to the store function
             self.tt.store(self.board.hash, s_depth, best_score, flag, tt_move)
 
