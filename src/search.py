@@ -259,13 +259,13 @@ class Search:
 
         played_moves = 0
         
-        all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
+        # all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
         
-        if not all_moves:
+        # if not all_moves:
             # Position is Checkmate or Stalemate. Handle this outside the search loop.
-            return self.board.evaluate()
+            # return self.board.evaluate()
         
-        best_move = entry.t_move if entry and entry.t_move else all_moves[0]
+        # best_move = entry.t_move if entry and entry.t_move else all_moves[0]
         
         # scored_moves = []
         # for t_move in all_moves:
@@ -283,36 +283,36 @@ class Search:
             self.board.make_move(t_move)
 
             played_moves += 1
-            #is_quiet = not t_move[3] and not t_move[2]
+            is_quiet = not t_move[3] and not t_move[2]
             
             # 1. Determine Search Depth (Default is full depth)
-            # current_depth = s_depth - 1
-            # reduction = 0
+            current_depth = s_depth - 1
+            reduction = 0
 
             # Apply LMR (LMR is only safe if it's NOT the PV move, NOT in check, and a quiet move)
-            # if is_quiet and s_depth >= 3 and played_moves > 3:
-            #      reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
-            #      current_depth = s_depth - 1 - reduction
+            if is_quiet and s_depth >= 3 and played_moves > 3:
+                 reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
+                 current_depth = s_depth - 1 - reduction
 
-            # # 2. Perform Primary Search (PVS: use a narrow window -alpha-1 for all but the first move)
-            # if played_moves == 1:
-            #     # First move: Full window search (to find the PV)
-            #     g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
-            # else:
-            #     # PVS Search (Narrow window, potentially reduced depth)
-            #     g_score = -self.search(current_depth, -alpha - 1, -alpha, ply + 1)
+            # 2. Perform Primary Search (PVS: use a narrow window -alpha-1 for all but the first move)
+            if played_moves == 1:
+                # First move: Full window search (to find the PV)
+                g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            else:
+                # PVS Search (Narrow window, potentially reduced depth)
+                g_score = -self.search(current_depth, -alpha - 1, -alpha, ply + 1)
 
-            #     # 3. LMR Re-search (if reduced search beat alpha)
-            #     if reduction > 0 and g_score > alpha:
-            #         # Re-search at full depth (s_depth - 1) but still with the narrow window
-            #         g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+                # 3. LMR Re-search (if reduced search beat alpha)
+                if reduction > 0 and g_score > alpha:
+                    # Re-search at full depth (s_depth - 1) but still with the narrow window
+                    g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
 
-            #     # 4. PV Re-search (if the move beat the current alpha)
-            #     if g_score > alpha and g_score < beta:
-            #         # Re-search with full window [alpha, beta]
-            #         g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+                # 4. PV Re-search (if the move beat the current alpha)
+                if g_score > alpha and g_score < beta:
+                    # Re-search with full window [alpha, beta]
+                    g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
             
-            g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            # g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
             
             self.board.unmake_move()
             
