@@ -175,16 +175,16 @@ class Search:
                     return entry[1]
 
         in_check = self.board.in_check()
-        # stand_pat = self.board.evaluate()
+        stand_pat = self.board.evaluate()
 
-        # if not is_pv_node and not in_check:
-        #     # Futility pruning (low eval)
-        #     if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
-        #         return stand_pat
+        if not is_pv_node and not in_check:
+            # Futility pruning (low eval)
+            if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
+                return stand_pat
 
-        #     # Razor pruning (high eval)
-        #     if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
-        #         return stand_pat
+            # Razor pruning (high eval)
+            if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
+                return stand_pat
 
         # if not is_pv_node and not in_check and s_depth <= 5:
         #     cut_boundary = alpha - (150 * s_depth)
@@ -231,7 +231,10 @@ class Search:
 
         played_moves = 0
         
-        # all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
+        all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
+
+        if entry and entry[4]:
+            all_moves = [entry[4]] + all_moves
         
         # if not all_moves:
             # Position is Checkmate or Stalemate. Handle this outside the search loop.
@@ -250,14 +253,16 @@ class Search:
         s_depth += in_check
 
         # for g_score, t_move in sorted_moves:
-        # for t_move in all_moves:
-        for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
+        for t_move in all_moves:
+        # for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
+            if played_moves > 0 and entry and entry[4] == t_move:
+                continue
             self.board.make_move(t_move)
 
             played_moves += 1
             # is_quiet = not t_move[3] and not t_move[2]
             
-            # 1. Determine Search Depth (Default is full depth)
+            # # 1. Determine Search Depth (Default is full depth)
             # current_depth = s_depth - 1
             # reduction = 0
 
@@ -351,12 +356,24 @@ class Search:
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
         
-        in_check = self.board.in_check()
-        
+        self.s_nodes += 1
+
+        # TT lookup
+        entry = self.tt.probe(self.board.hash)
+        if entry and entry[2] == 0:
+            if entry[3] == 'EXACT' or \
+                entry[3] == 'LOWERBOUND' and entry[1] >= beta or \
+                entry[3] == 'UPPERBOUND' and entry[1] <= alpha:
+                    return entry[1]
+
         stand_pat = self.board.evaluate()
-        
-        if q_depth >= 30:
+
+        if q_depth >= 30 or stand_pat >= beta:
             return stand_pat
+
+        alpha = max(alpha, stand_pat)
+
+        in_check = self.board.in_check()
         
         if not in_check and stand_pat >= beta:
             return beta
@@ -378,16 +395,6 @@ class Search:
         # else:
         #     # If in check, stand_pat is irrelevant, alpha remains the score to beat
         #     stand_pat = -float('inf')
-        
-        self.s_nodes += 1
-        
-        # TT lookup
-        entry = self.tt.probe(self.board.hash)
-        if entry and entry[2] == 0:
-            if entry[3] == 'EXACT' or \
-                entry[3] == 'LOWERBOUND' and entry[1] >= beta or \
-                entry[3] == 'UPPERBOUND' and entry[1] <= alpha:
-                    return entry[1]
 
         for t_move in sorted(self.board.gen_legal_moves(not in_check), key=self.board.score_move, reverse=True):
             self.board.make_move(t_move)
@@ -406,4 +413,4 @@ class Search:
                     return alpha
             
         return alpha
-        
+    
