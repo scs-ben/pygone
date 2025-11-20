@@ -2,10 +2,13 @@
 import sys
 from search import Search
 from board import Board
+#remove
 from perft import Perft
+#endremove
 
 def print_to_terminal(print_string):
     print(print_string, flush=True)
+
 
 def main():
     game_board = Board()
@@ -23,6 +26,7 @@ def main():
                 searcher = Search(game_board)
             elif line == "isready":
                 print_to_terminal("readyok")
+            #remove
             elif line == "unit":
                 b = Board()
                 orig_hash = b.hash
@@ -45,6 +49,8 @@ def main():
                 h_scratch = b.compute_hash()
                 
                 assert h_inc == h_scratch, "Incremental != recompute"
+            #endremove
+            #remove
             elif line.startswith("position fen"):
                 cmd = line[9:]
                 
@@ -66,7 +72,7 @@ def main():
                     promo = position_move[4] if len(position_move) == 5 else None
                     
                     game_board.make_move((from_sq, to_sq, promo, None, None))
-                
+            #endremove
             elif line.startswith("position"):
                 game_board = Board()
                 
@@ -82,41 +88,50 @@ def main():
                 searcher.set_board(game_board)
             elif line.startswith("go"):
                 move_time = 1e8
+                side_time = 1e8
                 is_white = game_board.white_to_move
+                #remove
                 v_depth = 0
                 perft_depth = 0
+                #endremove
                 
                 args = line.split()
                 for key, arg in enumerate(args):
                     if arg == 'wtime' and is_white or arg == 'btime' and not is_white:
                         side_time = int(args[key + 1]) / 1e3
                     # depth input can be commented out to save space since engine will be run on time
+                    #remove
                     elif arg == 'depth':
                         v_depth = int(args[key + 1])
                     elif arg == 'perft':
                         perft_depth = int(args[key + 1])
-
-                
+                    #endremove
+                #remove
                 if perft_depth:
                     perft = Perft(game_board)
                     perft.run(perft_depth)
                     continue
+                #endremove
                     
+                searcher.set_depth(50)
+                    
+                move_time = side_time / 20
+                
+                searcher.set_time_limit(move_time)
+                
+                #remove
                 if v_depth > 0:
                     searcher.set_time_limit(1e8)
                     searcher.set_depth(v_depth)
-                else:
-                    searcher.set_depth(50)
-                    
-                    move_time = side_time / 20
-                    
-                    searcher.set_time_limit(move_time)
+                #endremove
 
                 t_move, _ = searcher.iterative_search()
 
                 print_to_terminal(f"bestmove {str(game_board.move_to_uci(t_move))}")
+            #remove
             elif line.startswith('print'):
                 game_board.print_board()
+            #endremove
         except Exception as exc:
             print_to_terminal(exc)
             raise

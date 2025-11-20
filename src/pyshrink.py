@@ -36,6 +36,41 @@ for module_name, module_path in imports_to_inline:
 # --- write output ---
 combined_file.write_text(main_code)
 
+def comment_out_block(code: str, start_marker="#remove", end_marker="#endremove") -> str:
+    """
+    Comments out all lines between start_marker and end_marker (inclusive).
+    """
+    lines = code.splitlines()
+    output = []
+    inside_block = False
+
+    for line in lines:
+        if start_marker in line:
+            inside_block = True
+            output.append(f"# {line}")  # comment out the start marker
+            continue
+        elif end_marker in line:
+            inside_block = False
+            output.append(f"# {line}")  # comment out the end marker
+            continue
+
+        if inside_block:
+            output.append(f"# {line}")  # comment out all lines in the block
+        else:
+            output.append(line)
+
+    return "\n".join(output)
+
+
+# --- Example usage ---
+input_file = Path("pygone-combined.py")
+output_file = Path("pygone-combined.py")
+
+code = input_file.read_text()
+processed = comment_out_block(code)
+output_file.write_text(processed)
+print(f"Processed {input_file} → {output_file}")
+
 with open("pygone-combined.py") as f:
     code = f.read()
 
@@ -43,7 +78,7 @@ minified = python_minifier.minify(
     code,
     rename_locals=True,      # shrink local variables inside functions/classes
     rename_globals=False,    # leave module-level globals/constants intact
-    combine_imports=True,
+    combine_imports=False,
     hoist_literals=False,
     remove_annotations=True,
     remove_literal_statements=True

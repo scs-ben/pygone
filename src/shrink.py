@@ -1,9 +1,58 @@
 #!/usr/bin/env pypy3
 from pathlib import Path
 import python_minifier
+import re
+import tempfile
+import shutil
+from collections import defaultdict
 
-file = Path("pygone-mini.py")
-code = file.read_text()
+def combine_imports(file_path: str):
+    path = Path(file_path)
+    code = path.read_text()
+
+    # Collect imports
+    import_lines = []
+    other_lines = []
+
+    for line in code.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("import "):
+            import_lines.append(stripped)
+        elif stripped.startswith("from "):
+            import_lines.append(stripped)
+        else:
+            other_lines.append(line)
+
+    # Combine plain imports
+    plain_imports = []
+    from_imports = defaultdict(list)
+
+    for line in import_lines:
+        if line.startswith("import "):
+            modules = line[len("import "):].split(",")
+            modules = [m.strip() for m in modules]
+            plain_imports.extend(modules)
+        elif line.startswith("from "):
+            m = re.match(r"from (\S+) import (.+)", line)
+            if m:
+                module, names = m.groups()
+                names = [n.strip() for n in names.split(",")]
+                from_imports[module].extend(names)
+
+    # Remove duplicates and sort
+    plain_imports = sorted(set(plain_imports))
+    combined_plain = f"import {', '.join(plain_imports)}" if plain_imports else ""
+
+    combined_from = []
+    for module, names in from_imports.items():
+        unique_names = sorted(set(names))
+        combined_from.append(f"from {module} import {', '.join(unique_names)}")
+
+    # Combine all imports at top
+    new_code = "\n".join([combined_plain] + combined_from + [""] + other_lines)
+
+    path.write_text(new_code)
+    print(f"Imports combined and moved to top of {file_path}")
 
 # Define all replacements here
 replacements = {
@@ -41,6 +90,7 @@ replacements = {
     "rotate": "ak",
     "history": "al",
     
+    "gen_legal_moves": "aw1",
     "moves": "aw",
     "Move": "ax",
     "white_": "ay",
@@ -117,6 +167,9 @@ replacements = {
     "PAWN_ATK_WHITE": "dt",
     "SIDE_KEY": "du",
     "MATE_SCORE_UPPER": "dv",
+    "UNIFIED_PST": "dw",
+    "PST_WEIGHTS": "dx",
+    "START_FEN": "dy",
     
     "piece_bb": "f1",
     "piece_index": "f2",
@@ -142,6 +195,12 @@ replacements = {
     "threefold": "fm",
     "reduction": "fn",
     "friendly_pieces": "fo",
+    "piece_idx": "fp",
+    "eval_position": "fq",
+    "piece_on": "fr",
+    "piece_map": "fs",
+    "set_fen": "ft",
+    "fen": "fu",
     
     "ply": "fx",
     "rank": "fy",
@@ -203,14 +262,28 @@ replacements = {
     
     "bb_name": "q1",
     
+    "side_white": "qy1",
     "white": "qy",
     "name": "qz",
 
     # Built-ins / keywords
     "True": "1",
     "False": "0",
+    
+    #These have to match up with the assignment/replacements at the end
+    "None": "Za",
+    "enumerate": "Zb",
+    "random.getrandbits": "Zc",
+    "time.time": "Zd",
+    "range": "Ze",
+    "math.ceil": "Zf",
+    "sorted": "Zg",
 
 }
+
+path = "pygone-mini.py"
+file = Path(path)
+code = file.read_text()
 
 # Apply replacements (longest first to prevent partial overlaps)
 for old, new in sorted(replacements.items(), key=lambda kv: -len(kv[0])):
@@ -219,26 +292,43 @@ for old, new in sorted(replacements.items(), key=lambda kv: -len(kv[0])):
 # Write back
 file.write_text(code)
 
-# replacements = {
-#     "info H": "info depth",
-# }
-
-# # Apply replacements (longest first to prevent partial overlaps)
-# for old, new in sorted(replacements.items(), key=lambda kv: -len(kv[0])):
-#     code = code.replace(old, new)
-
-# # Write back
-# file.write_text(code)
-
 minified = python_minifier.minify(
     code,
-    rename_locals=True,      # shrink local variables inside functions/classes
+    rename_locals=False,      # shrink local variables inside functions/classes
     rename_globals=False,    # leave module-level globals/constants intact
-    combine_imports=True,
+    combine_imports=False,
     hoist_literals=False,
     remove_annotations=True,
     remove_literal_statements=True
 )
 
-with open("pygone-mini.py", "w") as f:
+with open(path, "w") as f:
+    f.write(minified)
+
+combine_imports(path)
+
+insert_text = "Za=None;Zb=enumerate;Zc=random.getrandbits;Zd=time.time;Ze=range;Zf=math.ceil;Zg=sorted\n"
+
+with tempfile.NamedTemporaryFile("w", delete=False) as tmp, open(path) as f:
+    for i, line in enumerate(f, start=1):
+        if i == 2:
+            tmp.write(insert_text)
+        tmp.write(line)
+
+shutil.move(tmp.name, path)
+
+file = Path(path)
+code = file.read_text()
+
+minified = python_minifier.minify(
+    code,
+    rename_locals=False,      # shrink local variables inside functions/classes
+    rename_globals=False,    # leave module-level globals/constants intact
+    combine_imports=False,
+    hoist_literals=False,
+    remove_annotations=True,
+    remove_literal_statements=True
+)
+
+with open(path, "w") as f:
     f.write(minified)

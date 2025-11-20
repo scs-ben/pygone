@@ -27,5 +27,6 @@ src/dist/*
 src/pygone.spec
 src/myenv/*
 src/perft.txt
-src/pygone-mini*.py
+src/pygone-mini*.py*
 src/pygone-combined*.py
+src/ruff.toml
