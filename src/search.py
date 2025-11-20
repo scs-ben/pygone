@@ -1,51 +1,27 @@
 import math, time
 
-class TTEntry:
-    __slots__ = ('key', 'g_score', 's_depth', 'flag', 't_move')
-    def __init__(self, key=0, g_score=0, s_depth=0, flag='EXACT', t_move=None):
-        self.key = key
-        self.g_score = g_score
-        self.s_depth = s_depth
-        self.flag = flag
-        self.t_move = t_move
+#class TTEntry:
+#    __slots__ = ('key', 'g_score', 's_depth', 'flag', 't_move')
 
 class TranspositionTable:
-    def __init__(self):
-        entry_size = 32  # approximate bytes per entry
-        self.size = 2**31 // entry_size
-        self.table = [None] * self.size
-
-    def tt_index(self, zobrist_key):
-        return zobrist_key % self.size
+    size = 2**31 // 32
+    table = [None] * size
 
     def store(self, key, s_depth, g_score, flag, t_move):
-        idx = self.tt_index(key)
-        entry = self.table[idx]
-        
-        # New, safer replacement criteria:
-        if entry is None or \
-           entry.key != key or \
-           entry.s_depth < s_depth or \
-           (entry.s_depth == s_depth and flag == 'EXACT'):
-           
-           # If the position already exists but is shallower, or if the new score is EXACT
-           # at the same depth, replace it.
-           self.table[idx] = TTEntry(key, g_score, s_depth, flag, t_move)
+        idx = (key % self.size)
+        e = self.table[idx]
+        if not e or e[0]!=key or e[2]<s_depth or (e[2]==s_depth and flag=='EXACT'):
+            self.table[idx] = (key, g_score, s_depth, flag, t_move)
 
-    def probe(self, key, ply, MATE_SCORE_UPPER): # Must pass MATE_SCORE_UPPER
-        idx = self.tt_index(key)
-        entry = self.table[idx]
-        if entry is not None and entry.key == key:
-            if entry.g_score > MATE_SCORE_UPPER - 1e3:
-                entry.g_score -= ply 
-            elif entry.g_score < -MATE_SCORE_UPPER + 1e3:
-                entry.g_score += ply 
-            return entry
-        return None
+    def probe(self, key, ply, MATE_SCORE_UPPER):
+        e = self.table[(key % self.size)]
+        if e is not None and e[0] == key:
+            if e[1] > MATE_SCORE_UPPER - 1e3: e[1] -= ply
+            elif e[1] < -MATE_SCORE_UPPER + 1e3: e[1] += ply
+            return e
 
 class Search:
     MATE_SCORE_UPPER = 32e4
-    TIME_CUT = 0
     
     def __init__(self, board):
         self.board = board
@@ -55,26 +31,25 @@ class Search:
         self.end_time = None
         self.time_up = False
         self.s_depth = 50
-        self.clear_tables()
+        #self.clear_tables()
 
-    def clear_tables(self):
-        """Called at the start of a new top-level search."""
-        self.killer_moves = [[None, None] for _ in range(64)]
-        self.history_table = [[0] * 64 for _ in range(64)]
+    #def clear_tables(self):
+    #    """Called at the start of a new top-level search."""
+    #    self.killer_moves = [[None, None] for _ in range(64)]
+    #    self.history_table = [[0] * 64 for _ in range(64)]
 
     def set_time_limit(self, seconds):
         self.time_limit = seconds
         self.end_time = time.time() + seconds
         self.time_up = False
-        
+    
+    #remove
     def set_depth(self, s_depth):
         self.s_depth = s_depth
+    #endremove
 
     def set_board(self, board):
         self.board = board
-
-    def print_stats(self, s_depth, g_score, time, s_nodes, nps, pv):
-        print(f"info depth {s_depth} score cp {g_score} time {time} nodes {s_nodes} nps {nps} pv {pv}", flush=True)
 
     # def score_killer_move(self, t_move, ply, tt_move):
     #     # 1. Transposition Table Move (Highest Priority)
@@ -118,14 +93,14 @@ class Search:
         best_score = None
         
         self.s_nodes = 0
-        self.clear_tables()
+        # self.clear_tables()
 
-        all_moves = self.board.gen_legal_moves()
-        if not all_moves:
-            # Position is Checkmate or Stalemate. Handle this outside the search loop.
-            return None, self.board.evaluate() # Or a known terminal score
+        # all_moves = self.board.gen_legal_moves()
+        # if not all_moves:
+        #     # Position is Checkmate or Stalemate. Handle this outside the search loop.
+        #     return None, self.board.evaluate() # Or a known terminal score
         
-        best_move = all_moves[0]
+        # best_move = all_moves[0]
 
         for s_depth in range(1, self.s_depth + 1):  # iterative deepening
             if self.time_up:
@@ -139,14 +114,14 @@ class Search:
             best_score = current_score
             
             entry = self.tt.probe(self.board.hash, 1, self.MATE_SCORE_UPPER)
-            if entry and entry.t_move:
-                best_move = entry.t_move
+            if entry and entry[4]: best_move = entry[4]
 
             elapsed_time = time.time() - start_time
             nps = math.ceil(self.s_nodes / elapsed_time) if elapsed_time > 0 else 1
 
             uci_move = self.board.move_to_uci(best_move) if best_move else None
-            self.print_stats(str(s_depth), str(math.ceil(best_score)), str(math.ceil(elapsed_time * 1e3)), str(self.s_nodes), str(nps), str(uci_move))
+            
+            print(f"info depth {s_depth} score cp {math.ceil(best_score)} time {math.ceil(elapsed_time * 1e3)} nodes {self.s_nodes} nps {nps} pv {uci_move}", flush=True)
             
             if s_depth >= self.s_depth:
                 break
@@ -179,8 +154,7 @@ class Search:
     def search(self, s_depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER, ply=0):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return -self.TIME_CUT
-            
+            return 0
             
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
@@ -196,11 +170,11 @@ class Search:
         
         # --- TT lookup ---
         entry = self.tt.probe(self.board.hash, ply, self.MATE_SCORE_UPPER)
-        if entry and entry.s_depth >= s_depth and not is_pv_node:
-            if entry.flag == 'EXACT' or \
-                entry.flag == 'LOWERBOUND' and entry.g_score >= beta or \
-                entry.flag == 'UPPERBOUND' and entry.g_score <= alpha:
-                    return entry.g_score
+        if entry and entry[2] >= s_depth and not is_pv_node:
+            if entry[3] == 'EXACT' or \
+                entry[3] == 'LOWERBOUND' and entry[1] >= beta or \
+                entry[3] == 'UPPERBOUND' and entry[1] <= alpha:
+                    return entry[1]
 
         in_check = self.board.in_check()
         # stand_pat = self.board.evaluate()
@@ -246,8 +220,8 @@ class Search:
 
         #     self.board.unmake_move() # Guaranteed unmake for all other cases
 
-        # if not is_pv_node and not in_check and entry and entry.t_move and entry.s_depth >= s_depth and abs(entry.g_score) < self.MATE_SCORE_UPPER:
-        #     self.board.make_move(entry.t_move)
+        # if not is_pv_node and not in_check and entry and entry[4] and entry[2] >= s_depth and abs(entry[1]) < self.MATE_SCORE_UPPER:
+        #     self.board.make_move(entry[4])
         #     local_score = -self.search(s_depth - 1, -beta, -alpha)
         #     self.board.unmake_move()
 
@@ -265,12 +239,12 @@ class Search:
             # Position is Checkmate or Stalemate. Handle this outside the search loop.
             # return self.board.evaluate()
         
-        # best_move = entry.t_move if entry and entry.t_move else all_moves[0]
+        # best_move = entry[4] if entry and entry[4] else all_moves[0]
         
         # scored_moves = []
         # for t_move in all_moves:
         #      # Pass the current ply and the tt_move
-        #      g_score = self.score_killer_move(t_move, ply, entry.t_move if entry else None)
+        #      g_score = self.score_killer_move(t_move, ply, entry[4] if entry else None)
         #      scored_moves.append((g_score, t_move))
              
         # sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
@@ -374,7 +348,7 @@ class Search:
     def q_search(self, alpha, beta, q_depth=0):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
-            return -self.TIME_CUT
+            return 0
         
         if self.threefold() or self.board.halfmove_clock >= 100:
             return 0
@@ -411,11 +385,11 @@ class Search:
         
         # TT lookup
         entry = self.tt.probe(self.board.hash, q_depth, self.MATE_SCORE_UPPER)
-        if entry and entry.s_depth == 0:
-            if entry.flag == 'EXACT' or \
-                entry.flag == 'LOWERBOUND' and entry.g_score >= beta or \
-                entry.flag == 'UPPERBOUND' and entry.g_score <= alpha:
-                    return entry.g_score
+        if entry and entry[2] == 0:
+            if entry[3] == 'EXACT' or \
+                entry[3] == 'LOWERBOUND' and entry[1] >= beta or \
+                entry[3] == 'UPPERBOUND' and entry[1] <= alpha:
+                    return entry[1]
         
         if not in_check and stand_pat >= beta:
             return stand_pat

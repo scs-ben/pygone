@@ -196,8 +196,7 @@ class Board:
         if self.ep != -1:
             self.hash ^= EP_KEYS[self.ep & 7]
 
-        old_castle = self.castle
-        self.hash ^= CASTLING_KEYS[old_castle]
+        self.hash ^= CASTLING_KEYS[self.castle]
 
         # find moving piece type
         from_mask = get_bit(frm); to_mask = get_bit(to)
@@ -218,10 +217,7 @@ class Board:
         # en-passant capture
         if moved_piece == 0 and to == self.ep:
             captured = True
-            if us:
-                cap_sq = to - 8
-            else:
-                cap_sq = to + 8
+            cap_sq = to - 8 if us else to + 8
             # remove enemy pawn
             self.hash ^= PIECE_KEYS[self.side_index(not us, 0)][cap_sq]
             self.P[self.side_index(not us, 0)] ^= get_bit(cap_sq)
@@ -270,35 +266,18 @@ class Board:
             if to == 63: self.castle &= ~4
         
         # handle castling rook move
-        # white king-side: e1(4)->g1(6) move rook h1->f1
-        if moved_piece==5 and us and frm==4 and to==6:
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][7]; self.hash ^= PIECE_KEYS[self.side_index(us,3)][5]
-            self.P[self.side_index(us,3)] ^= get_bit(7); self.P[self.side_index(us,3)] |= get_bit(5)
-            self.piece_map[7] = -1; self.piece_map[5] = self.side_index(us,3) 
-            
-        # white queen-side
-        if moved_piece==5 and us and frm==4 and to==2:
-            # HASH OUT: Rook at a1 (0)
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][0]
-            # HASH IN: Rook at d1 (3)
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][3]
-            self.P[self.side_index(us,3)] ^= get_bit(0); self.P[self.side_index(us,3)] |= get_bit(3)
-            self.piece_map[0] = -1; self.piece_map[3] = self.side_index(us,3) 
-        # black castling
-        if moved_piece==5 and (not us) and frm==60 and to==62:
-            # HASH OUT: Rook at h8 (63)
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][63] # Note: use 'us' index (idx=3)
-            # HASH IN: Rook at f8 (61)
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][61] # Note: use 'us' index (idx=3)
-            self.P[self.side_index(us,3)] ^= get_bit(63); self.P[self.side_index(us,3)] |= get_bit(61)
-            self.piece_map[63] = -1; self.piece_map[61] = self.side_index(us,3) 
-        if moved_piece==5 and (not us) and frm==60 and to==58:
-            # HASH OUT: Rook at a8 (56)
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][56] # Note: use 'us' index (idx=3)
-            # HASH IN: Rook at d8 (59)
-            self.hash ^= PIECE_KEYS[self.side_index(us,3)][59] # Note: use 'us' index (idx=3)
-            self.P[self.side_index(us,3)] ^= get_bit(56); self.P[self.side_index(us,3)] |= get_bit(59)
-            self.piece_map[56] = -1; self.piece_map[59] = self.side_index(us,3) 
+        cfr = 4; ct1 = 6; ct2 = 2
+        if not us:
+            cfr = 60; ct1 = 62; ct2 = 58
+        
+        if moved_piece==5 and frm==cfr and to==ct1:
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][ct1+1]; self.hash ^= PIECE_KEYS[self.side_index(us,3)][ct1-1]
+            self.P[self.side_index(us,3)] ^= get_bit(ct1+1); self.P[self.side_index(us,3)] |= get_bit(ct1-1)
+            self.piece_map[ct1+1] = -1; self.piece_map[ct1-1] = self.side_index(us,3) 
+        if moved_piece==5 and frm==cfr and to==ct2:
+            self.hash ^= PIECE_KEYS[self.side_index(us,3)][ct2-2]; self.hash ^= PIECE_KEYS[self.side_index(us,3)][ct2+1]          
+            self.P[self.side_index(us,3)] ^= get_bit(ct2-2); self.P[self.side_index(us,3)] |= get_bit(ct2+1)
+            self.piece_map[ct2-2] = -1; self.piece_map[ct2+1] = self.side_index(us,3) 
             
         self.hash ^= CASTLING_KEYS[self.castle]
         
@@ -356,15 +335,15 @@ class Board:
         
         # pawn
         if by_white:
-            if PAWN_ATK_BLACK[sq] & self.P[self.side_index(True, 0)]: 
-                return True
+            if PAWN_ATK_BLACK[sq] & self.P[self.side_index(True, 0)]: return True
         else:
-            if PAWN_ATK_WHITE[sq] & self.P[self.side_index(False, 0)]: 
-                return True
+            if PAWN_ATK_WHITE[sq] & self.P[self.side_index(False, 0)]: return True
+            
         # knight
         if KNIGHT_ATK[sq] & self.P[self.side_index(by_white,1)]: return True
         # king
         if KING_ATK[sq] & self.P[self.side_index(by_white,5)]: return True
+        
         # sliding: rook/queen for orthogonals
         for d in DIRS_ROOK:
             s = sq
@@ -374,8 +353,7 @@ class Board:
                 # file wrap checks
                 if d == E and ns%8 == 0: break
                 if d == W and ns%8 == 7: break
-                s = ns
-                m = get_bit(s)
+                s = ns; m = get_bit(s)
                 
                 if m & r_q_attacker_bb: # Is this an attacking Rook or Queen?
                     return True
@@ -392,8 +370,7 @@ class Board:
                 # file wrap
                 if d in (NE,SE) and ns%8 == 0: break
                 if d in (NW,SW) and ns%8 == 7: break
-                s = ns
-                m = get_bit(s)
+                s = ns; m = get_bit(s)
                 
                 if m & b_q_attacker_bb: # Is this an attacking Bishop or Queen?
                     return True
@@ -405,16 +382,10 @@ class Board:
 
     def king_square(self, white):
         bb = self.P[self.side_index(white,5)]
-        if bb: return (bb & -bb).bit_length()-1
-        return -1
+        return (bb & -bb).bit_length()-1 if bb else -1
     
     def in_check(self, white=True):
-        if white:
-            ksq = self.king_square(self.white_to_move)
-            return self.attacked(ksq, not self.white_to_move)
-        else:
-            ksq = self.king_square(not self.white_to_move)
-            return self.attacked(ksq, self.white_to_move)
+        return self.attacked(self.king_square(self.white_to_move), not self.white_to_move) if white else self.attacked(self.king_square(not self.white_to_move), self.white_to_move)
 
     # --- move generation -------------------------------------------------
     def gen_legal_moves(self, active=False):
@@ -422,17 +393,7 @@ class Board:
         for mv in self.gen_pseudo_legal():
             self.make_move(mv)
             # Check for legality (King is not in check after move)
-            if not self.in_check(False):
-                
-                # --- Move Filtering Logic ---
-                if active:
-                    # For Quiescence Search (when not in check):
-                    # Only accept CAPTURES (mv[3] is not None) OR PROMOTIONS (mv[2] is not None/empty)
-                    if mv[3] or mv[2]:
-                        moves.append(mv)
-                else:
-                    # For main Alpha-Beta Search: Accept ALL legal moves
-                    moves.append(mv)
+            if not self.in_check(False) and (not active or mv[3] or mv[2]): moves.append(mv)
                     
             self.unmake_move()
         return moves
@@ -682,10 +643,8 @@ class Board:
             # population count
             cnt = bb.bit_count()
             
-            if idx < 6:   # white piece
-                score += val * cnt
-            else:         # black piece
-                score -= val * cnt
+            if idx < 6: score += val * cnt
+            else: score -= val * cnt
         return score
 
     def eval_position(self):

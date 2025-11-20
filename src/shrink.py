@@ -266,6 +266,14 @@ replacements = {
     "white": "qy",
     "name": "qz",
 
+    "main": "r0",
+    "castle_options": "r1",
+    "empty_sqs": "r2",
+    "attacked_sqs": "r3",
+    "start_sq": "r4",
+    "end_sq": "r5",
+    
+
     # Built-ins / keywords
     "True": "1",
     "False": "0",
@@ -310,7 +318,9 @@ combine_imports(path)
 insert_text = "Za=None;Zb=enumerate;Zc=random.getrandbits;Zd=time.time;Ze=range;Zf=math.ceil;Zg=sorted\n"
 
 with tempfile.NamedTemporaryFile("w", delete=False) as tmp, open(path) as f:
-    for i, line in enumerate(f, start=1):
+    for i, line in enumerate(f, start=0):
+        if i == 0:
+            tmp.write("#!python3\n")
         if i == 2:
             tmp.write(insert_text)
         tmp.write(line)
