@@ -1,7 +1,7 @@
 #!/usr/bin/env pypy3
 import sys, time
-from search import Search
-from board import Board
+from search1 import Search
+from board1 import Board
 
 def print_to_terminal(print_string):
     print(print_string, flush=True)

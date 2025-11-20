@@ -1,7 +1,7 @@
 import math, time
 
 #class TTEntry:
-#    __slots__ = ('key', 'g_score', 's_depth', 'flag', 't_move')
+#    entry ('key', 'g_score', 's_depth', 'flag', 't_move')
 
 class TranspositionTable:
     size = 2**31 // 32
@@ -11,13 +11,11 @@ class TranspositionTable:
         idx = (key % self.size)
         e = self.table[idx]
         if not e or e[0]!=key or e[2]<s_depth or (e[2]==s_depth and flag=='EXACT'):
-            self.table[idx] = (key, g_score, s_depth, flag, t_move)
+            self.table[idx] = [key, g_score, s_depth, flag, t_move]
 
-    def probe(self, key, ply, MATE_SCORE_UPPER):
+    def probe(self, key):
         e = self.table[(key % self.size)]
         if e is not None and e[0] == key:
-            if e[1] > MATE_SCORE_UPPER - 1e3: e[1] -= ply
-            elif e[1] < -MATE_SCORE_UPPER + 1e3: e[1] += ply
             return e
 
 class Search:
@@ -113,7 +111,7 @@ class Search:
             
             best_score = current_score
             
-            entry = self.tt.probe(self.board.hash, 1, self.MATE_SCORE_UPPER)
+            entry = self.tt.probe(self.board.hash)
             if entry and entry[4]: best_move = entry[4]
 
             elapsed_time = time.time() - start_time
@@ -169,7 +167,7 @@ class Search:
         self.s_nodes += 1
         
         # --- TT lookup ---
-        entry = self.tt.probe(self.board.hash, ply, self.MATE_SCORE_UPPER)
+        entry = self.tt.probe(self.board.hash)
         if entry and entry[2] >= s_depth and not is_pv_node:
             if entry[3] == 'EXACT' or \
                 entry[3] == 'LOWERBOUND' and entry[1] >= beta or \
@@ -257,36 +255,36 @@ class Search:
             self.board.make_move(t_move)
 
             played_moves += 1
-            is_quiet = not t_move[3] and not t_move[2]
+            # is_quiet = not t_move[3] and not t_move[2]
             
             # 1. Determine Search Depth (Default is full depth)
-            current_depth = s_depth - 1
-            reduction = 0
+            # current_depth = s_depth - 1
+            # reduction = 0
 
-            # Apply LMR (LMR is only safe if it's NOT the PV move, NOT in check, and a quiet move)
-            if is_quiet and s_depth >= 3 and played_moves > 3:
-                 reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
-                 current_depth = s_depth - 1 - reduction
+            # # Apply LMR (LMR is only safe if it's NOT the PV move, NOT in check, and a quiet move)
+            # if is_quiet and s_depth >= 3 and played_moves > 3:
+            #      reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
+            #      current_depth = s_depth - 1 - reduction
 
-            # 2. Perform Primary Search (PVS: use a narrow window -alpha-1 for all but the first move)
-            if played_moves == 1:
-                # First move: Full window search (to find the PV)
-                g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
-            else:
-                # PVS Search (Narrow window, potentially reduced depth)
-                g_score = -self.search(current_depth, -alpha - 1, -alpha, ply + 1)
+            # # 2. Perform Primary Search (PVS: use a narrow window -alpha-1 for all but the first move)
+            # if played_moves == 1:
+            #     # First move: Full window search (to find the PV)
+            #     g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            # else:
+            #     # PVS Search (Narrow window, potentially reduced depth)
+            #     g_score = -self.search(current_depth, -alpha - 1, -alpha, ply + 1)
 
-                # 3. LMR Re-search (if reduced search beat alpha)
-                if reduction > 0 and g_score > alpha:
-                    # Re-search at full depth (s_depth - 1) but still with the narrow window
-                    g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+            #     # 3. LMR Re-search (if reduced search beat alpha)
+            #     if reduction > 0 and g_score > alpha:
+            #         # Re-search at full depth (s_depth - 1) but still with the narrow window
+            #         g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
 
-                # 4. PV Re-search (if the move beat the current alpha)
-                if g_score > alpha and g_score < beta:
-                    # Re-search with full window [alpha, beta]
-                    g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            #     # 4. PV Re-search (if the move beat the current alpha)
+            #     if g_score > alpha and g_score < beta:
+            #         # Re-search with full window [alpha, beta]
+            #         g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
             
-            # g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
             
             self.board.unmake_move()
             
@@ -384,15 +382,12 @@ class Search:
         self.s_nodes += 1
         
         # TT lookup
-        entry = self.tt.probe(self.board.hash, q_depth, self.MATE_SCORE_UPPER)
+        entry = self.tt.probe(self.board.hash)
         if entry and entry[2] == 0:
             if entry[3] == 'EXACT' or \
                 entry[3] == 'LOWERBOUND' and entry[1] >= beta or \
                 entry[3] == 'UPPERBOUND' and entry[1] <= alpha:
                     return entry[1]
-        
-        if not in_check and stand_pat >= beta:
-            return stand_pat
 
         for t_move in sorted(self.board.gen_legal_moves(not in_check), key=self.board.score_move, reverse=True):
             self.board.make_move(t_move)
