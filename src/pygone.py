@@ -112,8 +112,10 @@ def main():
                     perft.run(perft_depth)
                     continue
                 #endremove
-                    
+                
+                #remove
                 searcher.set_depth(50)
+                #endremove
                     
                 move_time = side_time / 20
                 
