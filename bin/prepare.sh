@@ -1,10 +1,12 @@
-sed -i '1s/^/#!\/bin\/sh\n/' ./pygone.xz
-sed -i '2s/^/T=`mktemp`\n/' ./pygone.xz
-sed -i '3s/^/tail -n+6 "$0"|xz -d>$T 2>\/dev\/null\n/' ./pygone.xz
-sed -i '4s/^/chmod +x $T\n/' ./pygone.xz
-sed -i '5s/^/(sleep 3;rm $T)\&exec $T\n/' ./pygone.xz
+cat > pygone <<'EOF'
+#!/bin/sh
+t=$(mktemp);tail -n+3 $0|xz -d > $t;chmod +x $t;(sleep 3;rm $t)&exec $t
+EOF
 
+# Append the binary xz payload
 cat pygone.xz >> pygone
+
 rm pygone.xz
 
+# Make it executable
 chmod +x pygone

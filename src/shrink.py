@@ -320,7 +320,7 @@ insert_text = "Za=None;Zb=enumerate;Zc=random.getrandbits;Zd=time.time;Ze=range;
 with tempfile.NamedTemporaryFile("w", delete=False) as tmp, open(path) as f:
     for i, line in enumerate(f, start=0):
         if i == 0:
-            tmp.write("#!python3\n")
+            tmp.write("#!/usr/bin/pypy3\n")
         if i == 2:
             tmp.write(insert_text)
         tmp.write(line)
