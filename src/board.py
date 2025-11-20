@@ -179,11 +179,9 @@ class Board:
         # ignore halfmove/fullmove counters
         self.compute_hash()
     #endremove
-    
-    #remove
+
     def algebraic_to_sq(self, s:str):
         return FILES.index(s[0]) + 8*int(s[1])-8
-    #endremove
 
     # make/unmake minimal for legality checking
     def make_move(self, mv):
