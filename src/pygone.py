@@ -99,7 +99,6 @@ def main():
                 for key, arg in enumerate(args):
                     if arg == 'wtime' and is_white or arg == 'btime' and not is_white:
                         side_time = int(args[key + 1]) / 1e3
-                    # depth input can be commented out to save space since engine will be run on time
                     #remove
                     elif arg == 'depth':
                         v_depth = int(args[key + 1])

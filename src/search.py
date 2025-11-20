@@ -119,7 +119,7 @@ class Search:
 
             uci_move = self.board.move_to_uci(best_move) if best_move else None
             
-            print(f"info depth {s_depth} score cp {math.ceil(best_score)} time {math.ceil(elapsed_time * 1e3)} nodes {self.s_nodes} nps {nps} pv {uci_move}", flush=True)
+            if uci_move: print(f"info depth {s_depth} score cp {math.ceil(best_score)} time {math.ceil(elapsed_time * 1e3)} nodes {self.s_nodes} nps {nps} pv {uci_move}", flush=True)
             
             if s_depth >= self.s_depth:
                 break
@@ -158,7 +158,7 @@ class Search:
             return 0
         
         # --- Leaf node ---
-        if s_depth == 0:
+        if s_depth <= 0:
             return self.q_search(alpha, beta)
         
         is_pv_node = beta > alpha + 1

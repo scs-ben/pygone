@@ -630,9 +630,6 @@ class Board:
             
         return shield
 
-    def eval_king_safety(self):
-        return self.king_safety(True) - self.king_safety(False)
-
     def eval_material(self):
         score = 0
         for idx, bb in enumerate(self.P):
