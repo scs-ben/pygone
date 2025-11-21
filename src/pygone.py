@@ -30,6 +30,7 @@ def main():
                 b.make_move(mv)
                 b.unmake_move()
 
+                print("Check hash")
                 assert b.hash == orig_hash, "Zobrist mismatch after make/unmake"
 
                 # 2) Compute from scratch vs incremental
@@ -45,6 +46,76 @@ def main():
                 h_scratch = b.compute_hash()
                 
                 assert h_inc == h_scratch, "Incremental != recompute"
+
+                print("Perft")
+                b = Board()
+                perft = Perft(b)
+                results = perft.run(1, True)
+                assert results == (1, 20, 0, 0)
+                results = perft.run(2, True)
+                assert results == (2, 400, 0, 0)
+                results = perft.run(3, True)
+                assert results == (3, 8902, 34, 12)
+                results = perft.run(4, True)
+                assert results == (4, 197281, 1576, 469)
+
+                b = Board()
+                b.set_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
+                
+                perft = Perft(b)
+                results = perft.run(1, True)
+                assert results == (1, 48, 8, 0)
+                results = perft.run(2, True)
+                assert results == (2, 2039, 351, 3)
+                results = perft.run(3, True)
+                assert results == (3, 97862, 17102, 993)
+
+                def parse_move(mv):
+                    b = Board()
+                    from_sq = b.algebraic_to_sq(mv[:2])
+                    to_sq = b.algebraic_to_sq(mv[2:4])
+
+                    return (from_sq, to_sq, None, None, None, False)
+
+                print("Check moves")
+                # 3) Board State Integrity Check
+                b = Board()
+                b.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                orig_fen = b.get_fen() # Assuming you have a get_fen() method
+
+                # Simple non-capture move
+                mv = parse_move("e2e4") 
+                b.make_move(mv)
+                b.unmake_move()
+
+                assert b.get_fen() == orig_fen, "Board FEN mismatch after quiet make/unmake"
+
+                # Test a capture move
+                b.set_fen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
+                orig_fen = b.get_fen()
+                mv = parse_move("g8f6") # Test a non-capture
+                b.make_move(mv)
+                b.unmake_move()
+                assert b.get_fen() == orig_fen, "Board FEN mismatch after capture make/unmake"
+
+                print('Scoring')
+                # 4) Basic Evaluation Consistency
+                b = Board()
+                b.set_fen("8/8/8/8/8/8/8/R7 w - - 0 1") # Rook vs no pieces
+                score_r = b.eval_position()
+
+                b.set_fen("8/8/8/8/8/8/8/N7 w - - 0 1") # Knight vs no pieces
+                score_n = b.eval_position()
+
+                # A Rook is worth more than a Knight
+                assert score_r > score_n, "Material scoring error: Rook should be worth more than Knight"
+
+                # Check symmetry (White score should be -Black score)
+                b.set_fen("r7/8/8/8/8/8/8/8 w - - 0 1") # Black Rook vs no pieces
+                score_br = b.eval_position()
+                assert score_r + score_br == 0, "Evaluation is not symmetrical"
+
+                print ("Unit complete")
             #endremove
             #remove
             elif line.startswith("position fen"):

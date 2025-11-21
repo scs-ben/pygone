@@ -3,6 +3,7 @@ import time
 
 # Updated Perft Class (Focus on the Perft method changes)
 class Perft:    
+    unit = False
     # Initialize counters to 0, but they are now only used for the final result aggregation
     def __init__(self, board):
         self.board = board
@@ -78,7 +79,8 @@ class Perft:
                 if is_check:
                     check_count += 1
             
-            print(f"{self.board.move_to_uci(move)}: {count}")
+            if not self.unit:
+                print(f"{self.board.move_to_uci(move)}: {count}")
             
             total_nodes += count
             self.total_captures += cap_count
@@ -86,10 +88,12 @@ class Perft:
             
             self.board.unmake_move()
 
-        print(f"Total nodes: {total_nodes} Captures: {self.total_captures} Checks: {self.total_checks}")
+        if not self.unit:
+            print(f"Total nodes: {total_nodes} Captures: {self.total_captures} Checks: {self.total_checks}")
         return total_nodes
 
-    def run(self, depth): 
+    def run(self, depth, unit=False):
+        self.unit = unit
         # run resets the counters, which are now instance variables used for final result
         self.total_captures = 0
         self.total_checks = 0
@@ -99,4 +103,7 @@ class Perft:
         nodes = self.perft_divide(depth)
         elapsed = max(1, time.time() - t0)
 
-        print(f"Depth {depth}: {nodes} nodes in {elapsed:.2f}s ({nodes/elapsed:.0f} NPS)")
+        if not self.unit:
+            print(f"Depth {depth}: {nodes} nodes in {elapsed:.2f}s ({nodes/elapsed:.0f} NPS)")
+        else:
+            return (depth, nodes, self.total_captures, self.total_checks)

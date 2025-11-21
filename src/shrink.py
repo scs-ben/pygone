@@ -182,6 +182,7 @@ replacements = {
     "UNIFIED_PST": "dw",
     "PST_WEIGHTS": "dx",
     "START_FEN": "dy",
+    "A_FILE_MASK": "dz",
     
     "piece_bb": "f1",
     "piece_index": "f2",
@@ -224,6 +225,7 @@ replacements = {
     "Board": "g4",
     "doubled": "g5",
     "isolated": "g6",
+    "enemy": "g7",
     
     "best_move": "h2",
     "halfmove_clock": "h3",
@@ -274,6 +276,8 @@ replacements = {
     "queen": "p5",
     "king_safety": "p6",
     "king": "p7",
+    "pawn_structure_penalty": "p8",
+    "get_square_indices": "p9",
     
     "bb_name": "q1",
     

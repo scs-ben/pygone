@@ -9,6 +9,7 @@ import random
 FILES = "abcdefgh"
 RANKS = "12345678"
 IDX_TO_PIECE = ['p','n','b','r','q','k','p','n','b','r','q','k']
+# A_FILE_MASK = 0x0101010101010101
 
 UNIFIED_PST = [
     -50,-40,-30,-30,-30,-30,-40,-50, # Rank 1/8
@@ -512,107 +513,32 @@ class Board:
                     if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
                         yield (60,58,None, None, 'k', True)
 
-    # def doubled_pawns(self, pawns):
-    #     score = 0
-    #     for file in range(8):
-    #         mask = 0x0101010101010101 << file
-    #         count = (pawns & mask).bit_count()
-    #         if count > 1:
-    #             score -= (count - 1) * 15
-    #     return score
-    
-    # def isolated_pawns(self, pawns):
-    #     score = 0
-    #     for file in range(8):
-    #         mask = 0x0101010101010101 << file
-    #         if pawns & mask:
-    #             left = (mask >> 1) & 0x7F7F7F7F7F7F7F7F
-    #             right = (mask << 1) & 0xFEFEFEFEFEFEFEFE
-    #             if (pawns & (left | right)) == 0:
-    #                 score -= 15
-    #     return score
-
-    # def passed_pawns(self, white):
-    #     wp = self.P[0]
-    #     bp = self.P[6]
-    #     score = 0
-    #     bb = wp if white else bp
-    #     ebb = bp if white else wp
-    #     while bb:
-    #         bb, sq = pop_lsb(bb)
-    #         file = sq % 8
-    #         rank = sq // 8
-    #         mask = 0
-    #         for f in (file-1, file, file+1):
-    #             if 0 <= f < 8:
-    #                 r_range = range(rank+1, 8) if white else range(0, rank)
-    #                 for r in r_range:
-    #                     mask |= get_bit(r*8 + f)
-    #         if ebb & mask == 0:
-    #             if white:
-    #                 score += (rank * 10 + 20)  # stronger closer to promotion
-    #             else:
-    #                 score += ((7-rank) * 10 + 20)
-    #     return score
-
-    # def eval_pawn_structure(self):
-    #     wp =  self.P[0]
-    #     bp =  self.P[6]
-        
-    #     return (
-    #         self.doubled_pawns(wp) - self.doubled_pawns(bp)
-    #         + self.isolated_pawns(wp) - self.isolated_pawns(bp)
-    #         + self.passed_pawns(True) - self.passed_pawns(False)
-    #     )
-
     def king_safety(self, white):
         k = self.king_square(white)
-        file = k % 8
-        rank = k // 8
-
-        direction = 1 if white else -1
-        bb = 0 if white else 6 # Pawn bitboard index
+        f, r = k % 8, k // 8
+        d, bb = (1, 0) if white else (-1, 6) # Direction and Pawn BB index
         
-        # Castle masks: 1 = White K-side, 2 = White Q-side, 4 = Black K-side, 8 = Black Q-side
-        castle_mask_k_side = 1 if white else 4 # Mask for King-side castle
-        castle_mask_q_side = 2 if white else 8 # Mask for Queen-side castle
-
-        shield = 0
+        # Calculate Pawn Shield Score using a generator expression
+        pawn_shield = 10 * sum(
+            1 for df in (-1, 0, 1) 
+            if 0 <= (nf := f + df) < 8 # Check new file
+            and 0 <= (nr := r + d) < 8  # Check new rank
+            and (self.P[bb] & get_bit(nr * 8 + nf))
+        )
         
-        # 1. Pawn Shield Calculation (FIXED for boundary errors)
-        # squares in front of king (rank + direction)
-        for df in (-1, 0, 1):
-            f = file + df
-            r = rank + direction # Calculate the new rank
-
-            # Ensure both file (f) and rank (r) are ON THE BOARD (0-7)
-            if 0 <= f < 8 and 0 <= r < 8:
-                sq = r * 8 + f
-                
-                # Check for friendly pawns in the protective zone
-                if self.P[bb] & get_bit(sq):  
-                    shield += 10 # Bonus for a pawn shield
-                    
-        # 2. King Location/Castling Bonuses
+        # Calculate Castling/Position Score
+        castle_pos_score = (
+            # 1. Castled Position Bonus (+15 if king on g/c file)
+            15 if (white and k in (6, 2)) or (not white and k in (62, 58)) else 0
+        ) + (
+            # 2. Lost Kingside Rights Penalty (-10)
+            -10 if not (self.castle & (1 if white else 4)) else 0
+        ) + (
+            # 3. Lost Queenside Rights Penalty (-5)
+            -5 if not (self.castle & (2 if white else 8)) else 0
+        )
         
-        # A. Bonus for having successfully castled (King on g1/g8 or c1/c8)
-        # This is a strong proxy for safety, rewarding a closed King position.
-        if (white and k in (6, 2)) or (not white and k in (62, 58)):
-            shield += 15
-            
-        # B. Penalty for lost castling rights (Using the castle masks)
-        # If the side *cannot* castle, it usually means the king has moved or 
-        # a rook was captured/moved, leading to potential danger.
-        
-        # Check if Kingside castling rights are LOST (mask & self.castle == 0)
-        if (self.castle & castle_mask_k_side) == 0:
-            shield -= 10
-            
-        # Check if Queenside castling rights are LOST
-        if (self.castle & castle_mask_q_side) == 0:
-            shield -= 5 # Queenside is often less critical
-            
-        return shield
+        return pawn_shield + castle_pos_score
 
     def eval_material(self):
         score = 0
@@ -666,17 +592,27 @@ class Board:
                 score += UNIFIED_PST[D] * weight * color
                 
         return score / 2
+    
+    # def pawn_structure_penalty(self, pawns):
+    #     return sum(
+    #         # Calculate the penalty for the current file 'f'
+            
+    #         # Determine the number of pawns on this file
+    #         (pawn_count := ((pawns >> f) & A_FILE_MASK).bit_count()) > 0
+    #         and (
+    #             -15 * max(0, pawn_count - 1)
+    #             + (-15 if (pawns & (
+    #                 (A_FILE_MASK << max(0, f - 1)) | (A_FILE_MASK << min(7, f + 1))
+    #             )) == 0 else 0)
+    #         )
+    #         for f in range(8)
+    # )
 
     def evaluate(self):
         score = self.eval_material()
         score += self.king_safety(True) - self.king_safety(False)
         
-        # wp =  self.P[0]
-        # bp =  self.P[6]
-        
-        # score += self.doubled_pawns(wp) - self.doubled_pawns(bp)
-        # score += self.isolated_pawns(wp) - self.isolated_pawns(bp)
-        # score += self.passed_pawns(True) - self.passed_pawns(False)
+        # score += self.pawn_structure_penalty(self.P[0]) - self.pawn_structure_penalty(self.P[6])
         
         score += self.eval_position()
 
@@ -691,7 +627,7 @@ class Board:
             # Promote to queen highest
             g_score += self.PIECE_VALUES[t_move[2]] * 1000
         if t_move[5]: # If the move is castling (assuming t_move[5] is the castling flag)
-            g_score += 1000
+            g_score += 500
         return g_score
 
     def piece_on(self, sq):
@@ -802,21 +738,17 @@ class Board:
         score = self.evaluate()
         
         mat_score = self.eval_material()
-        king_score = 0
-        # king_score = self.king_safety(True) - self.king_safety(False)
+        king_score = self.king_safety(True) - self.king_safety(False)
         
-        dp_score = 0
-        ip_score = 0
-        pp_score = 0
-        # wp =  self.P[0]
-        # bp =  self.P[6]
-        # dp_score = self.doubled_pawns(wp) - self.doubled_pawns(bp)
-        # ip_score = self.isolated_pawns(wp) - self.isolated_pawns(bp)
-        # pp_score = self.passed_pawns(True) - self.passed_pawns(False)
         
+        wp =  self.P[0]
+        bp =  self.P[6]
+        pawn_score = 0
+        # pawn_score = self.pawn_structure_penalty(wp) - self.pawn_structure_penalty(bp)
+
         pos_score = self.eval_position()
         
         print(f"Turn: {('W' if self.white_to_move else 'B')} 50c: {self.halfmove_clock} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
-        print(f"Mat: {mat_score} King: {king_score} DP: {dp_score} IP: {ip_score} PP: {pp_score} Pos: {pos_score}")
+        print(f"Mat: {mat_score} King: {king_score} Pawn: {pawn_score} Pos: {pos_score}")
         print(f"Fen: {self.get_fen()}")
     #endremove
