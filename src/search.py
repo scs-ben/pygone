@@ -118,10 +118,10 @@ class Search:
         # Nullmove pruning
         if s_depth >= 3 and not in_check:
             self.board.make_move(None)
-            g_score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
+            local_score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
             self.board.unmake_move()
-            if g_score >= beta:
-                return g_score
+            if local_score >= beta:
+                return local_score
         
         is_pv_node = beta > alpha + 1
         stand_pat = self.board.evaluate()
@@ -183,23 +183,23 @@ class Search:
             # -------------------------------
             if played_moves == 1:
                 # Full PV window
-                score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+                g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
             else:
                 # Zero-width search
-                score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
+                g_score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
 
                 # ---------------------------
                 # LMR re-search
                 # ---------------------------
-                if reduced_depth < s_depth - 1 and score > alpha:
-                    score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+                if reduced_depth < s_depth - 1 and g_score > alpha:
+                    g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
 
                 # ---------------------------
                 # Full-window re-search
                 # ---------------------------
-                if score > alpha and score < beta:
-                    score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+                if g_score > alpha and g_score < beta:
+                    g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
             # g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
