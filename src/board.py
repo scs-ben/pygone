@@ -3,7 +3,7 @@ import random
 
 # U64 = int
 # SQ = int
-# Move = Tuple[int,int,str,str,str]  # from, to, promotion or None, capture or None, piece moving
+# Move = Tuple[int,int,str,str,str,int]  # from, to, promotion or None, capture or None, piece moving, castling
 
 # --- helpers --------------------------------------------------------------
 FILES = "abcdefgh"
@@ -158,6 +158,7 @@ class Board:
         parts = fen.split()
         rows = parts[0].split('/')
         self.P = [0]*12
+        self.piece_map = [-1] * 64
         for r, row in enumerate(rows):
             sq = (7-r)*8
             for ch in row:
@@ -194,7 +195,7 @@ class Board:
             self.hash ^= EP_KEYS[self.ep & 7]
 
         if mv:
-            frm, to, promo, _, _ = mv
+            frm, to, promo, _, _, _ = mv
 
             us = self.white_to_move
 
@@ -377,7 +378,7 @@ class Board:
         for mv in self.gen_pseudo_legal():
             self.make_move(mv)
             # Check for legality (King is not in check after move)
-            if not self.in_check(False) and (not active or mv[3] or mv[2]): moves.append(mv)
+            if not self.in_check(False) and (not active or mv[3] or mv[2] or mv[5]): moves.append(mv)
                     
             self.unmake_move()
         return moves
@@ -387,7 +388,7 @@ class Board:
         occ = self.all_occupied()
         our = self.pieces_of(us)
         their = self.pieces_of(not us)
-        
+
         # pawns
         pawns = self.P[self.side_index(us,0)]
         while pawns:
@@ -397,39 +398,39 @@ class Board:
                 if not (occ & get_bit(sq+8)) and sq//8 < 7:
                     # promotion?
                     if sq//8 == 6:
-                        for p in ('q','r','b','n'): yield (sq, sq+8, p, None, 'p')
+                        for p in ('q','r','b','n'): yield (sq, sq+8, p, None, 'p', False)
                     else:
-                        yield (sq, sq+8, None, None, 'p')
+                        yield (sq, sq+8, None, None, 'p', False)
                         if sq//8 == 1 and not (occ & get_bit(sq+16)):
-                            yield (sq, sq+16, None, None, 'p')
+                            yield (sq, sq+16, None, None, 'p', False)
                 # captures
                 for t in (sq+7, sq+9):
                     if 0<=t<64:
                         if (PAWN_ATK_WHITE[sq] & get_bit(t)) and (their & get_bit(t)):
                             if sq//8 == 6:
-                                for p in ('q','r','b','n'): yield (sq,t,p,  self.piece_on(t), 'p')
-                            else: yield (sq,t,None,  self.piece_on(t), 'p')
+                                for p in ('q','r','b','n'): yield (sq,t,p,  self.piece_on(t), 'p', False)
+                            else: yield (sq,t,None,  self.piece_on(t), 'p', False)
                 # ep
                 if self.ep != -1:
                     if PAWN_ATK_WHITE[sq] & get_bit(self.ep):
-                        yield (sq,self.ep,None,'p', 'p')
+                        yield (sq,self.ep,None,'p', 'p', False)
             else:
                 if not (occ & get_bit(sq-8)) and sq//8 > 0:
                     if sq//8 == 1:
-                        for p in ('q','r','b','n'): yield (sq, sq-8, p, None, 'p')
+                        for p in ('q','r','b','n'): yield (sq, sq-8, p, None, 'p', False)
                     else:
-                        yield (sq, sq-8, None, None, 'p')
+                        yield (sq, sq-8, None, None, 'p', False)
                         if sq//8 == 6 and not (occ & get_bit(sq-16)):
-                            yield (sq, sq-16, None, None, 'p')
+                            yield (sq, sq-16, None, None, 'p', False)
                 for t in (sq-7, sq-9):
                     if 0<=t<64:
                         if (PAWN_ATK_BLACK[sq] & get_bit(t)) and (their & get_bit(t)):
                             if sq//8 == 1:
-                                for p in ('q','r','b','n'): yield (sq,t,p,  self.piece_on(t), 'p')
-                            else: yield (sq,t,None,  self.piece_on(t), 'p')
+                                for p in ('q','r','b','n'): yield (sq,t,p,  self.piece_on(t), 'p', False)
+                            else: yield (sq,t,None,  self.piece_on(t), 'p', False)
                 if self.ep != -1:
                     if PAWN_ATK_BLACK[sq] & get_bit(self.ep):
-                        yield (sq,self.ep,None,'p', 'p')
+                        yield (sq,self.ep,None,'p', 'p', False)
         # knights
         knights = self.P[self.side_index(us,1)]
         while knights:
@@ -438,7 +439,7 @@ class Board:
             bb = atk
             while bb:
                 bb, t = pop_lsb(bb)
-                yield (sq,t,None,  self.piece_on(t), 'n')
+                yield (sq,t,None,  self.piece_on(t), 'n', False)
         # bishops
         bishops = self.P[self.side_index(us,2)]
         while bishops:
@@ -453,7 +454,7 @@ class Board:
                     s = ns
                     m = get_bit(s)
                     if m & our: break
-                    yield (sq,s,None,  self.piece_on(s), 'b')
+                    yield (sq,s,None,  self.piece_on(s), 'b', False)
                     if m & their: break
         # rooks
         rooks = self.P[self.side_index(us,3)]
@@ -468,7 +469,7 @@ class Board:
                     if d == W and ns%8 == 7: break
                     s = ns; m = get_bit(s)
                     if m & our: break
-                    yield (sq,s,None,  self.piece_on(s), 'r')
+                    yield (sq,s,None,  self.piece_on(s), 'r', False)
                     if m & their: break
         # queens
         queens = self.P[self.side_index(us,4)]
@@ -484,33 +485,32 @@ class Board:
                     if d in (W,NW,SW) and ns%8 == 7: break
                     s = ns; m = get_bit(s)
                     if m & our: break
-                    yield (sq,s,None,  self.piece_on(s), 'q')
+                    yield (sq,s,None,  self.piece_on(s), 'q', False)
                     if m & their: break
         # king
         ksq = self.king_square(us)
         if 0 <= ksq < 64:
-            for t_bb in (KING_ATK[ksq] & ~our,):
-                bb = t_bb
-                while bb:
-                    bb, t = pop_lsb(bb)
-                    yield (ksq,t,None,  self.piece_on(t), 'k')
+            bb = KING_ATK[ksq] & ~our
+            while bb:
+                bb, t = pop_lsb(bb)
+                yield (ksq,t,None, self.piece_on(t), 'k', False)
             # castling (basic tests: empty squares + not attacked)
             if us:
                 # white king e1=4
                 if (self.castle & 1) and not (occ & (get_bit(5)|get_bit(6))):
                     # ensure no squares attacked f1/e1/g1
                     if not self.attacked(4, False) and not self.attacked(5,False) and not self.attacked(6,False):
-                        yield (4,6,None, None, 'k')
+                        yield (4,6,None, None, 'k', True)
                 if (self.castle & 2) and not (occ & (get_bit(1)|get_bit(2)|get_bit(3))):
                     if not self.attacked(4,False) and not self.attacked(3,False) and not self.attacked(2,False):
-                        yield (4,2,None, None, 'k')
+                        yield (4,2,None, None, 'k', True)
             else:
                 if (self.castle & 4) and not (occ & (get_bit(61)|get_bit(62))):
                     if not self.attacked(60, True) and not self.attacked(61,True) and not self.attacked(62,True):
-                        yield (60,62,None, None, 'k')
+                        yield (60,62,None, None, 'k', True)
                 if (self.castle & 8) and not (occ & (get_bit(57)|get_bit(58)|get_bit(59))):
                     if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
-                        yield (60,58,None, None, 'k')
+                        yield (60,58,None, None, 'k', True)
 
     # def doubled_pawns(self, pawns):
     #     score = 0
@@ -686,10 +686,12 @@ class Board:
         g_score = 0
         if t_move[3]:
             # MVV-LVA: Most valuable victim - least valuable attacker
-            g_score += self.PIECE_VALUES[t_move[3]] - self.PIECE_VALUES[t_move[4]] / 10
+            g_score += self.PIECE_VALUES[t_move[3]] * 100 - self.PIECE_VALUES[t_move[4]]
         if t_move[2]:
             # Promote to queen highest
-            g_score += self.PIECE_VALUES[t_move[2]] * 10
+            g_score += self.PIECE_VALUES[t_move[2]] * 1000
+        if t_move[5]: # If the move is castling (assuming t_move[5] is the castling flag)
+            g_score += 1000
         return g_score
 
     def piece_on(self, sq):

@@ -67,7 +67,7 @@ def main():
                     to_sq = game_board.algebraic_to_sq(position_move[2:4])
                     promo = position_move[4] if len(position_move) == 5 else None
                     
-                    game_board.make_move((from_sq, to_sq, promo, None, None))
+                    game_board.make_move((from_sq, to_sq, promo, None, None, False))
             #endremove
             elif line.startswith("position"):
                 game_board = Board()
@@ -79,7 +79,7 @@ def main():
                     to_sq = game_board.algebraic_to_sq(position_move[2:4])
                     promo = position_move[4] if len(position_move) == 5 else None
                     
-                    game_board.make_move((from_sq, to_sq, promo, None, None))
+                    game_board.make_move((from_sq, to_sq, promo, None, None, False))
                     
                 searcher.set_board(game_board)
             elif line.startswith("go"):

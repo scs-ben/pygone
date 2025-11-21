@@ -125,8 +125,7 @@ class Search:
                 break
 
         # When time expires, return the best move
-        if uci_move: print(f"bestmove {uci_move}", flush=True)
-        else: print("quit", flush=True)
+        print(f"bestmove {uci_move}", flush=True)
 
     def threefold(self):
         count = 1
@@ -184,7 +183,7 @@ class Search:
             self.board.unmake_move()
             if g_score >= beta:
                 return g_score
-            
+        
         all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
 
         if entry and entry[4]:
@@ -205,47 +204,49 @@ class Search:
             played_moves += 1
 
             self.board.make_move(t_move)
-            is_quiet = not t_move[3] and not t_move[2]
+            # is_quiet = not t_move[3] and not t_move[2]
 
-            # -------------------------------
-            # Late Move Reductions
-            # -------------------------------
-            if (played_moves > 1 and is_quiet and not in_check
-                and s_depth >= 3 and played_moves >= 4):
+            # # -------------------------------
+            # # Late Move Reductions
+            # # -------------------------------
+            # if (played_moves > 1 and is_quiet and not in_check
+            #     and s_depth >= 3 and played_moves >= 4):
 
-                reduction = 1 + (s_depth > 3) + (played_moves > 3)
-                reduced_depth = s_depth - 1 - reduction
+            #     reduction = 1 + (s_depth > 3) + (played_moves > 3)
+            #     reduced_depth = s_depth - 1 - reduction
 
-            else:
-                reduced_depth = s_depth - 1
+            # else:
+            #     reduced_depth = s_depth - 1
 
-            # -------------------------------
-            # PVS / zero-width search
-            # -------------------------------
-            if played_moves == 1:
-                # Full PV window
-                score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            # # -------------------------------
+            # # PVS / zero-width search
+            # # -------------------------------
+            # if played_moves == 1:
+            #     # Full PV window
+            #     score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
-            else:
-                # Zero-width search
-                score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
+            # else:
+            #     # Zero-width search
+            #     score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
 
-                # ---------------------------
-                # LMR re-search
-                # ---------------------------
-                if reduced_depth < s_depth - 1 and score > alpha:
-                    score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+            #     # ---------------------------
+            #     # LMR re-search
+            #     # ---------------------------
+            #     if reduced_depth < s_depth - 1 and score > alpha:
+            #         score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
 
-                # ---------------------------
-                # Full-window re-search
-                # ---------------------------
-                if score > alpha and score < beta:
-                    score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            #     # ---------------------------
+            #     # Full-window re-search
+            #     # ---------------------------
+            #     if score > alpha and score < beta:
+            #         score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+
+            score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
             self.board.unmake_move()
 
             # ------------------------------------------------------------------
-            # 6. Alpha-beta updates
+            # Alpha-beta updates
             # ------------------------------------------------------------------
             if score > best_score:
                 best_score = score
