@@ -69,8 +69,7 @@ def remove_blank_lines(input_text):
 replacements = {
     # Constants / dictionaries
     "self": "AA",
-    "algebraic_to_sq": "AB1",
-    "to_sq": "AB",
+    "algebraic_to_sq": "AB",
     "from_sq": "AC",
     "all_pieces": "AD",
     # E is a position
@@ -79,6 +78,7 @@ replacements = {
     "s_depth": "AH",
     "entry": "AI",
     "reduced_depth": "AJ",
+    "to_sq": "AK",
     
     "white_to_move": "a1",
     "white_file": "a2",
@@ -102,7 +102,7 @@ replacements = {
     "rotate": "ak",
     "history": "al",
     
-    "gen_legal_moves": "aw1",
+    "gen_legal_moves": "aW",
     "moves": "aw",
     "Move": "ax",
     "white_": "ay",
@@ -183,6 +183,7 @@ replacements = {
     "PST_WEIGHTS": "dx",
     "START_FEN": "dy",
     "A_FILE_MASK": "dz",
+    "CR_MASK": "dA",
     
     "piece_bb": "f1",
     "piece_index": "f2",
@@ -217,6 +218,7 @@ replacements = {
     
     "ply": "fx",
     "rank": "fy",
+    "pieces_of": "fA",
     "piece": "fz",
     
     "TranspositionTable": "g1",
