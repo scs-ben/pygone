@@ -9,7 +9,7 @@ import random
 FILES = "abcdefgh"
 RANKS = "12345678"
 IDX_TO_PIECE = ['p','n','b','r','q','k','p','n','b','r','q','k']
-# A_FILE_MASK = 0x0101010101010101
+A_FILE_MASK = 0x0101010101010101
 
 UNIFIED_PST = [
     -50,-40,-30,-30,-30,-30,-40,-50, # Rank 1/8
@@ -593,26 +593,26 @@ class Board:
                 
         return score / 2
     
-    # def pawn_structure_penalty(self, pawns):
-    #     return sum(
-    #         # Calculate the penalty for the current file 'f'
+    def pawn_structure_penalty(self, pawns):
+        return sum(
+            # Calculate the penalty for the current file 'f'
             
-    #         # Determine the number of pawns on this file
-    #         (pawn_count := ((pawns >> f) & A_FILE_MASK).bit_count()) > 0
-    #         and (
-    #             -15 * max(0, pawn_count - 1)
-    #             + (-15 if (pawns & (
-    #                 (A_FILE_MASK << max(0, f - 1)) | (A_FILE_MASK << min(7, f + 1))
-    #             )) == 0 else 0)
-    #         )
-    #         for f in range(8)
-    # )
+            # Determine the number of pawns on this file
+            (pawn_count := ((pawns >> f) & A_FILE_MASK).bit_count()) > 0
+            and (
+                -15 * max(0, pawn_count - 1)
+                + (-15 if (pawns & (
+                    (A_FILE_MASK << max(0, f - 1)) | (A_FILE_MASK << min(7, f + 1))
+                )) == 0 else 0)
+            )
+            for f in range(8)
+    )
 
     def evaluate(self):
         score = self.eval_material()
         score += self.king_safety(True) - self.king_safety(False)
         
-        # score += self.pawn_structure_penalty(self.P[0]) - self.pawn_structure_penalty(self.P[6])
+        score += self.pawn_structure_penalty(self.P[0]) - self.pawn_structure_penalty(self.P[6])
         
         score += self.eval_position()
 
@@ -743,8 +743,8 @@ class Board:
         
         wp =  self.P[0]
         bp =  self.P[6]
-        pawn_score = 0
-        # pawn_score = self.pawn_structure_penalty(wp) - self.pawn_structure_penalty(bp)
+        # pawn_score = 0
+        pawn_score = self.pawn_structure_penalty(wp) - self.pawn_structure_penalty(bp)
 
         pos_score = self.eval_position()
         

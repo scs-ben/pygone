@@ -156,44 +156,44 @@ class Search:
 
             self.board.make_move(t_move)
 
-            is_quiet = not t_move[3] and not t_move[2]
+            # is_quiet = not t_move[3] and not t_move[2]
 
-            # -------------------------------
-            # Late Move Reductions
-            # -------------------------------
-            if (played_moves > 1 and is_quiet and not in_check
-                and s_depth >= 3 and played_moves >= 4):
+            # # -------------------------------
+            # # Late Move Reductions
+            # # -------------------------------
+            # if (played_moves > 1 and is_quiet and not in_check
+            #     and s_depth >= 3 and played_moves >= 4):
 
-                reduction = 1 + (s_depth > 3) + (played_moves > 3)
-                reduced_depth = s_depth - 1 - reduction
+            #     reduction = 1 + (s_depth > 3) + (played_moves > 3)
+            #     reduced_depth = s_depth - 1 - reduction
 
-            else:
-                reduced_depth = s_depth - 1
+            # else:
+            #     reduced_depth = s_depth - 1
 
-            # -------------------------------
-            # PVS / zero-width search
-            # -------------------------------
-            if played_moves == 1:
-                # Full PV window
-                g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            # # -------------------------------
+            # # PVS / zero-width search
+            # # -------------------------------
+            # if played_moves == 1:
+            #     # Full PV window
+            #     g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
-            else:
-                # Zero-width search
-                g_score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
+            # else:
+            #     # Zero-width search
+            #     g_score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
 
-                # ---------------------------
-                # LMR re-search
-                # ---------------------------
-                if reduced_depth < s_depth - 1 and g_score > alpha:
-                    g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+            #     # ---------------------------
+            #     # LMR re-search
+            #     # ---------------------------
+            #     if reduced_depth < s_depth - 1 and g_score > alpha:
+            #         g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
 
-                # ---------------------------
-                # Full-window re-search
-                # ---------------------------
-                if g_score > alpha and g_score < beta:
-                    g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            #     # ---------------------------
+            #     # Full-window re-search
+            #     # ---------------------------
+            #     if g_score > alpha and g_score < beta:
+            #         g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
-            # g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
             self.board.unmake_move()
 
