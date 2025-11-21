@@ -18,6 +18,6 @@
         -pgnout games.pgn min \
         -recover \
         -wait 1000 \
-        -concurrency 3 \
+        -concurrency 4 \
         -resign movecount=6 score=800 \
         -games 2 -rounds 100 > debug.log
