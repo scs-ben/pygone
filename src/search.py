@@ -54,7 +54,7 @@ class Search:
             if self.time_up:
                 break
 
-            current_score = self.search(s_depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER)
+            current_score = self.search(s_depth, -self.MATE_SCORE_UPPER, self.MATE_SCORE_UPPER, 0)
 
             if self.time_up:
                 break
@@ -87,7 +87,7 @@ class Search:
             
         return False
 
-    def search(self, s_depth, alpha=-MATE_SCORE_UPPER, beta=MATE_SCORE_UPPER, ply=0):
+    def search(self, s_depth, alpha, beta, ply):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
             self.time_up = True
             return 0
@@ -222,8 +222,9 @@ class Search:
                     self.tt.store(self.board.hash, s_depth, alpha, 'LOWERBOUND', t_move)
                     return alpha
 
-        flag = 'EXACT' if alpha > alpha_orig else 'UPPERBOUND'
-        self.tt.store(self.board.hash, s_depth, alpha, flag, best_move)
+        if not self.time_up:
+            flag = 'EXACT' if alpha > alpha_orig else 'UPPERBOUND'
+            self.tt.store(self.board.hash, s_depth, alpha, flag, best_move)
 
         return alpha
     
