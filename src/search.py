@@ -155,7 +155,7 @@ class Search:
             all_moves = [entry[4]] + all_moves
 
         best_score = -1e9
-        best_move = None
+        best_move = all_moves[0]
         played_moves = 0
         alpha_orig = alpha
 

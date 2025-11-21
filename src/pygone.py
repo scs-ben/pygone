@@ -112,8 +112,10 @@ def main():
                 searcher.set_depth(50)
                 #endremove
                     
-                move_time = side_time / 20
+                move_time = max(2, side_time / 28)
                 
+                print(f"{side_time} {move_time}")
+
                 searcher.set_time_limit(move_time)
                 
                 #remove
