@@ -88,7 +88,7 @@ class Search:
     def iterative_search(self):
         start_time = time.time()
         best_move = None
-        best_score = None
+        uci_move = None
         
         self.s_nodes = 0
         # self.clear_tables()
@@ -109,8 +109,6 @@ class Search:
             if self.time_up:
                 break
             
-            best_score = current_score
-            
             entry = self.tt.probe(self.board.hash)
             if entry and entry[4]: best_move = entry[4]
 
@@ -121,13 +119,14 @@ class Search:
             if best_move:
                 uci_move = self.board.move_to_uci(best_move)
             
-            if uci_move: print(f"info depth {s_depth} score cp {math.ceil(best_score)} time {math.ceil(elapsed_time * 1e3)} nodes {self.s_nodes} nps {nps} pv {uci_move}", flush=True)
+            if uci_move: print(f"info depth {s_depth} score cp {math.ceil(current_score)} time {math.ceil(elapsed_time * 1e3)} nodes {self.s_nodes} nps {nps} pv {uci_move}", flush=True)
             
             if s_depth >= self.s_depth:
                 break
 
-        # When time expires, return the best move/eval found
-        return best_move, best_score
+        # When time expires, return the best move
+        if uci_move: print(f"bestmove {uci_move}", flush=True)
+        else: print("quit", flush=True)
 
     def threefold(self):
         count = 1
@@ -163,192 +162,106 @@ class Search:
         if s_depth <= 0:
             return self.q_search(alpha, beta)
         
-        is_pv_node = beta > alpha + 1
-        alpha_orig = alpha
+        in_check = self.board.in_check()
 
         self.s_nodes += 1
-        
-        # --- TT lookup ---
+
         entry = self.tt.probe(self.board.hash)
-        if entry and entry[2] >= s_depth and not is_pv_node:
-            if entry[3] == 'EXACT' or \
-                entry[3] == 'LOWERBOUND' and entry[1] >= beta or \
-                entry[3] == 'UPPERBOUND' and entry[1] <= alpha:
+        if entry:
+            if entry[2] >= s_depth:
+                if entry[3] == 'EXACT':
+                    return entry[1]
+                if entry[3] == 'LOWERBOUND' and entry[1] > alpha:
+                    alpha = entry[1]
+                elif entry[3] == 'UPPERBOUND' and entry[1] < beta:
+                    beta = entry[1]
+                if alpha >= beta:
                     return entry[1]
 
-        in_check = self.board.in_check()
-        stand_pat = self.board.evaluate()
-
-        if not is_pv_node and not in_check:
-            # Futility pruning (low eval)
-            if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
-                return stand_pat
-
-            # Razor pruning (high eval)
-            if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
-                return stand_pat
-
-        # if not is_pv_node and not in_check and s_depth <= 5:
-        #     cut_boundary = alpha - (150 * s_depth)
-        #     if stand_pat <= cut_boundary:
-        #         if s_depth <= 2:
-        #             return self.q_search(alpha, alpha + 1)
-
-        #         local_score = self.q_search(cut_boundary, cut_boundary + 1)
-
-        #         if local_score <= cut_boundary:
-        #             return local_score
-
-        # # Null move pruning (only when safe)
-        # if (
-        #     not is_pv_node
-        #     and not in_check
-        #     and s_depth >= 3
-        #     and self.has_sufficient_material()
-        # ):
-        #     reduction = 2 + s_depth // 6 # typical reduction
-        #     self.board.nullmove()
-
-        #     # skip if nullmove leaves us in check (can happen in some custom rulesets)
-        #     if not self.board.in_check(False): # Check for null move legality
-        #         null_score = -self.search(s_depth - reduction - 1, -beta, -beta + 1, ply + 1) # Note ply+1 added
-
-        #         # If the null move proves a cutoff, return immediately (beta cutoff)
-        #         if null_score >= beta:
-        #             self.board.unmake_move() # Unmake before returning
-        #             return beta
-
-        #     self.board.unmake_move() # Guaranteed unmake for all other cases
-
-        # if not is_pv_node and not in_check and entry and entry[4] and entry[2] >= s_depth and abs(entry[1]) < self.MATE_SCORE_UPPER:
-        #     self.board.make_move(entry[4])
-        #     local_score = -self.search(s_depth - 1, -beta, -alpha)
-        #     self.board.unmake_move()
-
-        #     if local_score >= beta:
-        #         return beta
-
-        best_score = -1e9
-        best_move = None
-
-        played_moves = 0
-        
+        if s_depth >= 3 and not in_check:
+            self.board.make_move(None)
+            g_score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
+            self.board.unmake_move()
+            if g_score >= beta:
+                return g_score
+            
         all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
 
         if entry and entry[4]:
             all_moves = [entry[4]] + all_moves
-        
-        # if not all_moves:
-            # Position is Checkmate or Stalemate. Handle this outside the search loop.
-            # return self.board.evaluate()
-        
-        # best_move = entry[4] if entry and entry[4] else all_moves[0]
-        
-        # scored_moves = []
-        # for t_move in all_moves:
-        #      # Pass the current ply and the tt_move
-        #      g_score = self.score_killer_move(t_move, ply, entry[4] if entry else None)
-        #      scored_moves.append((g_score, t_move))
-             
-        # sorted_moves = sorted(scored_moves, key=lambda x: x[0], reverse=True)
 
-        s_depth += in_check
-
-        # for g_score, t_move in sorted_moves:
-        for t_move in all_moves:
-        # for t_move in sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True):
-            if played_moves > 0 and entry and entry[4] == t_move:
-                continue
-            self.board.make_move(t_move)
-
-            played_moves += 1
-            # is_quiet = not t_move[3] and not t_move[2]
-            
-            # # 1. Determine Search Depth (Default is full depth)
-            # current_depth = s_depth - 1
-            # reduction = 0
-
-            # # Apply LMR (LMR is only safe if it's NOT the PV move, NOT in check, and a quiet move)
-            # if is_quiet and s_depth >= 3 and played_moves > 3:
-            #      reduction = int(0.75 + math.log(s_depth) * math.log(played_moves) / 2)
-            #      current_depth = s_depth - 1 - reduction
-
-            # # 2. Perform Primary Search (PVS: use a narrow window -alpha-1 for all but the first move)
-            # if played_moves == 1:
-            #     # First move: Full window search (to find the PV)
-            #     g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
-            # else:
-            #     # PVS Search (Narrow window, potentially reduced depth)
-            #     g_score = -self.search(current_depth, -alpha - 1, -alpha, ply + 1)
-
-            #     # 3. LMR Re-search (if reduced search beat alpha)
-            #     if reduction > 0 and g_score > alpha:
-            #         # Re-search at full depth (s_depth - 1) but still with the narrow window
-            #         g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
-
-            #     # 4. PV Re-search (if the move beat the current alpha)
-            #     if g_score > alpha and g_score < beta:
-            #         # Re-search with full window [alpha, beta]
-            #         g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
-            
-            g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
-            
-            self.board.unmake_move()
-            
-            if self.time_up:
-                break
-            
-            if not best_move:
-                best_move = t_move
-
-            if g_score > best_score:
-                best_score = g_score
-                best_move = t_move
-                
-                if g_score > alpha:
-                    alpha = g_score
-                    
-                    if alpha >= beta:
-                        # if is_quiet:
-                        #     # Update Killer Heuristic
-                        #     self.killer_moves[ply][1] = self.killer_moves[ply][0] # Move old killer to slot 1
-                        #     self.killer_moves[ply][0] = t_move                      # New killer in slot 0
-                            
-                        #     # Update History Heuristic (e.g., add 1 to the score)
-                        #     from_sq_idx = t_move[0]
-                        #     to_sq_idx = t_move[1]
-                        #     # Increase history score, possibly scaled by s_depth (e.g. s_depth * s_depth)
-                        #     self.history_table[from_sq_idx][to_sq_idx] += s_depth * s_depth
-                            # Limit the score to prevent overflow/bias (e.g., max 1e30)
-                        break
-        
-        if not played_moves:
+        if not all_moves:
             return -self.MATE_SCORE_UPPER + ply if in_check else 0
 
-        # --- Store in TT ---
-        if best_score <= alpha_orig:
-            flag = 'UPPERBOUND'
-            # Note: Do NOT store best_move for UPPERBOUND as it's unreliable
-            # tt_move = None 
-        elif best_score >= beta:
-            flag = 'LOWERBOUND'
-            # Store the move that caused the cutoff (Refutation Move)
-            # tt_move = best_move 
-        else:
-            flag = 'EXACT'
-            # Store the best move found
-            # tt_move = best_move
+        best_score = -1e9
+        best_move = None
+        played_moves = 0
+        alpha_orig = alpha
 
-        if not self.time_up:
-            tt_move = best_move if flag != 'UPPERBOUND' else None
-            if best_score > self.MATE_SCORE_UPPER - 1e3:
-                best_score += ply # Store the score AS IF it were found at the root (ply 0)
-            elif best_score < -self.MATE_SCORE_UPPER + 1e3:
-                best_score -= ply # Store the score AS IF it were found at the root (ply 0)
-            # Pass the appropriate move (tt_move) to the store function
-            self.tt.store(self.board.hash, s_depth, best_score, flag, tt_move)
+        for t_move in all_moves:
+            if played_moves > 0 and entry and entry[4] == t_move:
+                continue
 
-        return best_score
+            played_moves += 1
+
+            self.board.make_move(t_move)
+            is_quiet = not t_move[3] and not t_move[2]
+
+            # -------------------------------
+            # Late Move Reductions
+            # -------------------------------
+            if (played_moves > 1 and is_quiet and not in_check
+                and s_depth >= 3 and played_moves >= 4):
+
+                reduction = 1 + (s_depth > 3) + (played_moves > 3)
+                reduced_depth = s_depth - 1 - reduction
+
+            else:
+                reduced_depth = s_depth - 1
+
+            # -------------------------------
+            # PVS / zero-width search
+            # -------------------------------
+            if played_moves == 1:
+                # Full PV window
+                score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+
+            else:
+                # Zero-width search
+                score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
+
+                # ---------------------------
+                # LMR re-search
+                # ---------------------------
+                if reduced_depth < s_depth - 1 and score > alpha:
+                    score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+
+                # ---------------------------
+                # Full-window re-search
+                # ---------------------------
+                if score > alpha and score < beta:
+                    score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+
+            self.board.unmake_move()
+
+            # ------------------------------------------------------------------
+            # 6. Alpha-beta updates
+            # ------------------------------------------------------------------
+            if score > best_score:
+                best_score = score
+                best_move = t_move
+
+            if score > alpha:
+                alpha = score
+                if alpha >= beta:
+                    # Fail-high cutoff — store TT and exit
+                    self.tt.store(self.board.hash, s_depth, alpha, 'LOWERBOUND', t_move)
+                    return alpha
+
+        flag = 'EXACT' if alpha > alpha_orig else 'UPPERBOUND'
+        self.tt.store(self.board.hash, s_depth, alpha, flag, best_move)
+
+        return alpha
     
     def q_search(self, alpha, beta, q_depth=0):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):

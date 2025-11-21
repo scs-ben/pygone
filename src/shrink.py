@@ -67,6 +67,7 @@ replacements = {
     "board": "AG",
     "s_depth": "AH",
     "entry": "AI",
+    "reduced_depth": "AJ",
     
     "white_to_move": "a1",
     "white_file": "a2",
@@ -210,6 +211,8 @@ replacements = {
     "TTEntry": "g2",
     "Search": "g3",
     "Board": "g4",
+    "doubled": "g5",
+    "isolated": "g6",
     
     "best_move": "h2",
     "halfmove_clock": "h3",

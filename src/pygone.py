@@ -6,10 +6,6 @@ from board import Board
 from perft import Perft
 #endremove
 
-def print_to_terminal(print_string):
-    print(print_string, flush=True)
-
-
 def main():
     game_board = Board()
     searcher = Search(game_board)
@@ -20,12 +16,12 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print_to_terminal("pygone2.0\nuciok")
+                print("pygone2.0\nuciok", flush=True)
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher = Search(game_board)
             elif line == "isready":
-                print_to_terminal("readyok")
+                print("readyok", flush=True)
             #remove
             elif line == "unit":
                 b = Board()
@@ -126,15 +122,13 @@ def main():
                     searcher.set_depth(v_depth)
                 #endremove
 
-                t_move, _ = searcher.iterative_search()
-
-                print_to_terminal(f"bestmove {str(game_board.move_to_uci(t_move))}")
+                searcher.iterative_search()
             #remove
             elif line.startswith('print'):
                 game_board.print_board()
             #endremove
         except Exception as exc:
-            print_to_terminal(exc)
+            print(exc, flush=True)
             raise
 
 main()
