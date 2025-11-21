@@ -26,7 +26,7 @@ def main():
             elif line == "unit":
                 b = Board()
                 orig_hash = b.hash
-                mv = b.gen_legal_moves()[0]   # some legal move
+                mv = list(b.gen_pseudo_legal())[0]   # some legal move
                 b.make_move(mv)
                 b.unmake_move()
 
@@ -37,7 +37,7 @@ def main():
                 b = Board()
                 orig_hash = b.compute_hash()
                 # do a sequence of moves
-                moves = b.gen_legal_moves()[:4]
+                moves = list(b.gen_pseudo_legal())[:4]
                 for m in moves:
                     b.make_move(m)
                     b.unmake_move()
@@ -115,6 +115,60 @@ def main():
                 score_br = b.eval_position()
                 assert score_r + score_br == 0, "Evaluation is not symmetrical"
 
+                print("Testing Castling & EP")
+                # ---------------------------------------
+                # 5) Castling Integrity (Tests CR_MASK & Rook Move)
+                # ---------------------------------------
+                b = Board()
+                # White has full rights. Rooks on a1/h1, King e1.
+                b.set_fen("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1") 
+                orig_hash = b.hash
+                
+                # Move: White Castles Queenside (e1 -> c1)
+                # Indices: e1=4, c1=2
+                mv = (4, 2, None, None, None, None)
+                b.make_move(mv)
+                
+                # Checks:
+                assert b.piece_map[2] == 5, "King not on c1"
+                assert b.piece_map[3] == 3, "Rook not on d1 (auto-move failed)"
+                assert b.piece_map[0] == -1, "Rook still on a1"
+                assert (b.castle & 3) == 0, "White castling rights not cleared"
+                
+                b.unmake_move()
+                
+                # Restore checks:
+                assert b.piece_map[4] == 5, "King not back on e1"
+                assert b.piece_map[0] == 3, "Rook not back on a1"
+                assert b.piece_map[2] == -1, "c1 not empty"
+                assert b.hash == orig_hash, "Hash mismatch after Castle Unmake"
+
+                # ---------------------------------------
+                # 6) En Passant Integrity (Tests _x helper & Capture)
+                # ---------------------------------------
+                b = Board()
+                # White Pawn e5, Black Pawn d5. EP Target is d6 (index 21)
+                # White to move.
+                b.set_fen("8/8/8/3pP3/8/8/8/k6K w - d6 0 1")
+                orig_hash = b.hash
+                
+                # Move: e5 -> d6 (En Passant Capture)
+                # Indices: e5=36, d6=43
+                mv = (36, 43, None, None, None, None)
+                b.make_move(mv)
+                
+                # Checks:
+                assert b.piece_map[43] == 0, "White pawn not on d6"
+                assert b.piece_map[35] == -1, "Black pawn on d5 (35) not removed"
+                
+                b.unmake_move()
+                
+                # Restore checks:
+                assert b.piece_map[36] == 0, "White pawn not back on e5"
+                assert b.piece_map[35] == 6, "Black pawn not back on d5"
+                assert b.ep == 43, "EP Square not restored"
+                assert b.hash == orig_hash, "Hash mismatch after EP Unmake"
+                
                 print ("Unit complete")
             #endremove
             #remove
@@ -203,5 +257,9 @@ def main():
         except Exception as exc:
             print(exc, flush=True)
             raise
+        #remove
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit()
+        #endremove
 
 main()

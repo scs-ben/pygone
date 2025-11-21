@@ -8,8 +8,16 @@ import random
 # --- helpers --------------------------------------------------------------
 FILES = "abcdefgh"
 RANKS = "12345678"
-IDX_TO_PIECE = ['p','n','b','r','q','k','p','n','b','r','q','k']
+IDX_TO_PIECE = ['p','n','b','r','q','k']
 A_FILE_MASK = 0x0101010101010101
+
+CR_MASK = [15] * 64
+CR_MASK[0] = 13   # a1 (Remove WQ-2)
+CR_MASK[4] = 12   # e1 (Remove WK-1, WQ-2)
+CR_MASK[7] = 14   # h1 (Remove WK-1)
+CR_MASK[56] = 7   # a8 (Remove BQ-8)
+CR_MASK[60] = 3   # e8 (Remove BK-4, BQ-8)
+CR_MASK[63] = 11  # h8 (Remove BK-4)
 
 UNIFIED_PST = [
     -50,-40,-30,-30,-30,-30,-40,-50, # Rank 1/8
@@ -185,132 +193,138 @@ class Board:
     def algebraic_to_sq(self, s:str):
         return FILES.index(s[0]) + 8*int(s[1])-8
 
+    def _x(self, i, s):
+        self.P[i] ^= (1 << s)
+        self.hash ^= PIECE_KEYS[i][s]
+
     # make/unmake minimal for legality checking
     def make_move(self, mv):
-        # save state
-        self.stack.append((self.P[:], self.piece_map[:], self.white_to_move, self.castle, self.ep, self.halfmove_clock, self.hash))
+        if not mv:
+            return
+        frm, to, promo, _, _, _ = mv
+        us = self.white_to_move
         
-        self.hash ^= SIDE_KEY
+        # 1. CACHE OLD STATE
+        old_ep, old_castle, old_clock, old_hash = self.ep, self.castle, self.halfmove_clock, self.hash
 
-        if self.ep != -1:
-            self.hash ^= EP_KEYS[self.ep & 7]
-
-        if mv:
-            frm, to, promo, _, _, _ = mv
-
-            us = self.white_to_move
-
-            self.hash ^= CASTLING_KEYS[self.castle]
-
-            # find moving piece type
-            from_mask = get_bit(frm); to_mask = get_bit(to)
-            moved_piece = None
-            for p in range(6):
-                idx = self.side_index(us,p)
-                if self.P[idx] & from_mask:
-                    self.hash ^= PIECE_KEYS[idx][frm]
-                    moved_piece = p; self.P[idx] ^= from_mask; self.piece_map[frm] = -1; break
-            # capture (including en-passant)
-            captured = False
-            #remove
-            if moved_piece is None:
-                # sanity
-                return
-            #endremove
-            
-            # en-passant capture
-            if moved_piece == 0 and to == self.ep:
-                captured = True
-                cap_sq = to - 8 if us else to + 8
-                # remove enemy pawn
-                self.hash ^= PIECE_KEYS[self.side_index(not us, 0)][cap_sq]
-                self.P[self.side_index(not us, 0)] ^= get_bit(cap_sq)
-                self.piece_map[cap_sq] = -1
-            else:
-                # capture any piece on 'to'
-                for p in range(6):
-                    idx = self.side_index(not us, p)
-                    if self.P[idx] & to_mask:
-                        self.hash ^= PIECE_KEYS[idx][to]
-                        self.P[idx] ^= to_mask; self.piece_map[to] = -1; captured = True; break
-            
-            # Update halfmove clock, base clearing on actual board updates
-            self.halfmove_clock += 1
-            
-            if captured or moved_piece == 0:
-                self.halfmove_clock = 0
-            
-            # place moved piece (promotion?)
-            if promo:
-                prom_map = {'q':4,'r':3,'b':2,'n':1}
-                prom_idx = self.side_index(us, prom_map[promo])
-                self.P[self.side_index(us, prom_map[promo])] |= to_mask
-                self.hash ^= PIECE_KEYS[prom_idx][to]
-                self.piece_map[to] = prom_idx
-            else:
-                final_idx = self.side_index(us, moved_piece)
-                self.P[self.side_index(us, moved_piece)] |= to_mask
-                self.hash ^= PIECE_KEYS[final_idx][to]
-                self.piece_map[to] = final_idx
-            # update castle rights if king/rook moved or captured
-            if moved_piece == 5:
-                if us: self.castle &= ~3
-                else: self.castle &= ~12
-            if moved_piece == 3:
-                if us and frm==0: self.castle &= ~2
-                if us and frm==7: self.castle &= ~1
-                if (not us) and frm==56: self.castle &= ~8
-                if (not us) and frm==63: self.castle &= ~4
-            if captured:
-                # if rook captured update opponent castle rights
-                # check to-square for rook initial squares
-                if to == 0: self.castle &= ~2
-                if to == 7: self.castle &= ~1
-                if to == 56: self.castle &= ~8
-                if to == 63: self.castle &= ~4
-            
-            # handle castling rook move
-            cfr = 4; ct1 = 6; ct2 = 2
-            if not us:
-                cfr = 60; ct1 = 62; ct2 = 58
-            
-            if moved_piece==5 and frm==cfr and to==ct1:
-                self.hash ^= PIECE_KEYS[self.side_index(us,3)][ct1+1]; self.hash ^= PIECE_KEYS[self.side_index(us,3)][ct1-1]
-                self.P[self.side_index(us,3)] ^= get_bit(ct1+1); self.P[self.side_index(us,3)] |= get_bit(ct1-1)
-                self.piece_map[ct1+1] = -1; self.piece_map[ct1-1] = self.side_index(us,3) 
-            if moved_piece==5 and frm==cfr and to==ct2:
-                self.hash ^= PIECE_KEYS[self.side_index(us,3)][ct2-2]; self.hash ^= PIECE_KEYS[self.side_index(us,3)][ct2+1]          
-                self.P[self.side_index(us,3)] ^= get_bit(ct2-2); self.P[self.side_index(us,3)] |= get_bit(ct2+1)
-                self.piece_map[ct2-2] = -1; self.piece_map[ct2+1] = self.side_index(us,3) 
+        # 2. IDENTIFY MOVING PIECE
+        # (We assume you still have get_bit or use 1<<frm)
+        from_mask = 1 << frm
+        to_mask = 1 << to
+        
+        moved_piece_type = None
+        moved_piece_idx = -1
+        
+        for p in range(6):
+            idx = self.side_index(us, p)
+            if self.P[idx] & from_mask:
+                moved_piece_type = p
+                moved_piece_idx = idx
+                break
                 
-            self.hash ^= CASTLING_KEYS[self.castle]
-            
-            # en-passant target update
-            if moved_piece == 0 and abs(to - frm) == 16:
-                # pawn double push
-                self.ep = (frm + to)//2
-            else:
-                self.ep = -1
-            
-            if self.ep != -1:
-                self.hash ^= EP_KEYS[self.ep & 7]
+        # 3. HANDLE CAPTURES & EN PASSANT
+        captured_idx = -1
+        is_ep_capture = False
+        
+        if moved_piece_type == 0 and to == self.ep:
+            is_ep_capture = True
+            cap_sq = to - 8 if us else to + 8
+            captured_idx = self.side_index(not us, 0)
+            # USE HELPER: Remove EP Pawn
+            self._x(captured_idx, cap_sq) 
+            self.piece_map[cap_sq] = -1
         else:
-            self.ep = -1
+            for p in range(6):
+                e_idx = self.side_index(not us, p)
+                if self.P[e_idx] & to_mask:
+                    captured_idx = e_idx
+                    # USE HELPER: Remove Captured Piece
+                    self._x(e_idx, to) 
+                    break
+        
+        # 4. PUSH TO STACK
+        # (Assuming you are using the optimized stack from previous steps)
+        self.stack.append((mv, captured_idx, is_ep_capture, old_ep, old_castle, old_clock, old_hash))
+
+        # 5. UPDATE MOVING PIECE
+        # USE HELPER: Remove from 'from'
+        self._x(moved_piece_idx, frm)
+        self.piece_map[frm] = -1
+        
+        # Determine target piece (handle promotion)
+        target_idx = moved_piece_idx
+        if promo:
+            # promo is now an int (1-4) if you updated gen_legal, or use map
+            target_idx = self.side_index(us, promo)
             
-        # switch side
+        # USE HELPER: Place on 'to'
+        self._x(target_idx, to)
+        self.piece_map[to] = target_idx
+
+        # 6. UPDATE CLOCKS & SIDE
+        self.hash ^= SIDE_KEY
+        self.halfmove_clock += 1
+        if captured_idx != -1 or moved_piece_type == 0:
+            self.halfmove_clock = 0
+            
+        # 7. UPDATE CASTLING RIGHTS (Using CR_MASK)
+        self.hash ^= CASTLING_KEYS[old_castle]
+        self.castle &= CR_MASK[frm] & CR_MASK[to]
+        self.hash ^= CASTLING_KEYS[self.castle]
+
+        # 8. HANDLE CASTLING MOVE (Moving the Rook)
+        if moved_piece_type == 5 and abs(frm - to) == 2:
+            if to > frm: r_from, r_to = (frm + 3, frm + 1)
+            else:        r_from, r_to = (frm - 4, frm - 1)
+            
+            rook_idx = self.side_index(us, 3)
+            # USE HELPER: Move Rook (Remove old, Place new)
+            self._x(rook_idx, r_from)
+            self._x(rook_idx, r_to)
+            self.piece_map[r_from] = -1
+            self.piece_map[r_to] = rook_idx
+
+        # 9. UPDATE EP TARGET
+        if self.ep != -1: self.hash ^= EP_KEYS[self.ep & 7]
+        self.ep = (frm + to) // 2 if (moved_piece_type == 0 and abs(frm - to) == 16) else -1
+        if self.ep != -1: self.hash ^= EP_KEYS[self.ep & 7]
+            
         self.white_to_move = not self.white_to_move
 
     def unmake_move(self):
         if not self.stack: return
-        # The saved hash is restored directly
-        P, piece_map, wtm, castle, ep, hc, hash = self.stack.pop()
-        self.P = P # Restores all pieces
-        self.piece_map = piece_map
-        self.white_to_move = wtm
-        self.castle = castle
-        self.ep = ep
-        self.halfmove_clock = hc
-        self.hash = hash # Restores the hash
+        # Pop all state. Note: We handle 'is_ep' logic inside the index check now to save vars
+        mv, c_idx, is_ep, self.ep, self.castle, self.halfmove_clock, self.hash = self.stack.pop()
+        self.white_to_move = not self.white_to_move
+        
+        f, t, pr, _, _, _ = mv
+        
+        # 1. Pull piece back (t -> f)
+        pc = self.piece_map[t]                  # Get piece at 'to' (could be promoted Queen)
+        self.P[pc] ^= (1 << t)                  # Remove from 'to'
+        self.piece_map[t] = -1
+
+        # If promo, the piece landing on 'f' is a Pawn (0/6), otherwise it's 'pc'
+        real_p = pc if not pr else (0 if self.white_to_move else 6)
+        self.P[real_p] |= (1 << f)              # Place on 'from'
+        self.piece_map[f] = real_p
+
+        # 2. Restore Capture
+        if c_idx != -1:
+            # If En Passant, capture is shifted. Else it's at 't'
+            c_sq = t if not is_ep else (t - 8 if self.white_to_move else t + 8)
+            self.P[c_idx] |= (1 << c_sq)
+            self.piece_map[c_sq] = c_idx
+
+        # 3. Un-Castle (Move Rook back)
+        # If King moved >1 square, we must revert the Rook
+        if (real_p == 5 or real_p == 11) and abs(f - t) == 2:
+            # r_old = corner, r_new = center-ish
+            # K-side (t>f): r_new=f+1, r_old=f+3. Q-side: r_new=f-1, r_old=f-4
+            r_new, r_old = (f + 1, f + 3) if t > f else (f - 1, f - 4)
+            r_idx = 3 if self.white_to_move else 9
+            self.P[r_idx] ^= (1 << r_new) | (1 << r_old) # Toggle both rook squares at once
+            self.piece_map[r_new], self.piece_map[r_old] = -1, r_idx
 
     # attack detection
     def attacked(self, sq, by_white):
@@ -374,16 +388,6 @@ class Board:
         return self.attacked(self.king_square(self.white_to_move), not self.white_to_move) if white else self.attacked(self.king_square(not self.white_to_move), self.white_to_move)
 
     # --- move generation -------------------------------------------------
-    def gen_legal_moves(self, active=False):
-        moves = []
-        for mv in self.gen_pseudo_legal():
-            self.make_move(mv)
-            # Check for legality (King is not in check after move)
-            if not self.in_check(False) and (not active or mv[3] or mv[2] or mv[5]): moves.append(mv)
-                    
-            self.unmake_move()
-        return moves
-
     def gen_pseudo_legal(self):
         us = self.white_to_move
         occ = self.all_occupied()
@@ -545,7 +549,7 @@ class Board:
         for idx, bb in enumerate(self.P):
             if bb == 0:
                 continue
-            piece_char = IDX_TO_PIECE[idx]
+            piece_char = IDX_TO_PIECE[idx % 6]
             val = self.PIECE_VALUES[piece_char]
             # population count
             cnt = bb.bit_count()
@@ -632,7 +636,7 @@ class Board:
 
     def piece_on(self, sq):
         idx = self.piece_map[sq]
-        return IDX_TO_PIECE[idx] if idx != -1 else None
+        return IDX_TO_PIECE[idx % 6] if idx != -1 else None
 
     def move_to_uci(self, mv):
         base = (FILES[mv[0] % 8] + RANKS[mv[0] // 8]) + (FILES[mv[1] % 8] + RANKS[mv[1] // 8])

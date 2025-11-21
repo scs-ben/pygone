@@ -115,46 +115,42 @@ class Search:
                 if alpha >= beta:
                     return entry[1]
 
-        # # Nullmove pruning
-        # if s_depth >= 3 and not in_check:
-        #     self.board.make_move(None)
-        #     local_score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
-        #     self.board.unmake_move()
-        #     if local_score >= beta:
-        #         return local_score
+        # Nullmove pruning
+        if s_depth >= 3 and not in_check:
+            self.board.make_move(None)
+            local_score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
+            self.board.unmake_move()
+            if local_score >= beta:
+                return local_score
         
-        # is_pv_node = beta > alpha + 1
-        # stand_pat = self.board.evaluate()
+        is_pv_node = beta > alpha + 1
+        stand_pat = self.board.evaluate()
 
-        # if not is_pv_node and not in_check:
-        #     # Futility pruning (low eval)
-        #     if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
-        #         return stand_pat
+        if not is_pv_node and not in_check:
+            # Futility pruning (low eval)
+            if s_depth <= 2 and stand_pat + 100 * s_depth <= alpha:
+                return stand_pat
 
-        #     # Razor pruning (high eval)
-        #     if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
-        #         return stand_pat
+            # Razor pruning (high eval)
+            if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
+                return stand_pat
             
-        #     if s_depth <= 4 and self.board.eval_material() <= -500:
-        #         return stand_pat
-        
-        all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
-
-        if not all_moves:
-            return -self.MATE_SCORE_UPPER + ply if in_check else 0
-
-        if entry and entry[4]:
-            all_moves = [entry[4]] + all_moves
+            if s_depth <= 4 and self.board.eval_material() <= -500:
+                return stand_pat
 
         best_score = -1e9
-        best_move = all_moves[0]
+        best_move = None
         played_moves = 0
         alpha_orig = alpha
 
-        for t_move in all_moves:
+        for t_move in sorted(self.board.gen_pseudo_legal(), key=self.board.score_move, reverse=True):
             played_moves += 1
-
+            
             self.board.make_move(t_move)
+            
+            if self.board.in_check(False):
+                self.board.unmake_move()
+                continue
 
             # is_quiet = not t_move[3] and not t_move[2]
 
@@ -214,6 +210,9 @@ class Search:
                     self.tt.store(self.board.hash, s_depth, alpha, 'LOWERBOUND', t_move)
                     return alpha
 
+        if played_moves == 0:
+            return -self.MATE_SCORE_UPPER + ply if in_check else 0
+
         if not self.time_up:
             flag = 'EXACT' if alpha > alpha_orig else 'UPPERBOUND'
             self.tt.store(self.board.hash, s_depth, alpha, flag, best_move)
@@ -252,9 +251,16 @@ class Search:
         if not in_check and alpha < stand_pat:
             alpha = stand_pat
 
-        for t_move in sorted(self.board.gen_legal_moves(not in_check), key=self.board.score_move, reverse=True):
+        for t_move in sorted(self.board.gen_pseudo_legal(), key=self.board.score_move, reverse=True):
+            if not in_check and not t_move[2] and not t_move[3] and not t_move[5]:
+                continue
+
             self.board.make_move(t_move)
-                      
+            
+            if self.board.in_check(False):
+                self.board.unmake_move()
+                continue
+            
             g_score = -self.q_search(-beta, -alpha, q_depth + 1)
             
             self.board.unmake_move()

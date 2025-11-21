@@ -22,10 +22,14 @@ class Perft:
         captures = 0
         checks = 0
         
-        for move in self.board.gen_legal_moves():
+        for move in self.board.gen_pseudo_legal():
             is_capture = move[3]
             
             self.board.make_move(move)
+            
+            if self.board.in_check(False):
+                self.board.unmake_move()
+                continue
             
             is_check = self.board.in_check()
             
@@ -61,10 +65,14 @@ class Perft:
         self.total_checks = 0
         total_nodes = 0
 
-        for move in self.board.gen_legal_moves():
+        for move in self.board.gen_pseudo_legal():
             is_capture = move[3]
             
             self.board.make_move(move)
+            
+            if self.board.in_check(False):
+                self.board.unmake_move()
+                continue
             
             is_check = self.board.in_check()
             
