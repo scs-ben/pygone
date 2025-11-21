@@ -54,6 +54,17 @@ def combine_imports(file_path: str):
     path.write_text(new_code)
     print(f"Imports combined and moved to top of {file_path}")
 
+def remove_blank_lines(input_text):
+    # Split the text into a list of lines
+    lines = input_text.splitlines()
+    
+    # Filter out lines that are completely empty or only contain whitespace
+    # A line is considered blank if line.strip() returns an empty string
+    non_blank_lines = [line for line in lines if line.strip() != '']
+    
+    # Join the remaining lines back together with a newline character
+    return '\n'.join(non_blank_lines)
+
 # Define all replacements here
 replacements = {
     # Constants / dictionaries
@@ -261,7 +272,8 @@ replacements = {
     "bishop": "p3",
     "rook": "p4",
     "queen": "p5",
-    "king": "p6",
+    "king_safety": "p6",
+    "king": "p7",
     
     "bb_name": "q1",
     
@@ -280,16 +292,6 @@ replacements = {
     # Built-ins / keywords
     "True": "1",
     "False": "0",
-    
-    #These have to match up with the assignment/replacements at the end
-    "None": "Za",
-    "enumerate": "Zb",
-    "random.getrandbits": "Zc",
-    "time.time": "Zd",
-    "range": "Ze",
-    "math.ceil": "Zf",
-    "sorted": "Zg",
-
 }
 
 path = "pygone-mini.py"
@@ -300,32 +302,17 @@ code = file.read_text()
 for old, new in sorted(replacements.items(), key=lambda kv: -len(kv[0])):
     code = code.replace(old, new)
 
+code = code.replace('#!/usr/bin/env pypy3', '')
+
 # Write back
 file.write_text(code)
 
-minified = python_minifier.minify(
-    code,
-    rename_locals=False,      # shrink local variables inside functions/classes
-    rename_globals=False,    # leave module-level globals/constants intact
-    combine_imports=False,
-    hoist_literals=False,
-    remove_annotations=True,
-    remove_literal_statements=True
-)
-
-with open(path, "w") as f:
-    f.write(minified)
-
 combine_imports(path)
-
-insert_text = "Za=None;Zb=enumerate;Zc=random.getrandbits;Zd=time.time;Ze=range;Zf=math.ceil;Zg=sorted\n"
 
 with tempfile.NamedTemporaryFile("w", delete=False) as tmp, open(path) as f:
     for i, line in enumerate(f, start=0):
         if i == 0:
             tmp.write("#!/usr/bin/env pypy3\n")
-        if i == 2:
-            tmp.write(insert_text)
         tmp.write(line)
 
 shutil.move(tmp.name, path)
@@ -345,3 +332,11 @@ minified = python_minifier.minify(
 
 with open(path, "w") as f:
     f.write(minified)
+
+file = Path(path)
+code = file.read_text()
+code = code.replace('\t', ' ')
+code = remove_blank_lines(code)
+
+# Write back
+file.write_text(code)
