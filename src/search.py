@@ -135,16 +135,16 @@ class Search:
             if s_depth <= 3 and stand_pat >= beta - 80 * s_depth:
                 return stand_pat
             
-        # if not is_pv_node and not in_check and s_depth <= 5:
-        #     cut_boundary = alpha - (150 * s_depth)
-        #     if stand_pat <= cut_boundary:
-        #         if s_depth <= 2:
-        #             return self.q_search(alpha, alpha + 1)
+        if not is_pv_node and not in_check and s_depth <= 5:
+            cut_boundary = alpha - (150 * s_depth)
+            if stand_pat <= cut_boundary:
+                if s_depth <= 2:
+                    return self.q_search(alpha, alpha + 1)
 
-        #         local_score = self.q_search(cut_boundary, cut_boundary + 1)
+                local_score = self.q_search(cut_boundary, cut_boundary + 1)
 
-        #         if local_score <= cut_boundary:
-        #             return local_score
+                if local_score <= cut_boundary:
+                    return local_score
         
         all_moves = sorted(self.board.gen_legal_moves(), key=self.board.score_move, reverse=True)
 
@@ -164,7 +164,44 @@ class Search:
 
             self.board.make_move(t_move)
 
-            g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            is_quiet = not t_move[3] and not t_move[2]
+
+            # -------------------------------
+            # Late Move Reductions
+            # -------------------------------
+            if (played_moves > 1 and is_quiet and not in_check
+                and s_depth >= 3 and played_moves >= 4):
+
+                reduction = 1 + (s_depth > 3) + (played_moves > 3)
+                reduced_depth = s_depth - 1 - reduction
+
+            else:
+                reduced_depth = s_depth - 1
+
+            # -------------------------------
+            # PVS / zero-width search
+            # -------------------------------
+            if played_moves == 1:
+                # Full PV window
+                score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+
+            else:
+                # Zero-width search
+                score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
+
+                # ---------------------------
+                # LMR re-search
+                # ---------------------------
+                if reduced_depth < s_depth - 1 and score > alpha:
+                    score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+
+                # ---------------------------
+                # Full-window re-search
+                # ---------------------------
+                if score > alpha and score < beta:
+                    score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+
+            # g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
             self.board.unmake_move()
 
@@ -221,22 +258,6 @@ class Search:
             return beta
         if not in_check and alpha < stand_pat:
             alpha = stand_pat
-        
-        # if not in_check:
-        #     # We need the value of the most valuable piece (typically Queen, around 900-1e3)
-        #     # Use a slightly smaller value for safety margin (e.g., Q value - 100)
-        #     MAX_GAIN = self.board.PIECE_VALUES['q'] # Assuming 'q' is the key for Queen value
-            
-        #     # If (current best static eval) + (max possible material gain) is still less than alpha, prune.
-        #     if stand_pat + MAX_GAIN <= alpha:
-        #         return alpha
-            
-        #     # Optional: Small check for very deep Q-search
-        #     if q_depth > 5 and stand_pat + 200 <= alpha: # 200 is small futility margin
-        #         return alpha
-        # else:
-        #     # If in check, stand_pat is irrelevant, alpha remains the score to beat
-        #     stand_pat = -float('inf')
 
         for t_move in sorted(self.board.gen_legal_moves(not in_check), key=self.board.score_move, reverse=True):
             self.board.make_move(t_move)
