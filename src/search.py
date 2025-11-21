@@ -15,7 +15,7 @@ class TranspositionTable:
 
     def probe(self, key):
         e = self.table[(key % self.size)]
-        if e is not None and e[0] == key:
+        if e and e[0] == key:
             return e
 
 class Search:
@@ -117,7 +117,9 @@ class Search:
             elapsed_time = time.time() - start_time
             nps = math.ceil(self.s_nodes / elapsed_time) if elapsed_time > 0 else 1
 
-            uci_move = self.board.move_to_uci(best_move) if best_move else None
+            uci_move = None
+            if best_move:
+                uci_move = self.board.move_to_uci(best_move)
             
             if uci_move: print(f"info depth {s_depth} score cp {math.ceil(best_score)} time {math.ceil(elapsed_time * 1e3)} nodes {self.s_nodes} nps {nps} pv {uci_move}", flush=True)
             
