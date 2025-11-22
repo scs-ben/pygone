@@ -55,9 +55,13 @@ class Search:
         current_hash = self.board.hash
         limit = min(self.board.halfmove_clock, len(self.board.stack))
         
+        count = 0
         for i in range(2, limit + 1, 2):
             if self.board.stack[-i][6] == current_hash: 
-                return True
+                count += 1
+                # We need 2 past occurrences + current one = 3 total
+                if count >= 2:
+                    return True
         return False
 
     def search(self, depth, alpha, beta, ply):

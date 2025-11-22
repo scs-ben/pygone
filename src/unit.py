@@ -196,7 +196,7 @@ class Unit:
 
         print("Promotion unit test passed.")
 
-    def unit_search(self, b, s):
+    def unit_search(self, s, b):
         # Check Search
         orig_fen = b.get_fen()
 
@@ -211,3 +211,52 @@ class Unit:
         assert b.get_fen() == orig_fen, "FEN mismatch (Board corruption) after search"
 
         print ("Unit complete")
+
+    def unit_threefold(self, s, b):
+        print("Testing Threefold Repetition")
+        # Helper to find and make a move by string
+        def make_uci(move_str, b):
+            found = False
+            for m in b.gen_pseudo_legal():
+                if b.move_to_uci(m) == move_str:
+                    b.make_move(m)
+                    found = True
+                    break
+            assert found, f"Illegal or invalid move: {move_str}"
+
+        # Sequence to repeat the starting position:
+        # 1. White Knight out, Black Knight out
+        # 2. White Knight back, Black Knight back
+        repeat_seq = ["g1f3", "g8f6", "f3g1", "f6g8"]
+
+        # --- OCCURRENCE 1: Start Position ---
+        # (Count = 1)
+        assert s.threefold() == False, "Start pos is not 3-fold"
+
+        # --- OCCURRENCE 2: After moves ---
+        for m in repeat_seq: make_uci(m, b)
+        
+        # Check: If you implemented STRICT 3-fold, this must be False.
+        # (If you implemented 2-fold search pruning, this would be True).
+        assert s.threefold() == False, "2nd occurrence should not trigger strict 3-fold"
+
+        # --- OCCURRENCE 3: After moves again ---
+        for m in repeat_seq: make_uci(m, b)
+        
+        # Check: This MUST be True now.
+        assert s.threefold() == True, "3rd occurrence must trigger 3-fold"
+        
+        # --- IRREVERSIBLE MOVE TEST ---
+        # Make a pawn push. This resets the halfmove clock.
+        # Even if we repeat the knights now, it is a NEW position because the pawn structure changed.
+        make_uci("e2e4", b) 
+        make_uci("e7e5", b)
+        
+        # Repeat knights again
+        for m in repeat_seq: make_uci(m, b)
+        for m in repeat_seq: make_uci(m, b)
+        
+        # Should be False because the pawn push made the previous occurrences unreachable
+        assert s.threefold() == False, "Irreversible move (pawn push) should have reset counter"
+
+        print("Threefold unit test passed.")

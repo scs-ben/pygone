@@ -31,16 +31,16 @@ UNIFIED_PST = [
     -50,-40,-30,-30,-30,-30,-40,-50 # Rank 8/1
 ]
 PAWN_PST = [
-     0,  0,  0,  0,  0,  0,  0,  0,   # Rank 1 (Impossible)
-    50, 50, 50, 50, 50, 50, 50, 50,   # Rank 2 (About to promote)
-    10, 10, 20, 30, 30, 20, 10, 10,   # Rank 3
-     5,  5, 10, 25, 25, 10,  5,  5,   # Rank 4
-     0,  0,  0, 20, 20,  0,  0,  0,   # Rank 5 (Center push good)
-     5, -5,-10,  0,  0,-10, -5,  5,   # Rank 6
-     5, 10, 10,-20,-20, 10, 10,  5,   # Rank 7 (Start)
+     0,  0,  0,  0,  0,  0,  0,  0,   # Rank 1
+     5, 10, 10,-20,-20, 10, 10,  5,   # Rank 2
+     5, -5,-10,  0,  0,-10, -5,  5,   # Rank 3
+     0,  0,  0, 20, 20,  0,  0,  0,   # Rank 4
+     5,  5, 10, 25, 25, 10,  5,  5,   # Rank 5
+    10, 10, 20, 30, 30, 20, 10, 10,   # Rank 6
+    50, 50, 50, 50, 50, 50, 50, 50,   # Rank 7
      0,  0,  0,  0,  0,  0,  0,  0    # Rank 8
 ]
-PST_WEIGHTS = [1, 3, 3, 5, 9, 0]
+PST_WEIGHTS = [1, 2, 2, 1, 1, 0]
 
 # --- utilities -------------------------------------------------------------
 def get_bit(s): 
@@ -548,27 +548,26 @@ class Board:
     def eval_king(self, white):
         k = self.king_square(white)
         f, r = k % 8, k // 8
-        d, bb = (1, 0) if white else (-1, 6) # Direction and Pawn BB index
+        d, bb = (1, 0) if white else (-1, 6) 
         
-        # Calculate Pawn Shield Score using a generator expression
+        # 1. Pawn Shield (Defending pawns in front of King)
+        # Using generator to save space
         pawn_shield = 10 * sum(
             1 for df in (-1, 0, 1) 
-            if 0 <= (nf := f + df) < 8 # Check new file
-            and 0 <= (nr := r + d) < 8  # Check new rank
+            if 0 <= (nf := f + df) < 8 
+            and 0 <= (nr := r + d) < 8
             and (self.P[bb] & get_bit(nr * 8 + nf))
         )
         
-        # Calculate Castling/Position Score
-        castle_pos_score = (
-            # 1. Castled Position Bonus (+15 if king on g/c file)
-            15 if (white and k in (6, 2)) or (not white and k in (62, 58)) else 0
-        ) + (
-            # 2. Lost Kingside Rights Penalty (-10)
-            -10 if not (self.castle & (1 if white else 4)) else 0
-        ) + (
-            # 3. Lost Queenside Rights Penalty (-5)
-            -5 if not (self.castle & (2 if white else 8)) else 0
-        )
+        # 2. Castling Bonus (Huge incentive to castle)
+        # King on g/c file (castled positions) gets +60
+        castle_pos_score = 0
+        if (white and k in (6, 2)) or (not white and k in (62, 58)):
+            castle_pos_score += 60
+            
+        # Penalties for losing rights (remains small)
+        if not (self.castle & (1 if white else 4)): castle_pos_score -= 10
+        if not (self.castle & (2 if white else 8)): castle_pos_score -= 5
         
         return pawn_shield + castle_pos_score
 
@@ -761,12 +760,9 @@ class Board:
         mat_score = self.eval_material()
         king_score = self.eval_king(True) - self.eval_king(False)
         
-        # wp =  self.P[0]
-        # bp =  self.P[6]
-        pawn_score = 0
-        # pawn_score = self.pawn_structure_penalty(wp) - self.pawn_structure_penalty(bp)
+        pawn_score = self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
 
-        pos_score = self.eval_position()
+        pos_score = self.eval_material()
         
         print(f"Turn: {('W' if self.white_to_move else 'B')} 50c: {self.halfmove_clock} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
         print(f"Mat: {mat_score} King: {king_score} Pawn: {pawn_score} Pos: {pos_score}")

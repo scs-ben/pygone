@@ -48,7 +48,10 @@ def main():
                 b = Board()
                 b.set_fen("r1bqk1nr/2p2ppp/1pp5/2b1p3/p3P3/2NP1N2/PPP2PPP/R1BQ1RK1 w kq - 0 9")
                 s = Search(b)
-                unit.unit_search(b, s)
+                unit.unit_search(s, b)
+                b = Board()
+                s = Search(b)
+                unit.unit_threefold(s, b)
             #UNITendremove
             #remove
             elif line.startswith("position fen"):
