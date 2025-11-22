@@ -61,8 +61,7 @@ REPLACEMENTS = {
 
     "alpha_orig": "C1",
     "en_passant_square": "C2",
-    "compute_hash": "C31",
-    "hash": "C3",
+    "compute_hash": "C3",
     "active": "C4",
     "castling_rights": "C5",
     "promo": "C6",
@@ -86,6 +85,7 @@ REPLACEMENTS = {
     "time_limit": "co",
     "end_time": "cp",
     "is_insufficient_material": "cq",
+    "hash": "cr",
     
     "search": "cu",
     "Zobrist": "cv",
@@ -239,7 +239,7 @@ REPLACEMENTS = {
     
     "bb_name": "q1",
     
-    "side_white": "qy1",
+    "side_white": "qY",
     "white": "qy",
     "name": "qz",
 
@@ -379,6 +379,7 @@ def main():
     
     minified_code = minified_code.replace('import random', '')
     minified_code = minified_code.replace('import sys,time', 'import sys,time,random')
+    minified_code = minified_code.replace('__init__(A,fu=None)', '__init__(A)')
 
     final_code = minified_code.replace('\t', ' ')
     final_code = remove_blank_lines(final_code)

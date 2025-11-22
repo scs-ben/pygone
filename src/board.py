@@ -324,8 +324,7 @@ class Board:
         self.white_to_move = not self.white_to_move
         
         # --- NULL MOVE HANDLING ---
-        if not mv:
-            return # State variables restored above, no pieces to move
+        if not mv: return # State variables restored above, no pieces to move
         # --------------------------
 
         f, t, pr, _, _, _ = mv
@@ -508,8 +507,7 @@ class Board:
                         s = ns
                         m = get_bit(s)
                         
-                        if m & our: 
-                            break # Blocked by friend
+                        if m & our: break # Blocked by friend
                         
                         if m & their:
                             # Capture (Always yield)
@@ -588,16 +586,13 @@ class Board:
                 idx = sq if c == 1 else sq ^ 56
                 
                 # 1. ROOKS: Logic Override (Pig on 7th)
-                if p == 3:
-                    pst_val = 20 if (idx // 8) == 6 else 0
+                if p == 3: pst_val = 20 if (idx // 8) == 6 else 0
                     
                 # 2. PAWNS: Use Special Table (Clean!)
-                elif p == 0: 
-                    pst_val = PAWN_PST[idx]
+                elif p == 0: pst_val = PAWN_PST[idx]
                     
                 # 3. OTHERS: Use Unified Table
-                else:
-                    pst_val = UNIFIED_PST[idx]
+                else: pst_val = UNIFIED_PST[idx]
                 
                 score += c * (mat + (pst_val * weight // 2))
                 
@@ -613,8 +608,7 @@ class Board:
             # 1. Doubled Pawns
             # Count pawns on this file
             cnt = (pawns & file_mask).bit_count()
-            if cnt > 1:
-                score -= (cnt - 1) * 15
+            if cnt > 1: score -= (cnt - 1) * 15
             
             # 2. Isolated Pawns
             # Only check if there is at least one pawn on this file
@@ -624,35 +618,35 @@ class Board:
                 neighbors = ((file_mask << 1) & 0xFEFEFEFEFEFEFEFE) | \
                             ((file_mask >> 1) & 0x7F7F7F7F7F7F7F7F)
                 
-                if not (pawns & neighbors):
-                    score -= 15
+                if not (pawns & neighbors): score -= 15
                     
         return score
     
-    # def is_insufficient_material(self):
-    #     # 1. If any Pawns, Rooks, or Queens exist, it's not insufficient.
-    #     # White Pawns(0) | Black Pawns(6) | W Rooks(3) | W Queens(4) | B Rooks(9) | B Queens(10)
-    #     if (self.P[0] | self.P[6] | self.P[3] | self.P[4] | self.P[9] | self.P[10]):
-    #         return False
+    def is_insufficient_material(self):
+        # 1. If any Pawns, Rooks, or Queens exist, it's not insufficient.
+        # White Pawns(0) | Black Pawns(6) | W Rooks(3) | W Queens(4) | B Rooks(9) | B Queens(10)
+        if (self.P[0] | self.P[6] | self.P[3] | self.P[4] | self.P[9] | self.P[10]):
+            return False
         
-    #     # 2. If we are here, only Kings, Knights, and Bishops remain.
-    #     # Calculate total minor pieces.
-    #     # W Knights(1) | W Bishops(2) | B Knights(7) | B Bishops(8)
-    #     minors = (self.P[1] | self.P[2] | self.P[7] | self.P[8])
+        # 2. If we are here, only Kings, Knights, and Bishops remain.
+        # Calculate total minor pieces.
+        # W Knights(1) | W Bishops(2) | B Knights(7) | B Bishops(8)
+        minors = (self.P[1] | self.P[2] | self.P[7] | self.P[8])
         
-    #     # If no minors (K vs K) or only 1 minor total (K+N vs K), it's a draw.
-    #     # We can use bit_count() since you already use it in pawn_structure_score
-    #     if minors.bit_count() < 2:
-    #         return True
+        # If no minors (K vs K) or only 1 minor total (K+N vs K), it's a draw.
+        # We can use bit_count() since you already use it in pawn_structure_score
+        if minors.bit_count() < 2:
+            return True
             
-    #     # Note: K+B vs K+B (opposite colors) is a theoretical draw but tricky 
-    #     # for engines to prove. K+N vs K+N is mostly drawn but can checkmate. 
-    #     # Keeping it simple (count < 2) covers the vast majority of cases 
-    #     # with 0 performance cost.
+        # Note: K+B vs K+B (opposite colors) is a theoretical draw but tricky 
+        # for engines to prove. K+N vs K+N is mostly drawn but can checkmate. 
+        # Keeping it simple (count < 2) covers the vast majority of cases 
+        # with 0 performance cost.
         
-    #     return False
+        return False
 
     def evaluate(self):
+        if self.is_insufficient_material(): return 0
         score = self.eval_material()
         score += self.eval_king(True) - self.eval_king(False)
         
@@ -662,8 +656,7 @@ class Board:
 
         return score if self.white_to_move else -score
 
-    def score_move(self, m, tt_move=None):
-        if m == tt_move: return 20000
+    def score_move(self, m):
         return ((self.PIECE_VALUES[m[3]] * 100 - self.PIECE_VALUES[m[4]] if m[3] else 0) + 
                 (self.PIECE_VALUES[m[2]] * 1000 if m[2] else 0) + (500 if m[5] else 0) - 
                 int(max(abs(m[1]//8 - 3.5), abs(m[1]%8 - 3.5)) * 5))
@@ -674,8 +667,7 @@ class Board:
 
     def move_to_uci(self, mv):
         base = (FILES[mv[0] % 8] + RANKS[mv[0] // 8]) + (FILES[mv[1] % 8] + RANKS[mv[1] // 8])
-        if mv[2]:
-            return base + mv[2]
+        if mv[2]: return base + mv[2]
         return base
     
     #UNITremove
