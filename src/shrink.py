@@ -231,6 +231,8 @@ REPLACEMENTS = {
     "get_square_indices": "p9",
     "bm_w": "pa",
     "bm_b": "pb",
+    "pawn_count": "pc",
+    "pawns": "pd",
     
     "bb_name": "q1",
     

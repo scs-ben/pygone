@@ -618,26 +618,27 @@ class Board:
                 
         return score / 2
     
-    # def pawn_structure_penalty(self, pawns):
-    #     return sum(
-    #         # Calculate the penalty for the current file 'f'
-            
-    #         # Determine the number of pawns on this file
-    #         (pawn_count := ((pawns >> f) & A_FILE_MASK).bit_count()) > 0
-    #         and (
-    #             -15 * max(0, pawn_count - 1)
-    #             + (-15 if (pawns & (
-    #                 (A_FILE_MASK << max(0, f - 1)) | (A_FILE_MASK << min(7, f + 1))
-    #             )) == 0 else 0)
-    #         )
-    #         for f in range(8)
-    # )
+    def pawn_structure_penalty(self, pawns):
+        return -15 * sum(
+                    # Walrus operator to capture count 'k'
+                    (k := ((pawns >> f) & A_FILE_MASK).bit_count())
+                    and (
+                        # Penalty 1: (k - 1) for doubled pawns (if k=1, this is 0)
+                        (k - 1) 
+                        # Penalty 2: +1 if isolated (no neighbors)
+                        # We use conditional shifts to safely check neighbors without wrapping or self-matching
+                        + (not (pawns & (
+                            (A_FILE_MASK << (f - 1) if f else 0) | (A_FILE_MASK << (f + 1) if f < 7 else 0)
+                        )))
+                    )
+                    for f in range(8)
+                )
 
     def evaluate(self):
         score = self.eval_material()
         score += self.king_safety(True) - self.king_safety(False)
         
-        # score += self.pawn_structure_penalty(self.P[0]) - self.pawn_structure_penalty(self.P[6])
+        score += self.pawn_structure_penalty(self.P[0]) - self.pawn_structure_penalty(self.P[6])
         
         score += self.eval_position()
 
