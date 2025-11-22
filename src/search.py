@@ -78,11 +78,11 @@ class Search:
         print(f"bestmove {uci_move}", flush=True)
 
     def threefold(self):
-        count = 1
+        move_count = 1
         
         for entry in self.board.stack:
-            count += entry[-1] == self.board.hash
-            if count >= 3:
+            move_count += entry[-1] == self.board.hash
+            if move_count >= 3:
                 return True
             
         return False

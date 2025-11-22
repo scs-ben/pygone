@@ -1,73 +1,18 @@
-#!/usr/bin/env pypy3
-from pathlib import Path
-import python_minifier
+#!/usr/bin/env python3
 import re
-import tempfile
-import shutil
-from collections import defaultdict
+import tokenize
+import io
+import python_minifier
+from pathlib import Path
 
-def combine_imports(file_path: str):
-    path = Path(file_path)
-    code = path.read_text()
-
-    # Collect imports
-    import_lines = []
-    other_lines = []
-
-    for line in code.splitlines():
-        stripped = line.strip()
-        if stripped.startswith("import "):
-            import_lines.append(stripped)
-        elif stripped.startswith("from "):
-            import_lines.append(stripped)
-        else:
-            other_lines.append(line)
-
-    # Combine plain imports
-    plain_imports = []
-    from_imports = defaultdict(list)
-
-    for line in import_lines:
-        if line.startswith("import "):
-            modules = line[len("import "):].split(",")
-            modules = [m.strip() for m in modules]
-            plain_imports.extend(modules)
-        elif line.startswith("from "):
-            m = re.match(r"from (\S+) import (.+)", line)
-            if m:
-                module, names = m.groups()
-                names = [n.strip() for n in names.split(",")]
-                from_imports[module].extend(names)
-
-    # Remove duplicates and sort
-    plain_imports = sorted(set(plain_imports))
-    combined_plain = f"import {', '.join(plain_imports)}" if plain_imports else ""
-
-    combined_from = []
-    for module, names in from_imports.items():
-        unique_names = sorted(set(names))
-        combined_from.append(f"from {module} import {', '.join(unique_names)}")
-
-    # Combine all imports at top
-    new_code = "\n".join([combined_plain] + combined_from + [""] + other_lines)
-
-    path.write_text(new_code)
-    print(f"Imports combined and moved to top of {file_path}")
-
-def remove_blank_lines(input_text):
-    # Split the text into a list of lines
-    lines = input_text.splitlines()
-    
-    # Filter out lines that are completely empty or only contain whitespace
-    # A line is considered blank if line.strip() returns an empty string
-    non_blank_lines = [line for line in lines if line.strip() != '']
-    
-    # Join the remaining lines back together with a newline character
-    return '\n'.join(non_blank_lines)
-
-# Define all replacements here
-replacements = {
+# --- 1. AGGRESSIVE REPLACEMENT MAP (Your Dictionary) ---
+# I removed 'self' and local vars (idx, frm) because pyminifier
+# renames them to 1-char ('a', 'b') which is smaller than 2-chars ('AA', 'U').
+# I kept ALL attributes, methods, and global constants.
+REPLACEMENTS = {
     # Constants / dictionaries
+    "idx": "U",
+    "frm": "V",
     "self": "AA",
     "algebraic_to_sq": "AB",
     "from_sq": "AC",
@@ -80,14 +25,14 @@ replacements = {
     "reduced_depth": "AJ",
     "to_sq": "AK",
     
-    "white_to_move": "a1",
-    "white_file": "a2",
-    "black_file": "a3",
-    "by_white": "a4",
-    "moves_section": "a5",
-    "played_moves": "a6",
-    "sorted_moves": "a7",
-    "scored_moves": "a8",
+    "white_to_move": "A1",
+    "white_file": "A2",
+    "black_file": "A3",
+    "by_white": "A4",
+    "moves_section": "A5",
+    "played_moves": "A6",
+    "sorted_moves": "A7",
+    "scored_moves": "A8",
     "is_pv_node": "a9",
     "null_score": "aa",
     "cut_boundary": "ab",
@@ -108,21 +53,21 @@ replacements = {
     "white_": "ay",
     "black_": "az",
     
-    "g_score": "b1",
-    "t_move": "b2",
-    "s_move": "b3",
-    "init_hash": "b4",
-    "is_en_passant": "b5",
+    "g_score": "B1",
+    "t_move": "B2",
+    "s_move": "B3",
+    "init_hash": "B4",
+    "is_en_passant": "B5",
 
-    "alpha_orig": "c1",
-    "en_passant_square": "c2",
-    "compute_hash": "c31",
-    "hash": "c3",
-    "active": "c4",
-    "castling_rights": "c5",
-    "promo": "c6",
-    "q_search": "c7",
-    "flag": "c8",
+    "alpha_orig": "C1",
+    "en_passant_square": "C2",
+    "compute_hash": "C31",
+    "hash": "C3",
+    "active": "C4",
+    "castling_rights": "C5",
+    "promo": "C6",
+    "q_search": "C7",
+    "flag": "C8",
     "file": "c9",
     "in_check": "ca",
     "time_up": "cb",
@@ -148,14 +93,14 @@ replacements = {
     
     "BLACK_SQUARES": "D1",
     
-    "TIME_CUT": "d1",
-    "KNIGHT_ATTACKS": "d2",
-    "KING_ATTACKS": "d3",
-    "WHITE_PAWN_ATTACKS": "d4",
-    "BLACK_PAWN_ATTACKS": "d5",
-    "RAYS": "d6",
-    "DIRECTIONS": "d7",
-    "PIECE_KEYS": "d8",
+    "TIME_CUT": "dZ",
+    "KNIGHT_ATTACKS": "D2",
+    "KING_ATTACKS": "D3",
+    "WHITE_PAWN_ATTACKS": "D4",
+    "BLACK_PAWN_ATTACKS": "D5",
+    "RAYS": "D6",
+    "DIRECTIONS": "D7",
+    "PIECE_KEYS": "D8",
     "IDX_TO_PIECE": "d9",
     "FILES": "da",
     "RANKS": "db",
@@ -185,14 +130,14 @@ replacements = {
     "A_FILE_MASK": "dz",
     "CR_MASK": "dA",
     
-    "piece_bb": "f1",
-    "piece_index": "f2",
-    "piece_keys": "f3",
-    "piece_values": "f4",
-    "enemy_pieces": "f5",
-    "capture": "f6",
-    "to_rank": "f7",
-    "from_rank": "f8",
+    "piece_bb": "F1",
+    "piece_index": "F2",
+    "piece_keys": "F3",
+    "piece_values": "F4",
+    "enemy_pieces": "F5",
+    "capture": "F6",
+    "to_rank": "F7",
+    "from_rank": "F8",
     "ray": "f9",
     "sq_idx": "fa",
     "w_time": "fb",
@@ -219,22 +164,23 @@ replacements = {
     "ply": "fx",
     "rank": "fy",
     "pieces_of": "fA",
+    "moved_piece": "fB",
     "piece": "fz",
     
-    "TranspositionTable": "g1",
-    "TTEntry": "g2",
-    "Search": "g3",
-    "Board": "g4",
-    "doubled": "g5",
-    "isolated": "g6",
-    "enemy": "g7",
+    "TranspositionTable": "G1",
+    "TTEntry": "G2",
+    "Search": "G3",
+    "Board": "G4",
+    "doubled": "G5",
+    "isolated": "G6",
+    "enemy": "G7",
     
-    "best_move": "h2",
-    "halfmove_clock": "h3",
-    "killer_moves": "h4",
-    "tt_move": "h5",
-    "unmove": "h6",
-    "uci_move": "h7",
+    "best_move": "H2",
+    "halfmove_clock": "H3",
+    "killer_moves": "H4",
+    "tt_move": "H5",
+    "unmove": "H6",
+    "uci_move": "H7",
     "generate_sliding_moves": "h9",
     "generate_pseudo_legal_moves": "ha",
     "generate_piece_moves": "hb",
@@ -272,9 +218,11 @@ replacements = {
     "table": "o8",
     
     "pawn": "p1",
+    "knights": "pA",
     "knight": "p2",
     "bishop": "p3",
     "rook": "p4",
+    "queens": "pB",
     "queen": "p5",
     "king_safety": "p6",
     "king": "p7",
@@ -300,49 +248,106 @@ replacements = {
     "False": "0",
 }
 
-path = "pygone-mini.py"
-file = Path(path)
-code = file.read_text()
+def remove_blank_lines(text):
+    return '\n'.join([line for line in text.splitlines() if line.strip()])
 
-# Apply replacements (longest first to prevent partial overlaps)
-for old, new in sorted(replacements.items(), key=lambda kv: -len(kv[0])):
-    code = code.replace(old, new)
+def process_fstring(text, mapping):
+    """
+    Parses an f-string (e.g. f"Value: {s_depth}") and replaces 
+    identifiers inside the curly braces only.
+    """
+    # Regex to match {expression} inside the string
+    # Looks for { followed by anything that isn't a } followed by }
+    # (?<!\{) and (?!\}) handle double brace escaping {{ }}
+    pattern = re.compile(r'(?<!\{)\{(.*?)\}(?!\})')
+    
+    # Regex to match whole words in the mapping
+    # We compile this once for efficiency
+    keys = sorted(mapping.keys(), key=len, reverse=True) 
+    map_pattern = re.compile(r'\b(' + '|'.join(map(re.escape, keys)) + r')\b')
 
-code = code.replace('#!/usr/bin/env pypy3', '')
+    def replace_expression_content(match):
+        content = match.group(1)
+        # Replace identifiers inside the content
+        new_content = map_pattern.sub(lambda m: mapping[m.group(0)], content)
+        return f"{{{new_content}}}"
 
-# Write back
-file.write_text(code)
+    return pattern.sub(replace_expression_content, text)
 
-combine_imports(path)
+def apply_safe_replacements(source_code, mapping):
+    """
+    Uses tokenize to replace identifiers AND variables inside f-strings.
+    """
+    tokens = list(tokenize.tokenize(io.BytesIO(source_code.encode('utf-8')).readline))
+    
+    modified_tokens = []
+    for t in tokens:
+        # 1. Handle Standard Variables
+        if t.type == tokenize.NAME and t.string in mapping:
+            new_t = (t.type, mapping[t.string], t.start, t.end, t.line)
+            modified_tokens.append(new_t)
+            
+        # 2. Handle 'print' if mapped (optional)
+        elif t.type == tokenize.NAME and t.string == 'print' and 'print' in mapping:
+            new_t = (t.type, mapping[t.string], t.start, t.end, t.line)
+            modified_tokens.append(new_t)
+            
+        # 3. Handle F-STRINGS (The fix!)
+        elif t.type == tokenize.STRING:
+            # Check for f-string prefix (f', f", F', F")
+            prefix = t.string[:2].lower()
+            if 'f' in prefix and (prefix.startswith('f') or prefix.startswith('fr') or prefix.startswith('rf')):
+                new_val = process_fstring(t.string, mapping)
+                new_t = (t.type, new_val, t.start, t.end, t.line)
+                modified_tokens.append(new_t)
+            else:
+                modified_tokens.append(t)
+                
+        else:
+            modified_tokens.append(t)
 
-with tempfile.NamedTemporaryFile("w", delete=False) as tmp, open(path) as f:
-    for i, line in enumerate(f, start=0):
-        if i == 0:
-            tmp.write("#!/usr/bin/env pypy3\n")
-        tmp.write(line)
+    return tokenize.untokenize(modified_tokens)
 
-shutil.move(tmp.name, path)
+def main():
+    # 1. Read input
+    input_path = Path("pygone-combined.py") 
+    if not input_path.exists():
+        print("Error: Run pyshrink.py first to generate pygone-combined.py")
+        return
 
-file = Path(path)
-code = file.read_text()
+    raw_code = input_path.read_text()
 
-minified = python_minifier.minify(
-    code,
-    rename_locals=False,      # shrink local variables inside functions/classes
-    rename_globals=False,    # leave module-level globals/constants intact
-    combine_imports=False,
-    hoist_literals=False,
-    remove_annotations=True,
-    remove_literal_statements=True
-)
+    # 2. Apply Safe Renaming (Tokenizer + F-String Parser)
+    print("Applying safe attribute renaming (including f-strings)...")
+    renamed_code = apply_safe_replacements(raw_code, REPLACEMENTS)
 
-with open(path, "w") as f:
-    f.write(minified)
+    # 3. Minify
+    print("Running pyminifier...")
+    minified_code = python_minifier.minify(
+        renamed_code,
+        rename_locals=True,
+        rename_globals=False,
+        hoist_literals=False,
+        remove_annotations=True,
+        remove_literal_statements=True,
+    )
 
-file = Path(path)
-code = file.read_text()
-code = code.replace('\t', ' ')
-code = remove_blank_lines(code)
+    # 4. Final Cleanup (Tabs/Blank Lines)
+    print("Performing final cleanup...")
+    final_code = minified_code.replace('\t', ' ')
+    final_code = remove_blank_lines(final_code)
 
-# Write back
-file.write_text(code)
+    # 5. Write Output
+    output_path = Path("pygone-final.py")
+    # Ensure we only have one shebang
+    if final_code.startswith("#!"):
+        final_code = "\n".join(final_code.splitlines()[1:])
+        
+    output_path.write_text("#!/usr/bin/env python3\n" + final_code)
+    
+    print(f"Original: {len(raw_code)} bytes")
+    print(f"Final:    {len(final_code) + len('#!/usr/bin/env python3')} bytes")
+    print(f"Saved to: {output_path}")
+
+if __name__ == "__main__":
+    main()

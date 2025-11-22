@@ -2,9 +2,9 @@
 import sys
 from search import Search
 from board import Board
-#remove
+#UNITremove
 from perft import Perft
-#endremove
+#UNITendremove
 
 def main():
     game_board = Board()
@@ -22,7 +22,7 @@ def main():
                 searcher = Search(game_board)
             elif line == "isready":
                 print("readyok", flush=True)
-            #remove
+            #UNITremove
             elif line == "unit":
                 b = Board()
                 orig_hash = b.hash
@@ -169,8 +169,63 @@ def main():
                 assert b.ep == 43, "EP Square not restored"
                 assert b.hash == orig_hash, "Hash mismatch after EP Unmake"
                 
+                print("Testing Promotion & Reversal")
+                # ---------------------------------------
+                # 7) Promotion Integrity
+                # ---------------------------------------
+                b = Board()
+                # White Pawn on a7, Black King far away.
+                b.set_fen("8/P7/8/8/8/8/8/k6K w - - 0 1")
+                orig_hash = b.hash
+
+                # Find the move: a7 -> a8 (Queen promotion)
+                # Algebraic: a7=48, a8=56
+                # Gen pseudo legal moves to find the specific promotion tuple
+                moves = list(b.gen_pseudo_legal())
+                promo_move = None
+                for m in moves:
+                    # m format: (from, to, promo, capture, piece, is_castle)
+                    # We look for promo == 'q' (Queen)
+                    if m[0] == 48 and m[1] == 56 and m[2] == 'q':
+                        promo_move = m
+                        break
+                
+                assert promo_move is not None, "Could not generate a7a8q move"
+                
+                # --- EXECUTE MAKE ---
+                b.make_move(promo_move)
+
+                # Checks after Make:
+                # 1. Target square (a8/56) should have White Queen (index 4)
+                # If the bug exists, this will likely fail or crash before here
+                assert b.piece_map[56] == 4, f"Expected White Queen (4) at a8, got {b.piece_map[56]}"
+                
+                # 2. Source square (a7/48) should be empty (-1)
+                assert b.piece_map[48] == -1, "Source square a7 was not cleared"
+                
+                # 3. Bitboard check: The White Queen bitboard (P[4]) should have bit 56 set
+                assert (b.P[4] & (1 << 56)), "White Queen bitboard not updated"
+                
+                # 4. Bitboard check: The White Pawn bitboard (P[0]) should NOT have bit 48 set
+                assert not (b.P[0] & (1 << 48)), "White Pawn bitboard not cleared"
+
+                # --- EXECUTE UNMAKE ---
+                b.unmake_move()
+
+                # Checks after Unmake:
+                # 1. Target square (a8/56) should be empty
+                assert b.piece_map[56] == -1, "Promotion square a8 not cleared after unmake"
+                
+                # 2. Source square (a7/48) should be a White Pawn (index 0) again
+                assert b.piece_map[48] == 0, f"Expected White Pawn (0) at a7, got {b.piece_map[48]}"
+                
+                # 3. Hash check
+                assert b.hash == orig_hash, "Hash mismatch after Promotion Unmake"
+
+                print("Promotion unit test passed.")
+
                 print ("Unit complete")
-            #endremove
+            #UNITendremove
             #remove
             elif line.startswith("position fen"):
                 cmd = line[9:]
@@ -238,8 +293,6 @@ def main():
                 #endremove
                     
                 move_time = max(2, side_time / 28)
-                
-                print(f"{side_time} {move_time}")
 
                 searcher.set_time_limit(move_time)
                 
