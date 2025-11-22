@@ -30,7 +30,17 @@ UNIFIED_PST = [
     -40,-20, 0, 0, 0, 0,-20,-40,
     -50,-40,-30,-30,-30,-30,-40,-50 # Rank 8/1
 ]
-PST_WEIGHTS = [1, 3, 2, 1, 1, 4]
+PAWN_PST = [
+     0,  0,  0,  0,  0,  0,  0,  0,   # Rank 1 (Impossible)
+    50, 50, 50, 50, 50, 50, 50, 50,   # Rank 2 (About to promote)
+    10, 10, 20, 30, 30, 20, 10, 10,   # Rank 3
+     5,  5, 10, 25, 25, 10,  5,  5,   # Rank 4
+     0,  0,  0, 20, 20,  0,  0,  0,   # Rank 5 (Center push good)
+     5, -5,-10,  0,  0,-10, -5,  5,   # Rank 6
+     5, 10, 10,-20,-20, 10, 10,  5,   # Rank 7 (Start)
+     0,  0,  0,  0,  0,  0,  0,  0    # Rank 8
+]
+PST_WEIGHTS = [1, 3, 3, 5, 9, 0]
 
 # --- utilities -------------------------------------------------------------
 def get_bit(s): 
@@ -349,55 +359,40 @@ class Board:
 
     # attack detection
     def attacked(self, sq, by_white):
-        occ = self.all_occupied()
-        # Pre-calculate Attacker Bitboards for Sliding Pieces
-        r_q_attacker_bb = self.P[self.side_index(by_white, 3)] | self.P[self.side_index(by_white, 4)]
-        b_q_attacker_bb = self.P[self.side_index(by_white, 2)] | self.P[self.side_index(by_white, 4)]
-        
-        # pawn
+        # 1. Pawns, Knights, Kings (Step Pieces)
+        # Note: side_index(True, 0) is White Pawn (0), False is Black Pawn (6)
         if by_white:
-            if PAWN_ATK_BLACK[sq] & self.P[self.side_index(True, 0)]: return True
+            if PAWN_ATK_BLACK[sq] & self.P[0]: return True
         else:
-            if PAWN_ATK_WHITE[sq] & self.P[self.side_index(False, 0)]: return True
+            if PAWN_ATK_WHITE[sq] & self.P[6]: return True
             
-        # knight
-        if KNIGHT_ATK[sq] & self.P[self.side_index(by_white,1)]: return True
-        # king
-        if KING_ATK[sq] & self.P[self.side_index(by_white,5)]: return True
+        if KNIGHT_ATK[sq] & self.P[self.side_index(by_white, 1)]: return True
+        if KING_ATK[sq] & self.P[self.side_index(by_white, 5)]: return True
         
-        # sliding: rook/queen for orthogonals
-        for d in DIRS_ROOK:
-            s = sq
-            while True:
-                ns = s + d
-                if ns < 0 or ns >= 64: break
-                # file wrap checks
-                if d == E and ns%8 == 0: break
-                if d == W and ns%8 == 7: break
-                s = ns; m = get_bit(s)
-                
-                if m & r_q_attacker_bb: # Is this an attacking Rook or Queen?
-                    return True
+        # 2. Sliders (Merged Logic)
+        occ = self.all_occupied()
+        
+        # Define attacker groups: (Directions, Bitboard of attackers)
+        # Rooks (3) + Queens (4) use Rook Dirs
+        # Bishops (2) + Queens (4) use Bishop Dirs
+        sliders = [
+            (DIRS_ROOK, self.P[self.side_index(by_white, 3)] | self.P[self.side_index(by_white, 4)]),
+            (DIRS_BISHOP, self.P[self.side_index(by_white, 2)] | self.P[self.side_index(by_white, 4)])
+        ]
+
+        for dirs, attackers in sliders:
+            for d in dirs:
+                s = sq
+                while True:
+                    s += d
+                    # Bounds Check
+                    if s < 0 or s >= 64: break
+                    # File Wrap Check
+                    if abs((s - d) % 8 - s % 8) > 1: break
                     
-                if m & occ: # Is this ANY piece (blocking the ray)?
-                    break
-                    
-        # sliding: bishop/queen for diagonals
-        for d in DIRS_BISHOP:
-            s = sq
-            while True:
-                ns = s + d
-                if ns < 0 or ns >= 64: break
-                # file wrap
-                if d in (NE,SE) and ns%8 == 0: break
-                if d in (NW,SW) and ns%8 == 7: break
-                s = ns; m = get_bit(s)
-                
-                if m & b_q_attacker_bb: # Is this an attacking Bishop or Queen?
-                    return True
-                    
-                if m & occ: # Is this ANY piece (blocking the ray)?
-                    break
+                    bit = 1 << s
+                    if bit & attackers: return True
+                    if bit & occ: break
                     
         return False
 
@@ -550,7 +545,7 @@ class Board:
                         if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
                             yield (60, 58, None, None, 'k', True)
 
-    def king_safety(self, white):
+    def eval_king(self, white):
         k = self.king_square(white)
         f, r = k % 8, k // 8
         d, bb = (1, 0) if white else (-1, 6) # Direction and Pawn BB index
@@ -579,94 +574,82 @@ class Board:
 
     def eval_material(self):
         score = 0
-        for idx, bb in enumerate(self.P):
-            if bb == 0:
-                continue
-            piece_char = IDX_TO_PIECE[idx % 6]
-            val = self.PIECE_VALUES[piece_char]
-            # population count
-            cnt = bb.bit_count()
+        
+        for i in range(12):
+            p, c = i % 6, 1 if i < 6 else -1
             
-            if idx < 6: score += val * cnt
-            else: score -= val * cnt
+            mat = self.PIECE_VALUES[IDX_TO_PIECE[p]]
+            weight = PST_WEIGHTS[p]
+            
+            bb = self.P[i]
+            while bb:
+                sq = (bb & -bb).bit_length() - 1
+                bb &= bb - 1
+                
+                idx = sq if c == 1 else sq ^ 56
+                
+                # 1. ROOKS: Logic Override (Pig on 7th)
+                if p == 3:
+                    pst_val = 20 if (idx // 8) == 6 else 0
+                    
+                # 2. PAWNS: Use Special Table (Clean!)
+                elif p == 0: 
+                    pst_val = PAWN_PST[idx]
+                    
+                # 3. OTHERS: Use Unified Table
+                else:
+                    pst_val = UNIFIED_PST[idx]
+                
+                score += c * (mat + (pst_val * weight // 2))
+                
         return score
 
-    def eval_position(self):
+    def pawn_structure_score(self, pawns):
         score = 0
         
-        # Loop 12 times: White Pawns (0) to Black King (11)
-        for i in range(12): 
-            # T: Piece Type Index (0-5)
-            piece = i % 6 
+        for f in range(8):
+            # Create mask for this file
+            file_mask = A_FILE_MASK << f
             
-            # W: Weight based on the piece type
-            weight = PST_WEIGHTS[piece] 
+            # 1. Doubled Pawns
+            # Count pawns on this file
+            cnt = (pawns & file_mask).bit_count()
+            if cnt > 1:
+                score -= (cnt - 1) * 15
             
-            # C: Color factor (1 for White, -1 for Black)
-            color = 1 if i < 6 else -1
-            
-            # B: Copy of the Bitboard for the current piece type
-            bb = self.P[i] 
-            
-            # --- Internal Loop: Iterating over set bits (squares) ---
-            
-            # Loop while the bitboard B has set bits
-            while bb:
-                # S: Square Index (Find the Least Significant Bit)
-                # This bit hack finds the index of the LSB (e.g., using b.bit_length() - 1 
-                # or a compiler intrinsic like __builtin_ctz if you were in C).
-                # The most common Python implementation for a 64-bit board is this sequence:
-                idx = (bb & -bb).bit_length() - 1 
+            # 2. Isolated Pawns
+            # Only check if there is at least one pawn on this file
+            if cnt > 0:
+                # Mask for adjacent files (Left | Right)
+                # Use 0xFE... to clear H-file wrap, 0x7F... to clear A-file wrap
+                neighbors = ((file_mask << 1) & 0xFEFEFEFEFEFEFEFE) | \
+                            ((file_mask >> 1) & 0x7F7F7F7F7F7F7F7F)
                 
-                # Clear the LSB (bb &= bb - 1) is the standard fastest way to pop a bit.
-                bb &= bb - 1 
-                
-                # D: PST Index. Mirror for Black pieces (C == -1). 
-                # S^56 flips the rank (0 -> 56, 1 -> 57, etc.)
-                D = idx if color == 1 else idx ^ 56
-                
-                # Add/subtract the weighted score
-                score += UNIFIED_PST[D] * weight * color
-                
-        return score / 2
-    
-    # def pawn_structure_penalty(self, pawns):
-    #     return -15 * sum(
-    #                 # Walrus operator to capture count 'k'
-    #                 (k := ((pawns >> f) & A_FILE_MASK).bit_count())
-    #                 and (
-    #                     # Penalty 1: (k - 1) for doubled pawns (if k=1, this is 0)
-    #                     (k - 1) 
-    #                     # Penalty 2: +1 if isolated (no neighbors)
-    #                     # We use conditional shifts to safely check neighbors without wrapping or self-matching
-    #                     + (not (pawns & (
-    #                         (A_FILE_MASK << (f - 1) if f else 0) | (A_FILE_MASK << (f + 1) if f < 7 else 0)
-    #                     )))
-    #                 )
-    #                 for f in range(8)
-    #             )
+                if not (pawns & neighbors):
+                    score -= 15
+                    
+        return score
 
     def evaluate(self):
         score = self.eval_material()
-        score += self.king_safety(True) - self.king_safety(False)
+        score += self.eval_king(True) - self.eval_king(False)
         
-        # score += self.pawn_structure_penalty(self.P[0]) - self.pawn_structure_penalty(self.P[6])
+        score += self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
         
-        score += self.eval_position()
+        # score += self.eval_position()
 
         return score if self.white_to_move else -score
 
-    def score_move(self, t_move):
-        g_score = 0
-        if t_move[3]:
-            # MVV-LVA: Most valuable victim - least valuable attacker
-            g_score += self.PIECE_VALUES[t_move[3]] * 100 - self.PIECE_VALUES[t_move[4]]
-        if t_move[2]:
-            # Promote to queen highest
-            g_score += self.PIECE_VALUES[t_move[2]] * 1000
-        if t_move[5]: # If the move is castling (assuming t_move[5] is the castling flag)
-            g_score += 500
-        return g_score
+    def score_move(self, m):
+        # m: (from, to, promo, cap_piece, moved_piece, castle_flag)
+        return (
+            # MVV-LVA: Capture Value * 100 - Attacker Value
+            (self.PIECE_VALUES[m[3]] * 100 - self.PIECE_VALUES[m[4]] if m[3] else 0)
+            # Promotion: Huge bonus
+            + (self.PIECE_VALUES[m[2]] * 1000 if m[2] else 0)
+            # Castle: Moderate bonus
+            + (500 if m[5] else 0)
+        )
 
     def piece_on(self, sq):
         idx = self.piece_map[sq]
@@ -776,7 +759,7 @@ class Board:
         score = self.evaluate()
         
         mat_score = self.eval_material()
-        king_score = self.king_safety(True) - self.king_safety(False)
+        king_score = self.eval_king(True) - self.eval_king(False)
         
         # wp =  self.P[0]
         # bp =  self.P[6]

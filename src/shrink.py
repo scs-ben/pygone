@@ -130,6 +130,7 @@ REPLACEMENTS = {
     "A_FILE_MASK": "dz",
     "CR_MASK": "dA",
     "PROMO_MAP": "dB",
+    "PAWN_PST": "dC",
     
     "piece_bb": "F1",
     "piece_index": "F2",
@@ -225,7 +226,7 @@ REPLACEMENTS = {
     "rook": "p4",
     "queens": "pB",
     "queen": "p5",
-    "king_safety": "p6",
+    "eval_king": "p6",
     "king": "p7",
     "pawn_structure_penalty": "p8",
     "get_square_indices": "p9",
@@ -233,6 +234,7 @@ REPLACEMENTS = {
     "bm_b": "pb",
     "pawn_count": "pc",
     "pawns": "pd",
+    "pawn_structure_score": "pe",
     
     "bb_name": "q1",
     

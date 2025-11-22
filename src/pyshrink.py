@@ -11,6 +11,7 @@ imports_to_inline = [
     ("search", Path("search.py")),
     ("board", Path("board.py")),
     ("perft", Path("perft.py")),
+    ("unit", Path("unit.py")),
 ]
 
 # --- read main file ---
