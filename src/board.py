@@ -409,134 +409,146 @@ class Board:
         return self.attacked(self.king_square(self.white_to_move), not self.white_to_move) if white else self.attacked(self.king_square(not self.white_to_move), self.white_to_move)
 
     # --- move generation -------------------------------------------------
-    def gen_pseudo_legal(self):
+    def gen_pseudo_legal(self, active=False):
         us = self.white_to_move
         occ = self.all_occupied()
         our = self.pieces_of(us)
         their = self.pieces_of(not us)
+        
+        # Target mask for Knights and King: 
+        # If active (QSearch), we only want captures (their pieces).
+        # If not active, we want anything not ours (empty + their pieces).
+        step_targets = their if active else ~our
 
-        # pawns
-        pawns = self.P[self.side_index(us,0)]
+        # --- PAWNS ---
+        pawns = self.P[self.side_index(us, 0)]
         while pawns:
             pawns, sq = pop_lsb(pawns)
+            
+            # WHITE PAWNS
             if us:
-                # single push
-                if not (occ & get_bit(sq+8)) and sq//8 < 7:
-                    # promotion?
-                    if sq//8 == 6:
-                        for p in ('q','r','b','n'): yield (sq, sq+8, p, None, 'p', False)
-                    else:
-                        yield (sq, sq+8, None, None, 'p', False)
-                        if sq//8 == 1 and not (occ & get_bit(sq+16)):
-                            yield (sq, sq+16, None, None, 'p', False)
-                # captures
-                for t in (sq+7, sq+9):
-                    if 0<=t<64:
-                        if (PAWN_ATK_WHITE[sq] & get_bit(t)) and (their & get_bit(t)):
-                            if sq//8 == 6:
-                                for p in ('q','r','b','n'): yield (sq,t,p,  self.piece_on(t), 'p', False)
-                            else: yield (sq,t,None,  self.piece_on(t), 'p', False)
-                # ep
-                if self.ep != -1:
-                    if PAWN_ATK_WHITE[sq] & get_bit(self.ep):
-                        yield (sq,self.ep,None,'p', 'p', False)
+                # 1. Pushes (Quiet unless promotion)
+                if not (occ & get_bit(sq + 8)) and sq // 8 < 7:
+                    # Promotion (Rank 7->8) is ALWAYS generated (it's "active")
+                    is_promo = (sq // 8 == 6)
+                    
+                    if is_promo or not active:
+                        if is_promo:
+                            for p in ('q', 'r', 'b', 'n'): 
+                                yield (sq, sq + 8, p, None, 'p', False)
+                        else:
+                            # Normal push (only if not active)
+                            yield (sq, sq + 8, None, None, 'p', False)
+                            
+                            # Double push (Rank 2->4) - Only if not active
+                            if sq // 8 == 1 and not (occ & get_bit(sq + 16)):
+                                yield (sq, sq + 16, None, None, 'p', False)
+
+                # 2. Captures (Always active)
+                for t in (sq + 7, sq + 9):
+                    if 0 <= t < 64 and (PAWN_ATK_WHITE[sq] & get_bit(t)) and (their & get_bit(t)):
+                        if sq // 8 == 6:
+                            for p in ('q', 'r', 'b', 'n'): 
+                                yield (sq, t, p, self.piece_on(t), 'p', False)
+                        else:
+                            yield (sq, t, None, self.piece_on(t), 'p', False)
+                
+                # 3. En Passant (Always active)
+                if self.ep != -1 and (PAWN_ATK_WHITE[sq] & get_bit(self.ep)):
+                    yield (sq, self.ep, None, 'p', 'p', False)
+
+            # BLACK PAWNS
             else:
-                if not (occ & get_bit(sq-8)) and sq//8 > 0:
-                    if sq//8 == 1:
-                        for p in ('q','r','b','n'): yield (sq, sq-8, p, None, 'p', False)
-                    else:
-                        yield (sq, sq-8, None, None, 'p', False)
-                        if sq//8 == 6 and not (occ & get_bit(sq-16)):
-                            yield (sq, sq-16, None, None, 'p', False)
-                for t in (sq-7, sq-9):
-                    if 0<=t<64:
-                        if (PAWN_ATK_BLACK[sq] & get_bit(t)) and (their & get_bit(t)):
-                            if sq//8 == 1:
-                                for p in ('q','r','b','n'): yield (sq,t,p,  self.piece_on(t), 'p', False)
-                            else: yield (sq,t,None,  self.piece_on(t), 'p', False)
-                if self.ep != -1:
-                    if PAWN_ATK_BLACK[sq] & get_bit(self.ep):
-                        yield (sq,self.ep,None,'p', 'p', False)
-        # knights
-        knights = self.P[self.side_index(us,1)]
+                if not (occ & get_bit(sq - 8)) and sq // 8 > 0:
+                    is_promo = (sq // 8 == 1)
+                    
+                    if is_promo or not active:
+                        if is_promo:
+                            for p in ('q', 'r', 'b', 'n'): 
+                                yield (sq, sq - 8, p, None, 'p', False)
+                        else:
+                            yield (sq, sq - 8, None, None, 'p', False)
+                            if sq // 8 == 6 and not (occ & get_bit(sq - 16)):
+                                yield (sq, sq - 16, None, None, 'p', False)
+
+                for t in (sq - 7, sq - 9):
+                    if 0 <= t < 64 and (PAWN_ATK_BLACK[sq] & get_bit(t)) and (their & get_bit(t)):
+                        if sq // 8 == 1:
+                            for p in ('q', 'r', 'b', 'n'): 
+                                yield (sq, t, p, self.piece_on(t), 'p', False)
+                        else:
+                            yield (sq, t, None, self.piece_on(t), 'p', False)
+
+                if self.ep != -1 and (PAWN_ATK_BLACK[sq] & get_bit(self.ep)):
+                    yield (sq, self.ep, None, 'p', 'p', False)
+
+        # --- KNIGHTS ---
+        knights = self.P[self.side_index(us, 1)]
         while knights:
             knights, sq = pop_lsb(knights)
-            atk = KNIGHT_ATK[sq] & ~our
-            bb = atk
+            # Mask attacks by step_targets (captures only if active)
+            bb = KNIGHT_ATK[sq] & step_targets
             while bb:
                 bb, t = pop_lsb(bb)
-                yield (sq,t,None,  self.piece_on(t), 'n', False)
-        # bishops
-        bishops = self.P[self.side_index(us,2)]
-        while bishops:
-            bishops, sq = pop_lsb(bishops)
-            for d in DIRS_BISHOP:
-                s = sq
-                while True:
-                    ns = s + d
-                    if ns < 0 or ns >= 64: break
-                    if d in (NE,SE) and ns%8 == 0: break
-                    if d in (NW,SW) and ns%8 == 7: break
-                    s = ns
-                    m = get_bit(s)
-                    if m & our: break
-                    yield (sq,s,None,  self.piece_on(s), 'b', False)
-                    if m & their: break
-        # rooks
-        rooks = self.P[self.side_index(us,3)]
-        while rooks:
-            rooks, sq = pop_lsb(rooks)
-            for d in DIRS_ROOK:
-                s = sq
-                while True:
-                    ns = s + d
-                    if ns < 0 or ns >= 64: break
-                    if d == E and ns%8 == 0: break
-                    if d == W and ns%8 == 7: break
-                    s = ns; m = get_bit(s)
-                    if m & our: break
-                    yield (sq,s,None,  self.piece_on(s), 'r', False)
-                    if m & their: break
-        # queens
-        queens = self.P[self.side_index(us,4)]
-        while queens:
-            queens, sq = pop_lsb(queens)
-            for d in DIRS_ROOK+DIRS_BISHOP:
-                s = sq
-                while True:
-                    ns = s + d
-                    if ns < 0 or ns >= 64: break
-                    # file wrap checks
-                    if d in (E,NE,SE) and ns%8 == 0: break
-                    if d in (W,NW,SW) and ns%8 == 7: break
-                    s = ns; m = get_bit(s)
-                    if m & our: break
-                    yield (sq,s,None,  self.piece_on(s), 'q', False)
-                    if m & their: break
-        # king
+                yield (sq, t, None, self.piece_on(t), 'n', False)
+
+        # --- SLIDING PIECES (Bishops, Rooks, Queens) ---
+        # Helper for sliding logic to reduce code duplication
+        for piece_type, directions in [(2, DIRS_BISHOP), (3, DIRS_ROOK), (4, DIRS_ROOK + DIRS_BISHOP)]:
+            pieces = self.P[self.side_index(us, piece_type)]
+            p_char = IDX_TO_PIECE[piece_type]
+            
+            while pieces:
+                pieces, sq = pop_lsb(pieces)
+                for d in directions:
+                    s = sq
+                    while True:
+                        ns = s + d
+                        # Bounds checking
+                        if ns < 0 or ns >= 64: break
+                        # File wrapping
+                        if d in (E, NE, SE) and ns % 8 == 0: break
+                        if d in (W, NW, SW) and ns % 8 == 7: break
+                        
+                        s = ns
+                        m = get_bit(s)
+                        
+                        if m & our: 
+                            break # Blocked by friend
+                        
+                        if m & their:
+                            # Capture (Always yield)
+                            yield (sq, s, None, self.piece_on(s), p_char, False)
+                            break # Blocked by enemy
+                        elif not active:
+                            # Quiet move (Only yield if not active)
+                            yield (sq, s, None, None, p_char, False)
+
+        # --- KING ---
         ksq = self.king_square(us)
         if 0 <= ksq < 64:
-            bb = KING_ATK[ksq] & ~our
+            # Normal moves (step_targets handles capture-only logic)
+            bb = KING_ATK[ksq] & step_targets
             while bb:
                 bb, t = pop_lsb(bb)
-                yield (ksq,t,None, self.piece_on(t), 'k', False)
-            # castling (basic tests: empty squares + not attacked)
-            if us:
-                # white king e1=4
-                if (self.castle & 1) and not (occ & (get_bit(5)|get_bit(6))):
-                    # ensure no squares attacked f1/e1/g1
-                    if not self.attacked(4, False) and not self.attacked(5,False) and not self.attacked(6,False):
-                        yield (4,6,None, None, 'k', True)
-                if (self.castle & 2) and not (occ & (get_bit(1)|get_bit(2)|get_bit(3))):
-                    if not self.attacked(4,False) and not self.attacked(3,False) and not self.attacked(2,False):
-                        yield (4,2,None, None, 'k', True)
-            else:
-                if (self.castle & 4) and not (occ & (get_bit(61)|get_bit(62))):
-                    if not self.attacked(60, True) and not self.attacked(61,True) and not self.attacked(62,True):
-                        yield (60,62,None, None, 'k', True)
-                if (self.castle & 8) and not (occ & (get_bit(57)|get_bit(58)|get_bit(59))):
-                    if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
-                        yield (60,58,None, None, 'k', True)
+                yield (ksq, t, None, self.piece_on(t), 'k', False)
+
+            # --- CASTLING (Quiet - Skip if active) ---
+            if not active:
+                if us:
+                    if (self.castle & 1) and not (occ & (get_bit(5)|get_bit(6))):
+                        if not self.attacked(4, False) and not self.attacked(5,False) and not self.attacked(6,False):
+                            yield (4, 6, None, None, 'k', True)
+                    if (self.castle & 2) and not (occ & (get_bit(1)|get_bit(2)|get_bit(3))):
+                        if not self.attacked(4,False) and not self.attacked(3,False) and not self.attacked(2,False):
+                            yield (4, 2, None, None, 'k', True)
+                else:
+                    if (self.castle & 4) and not (occ & (get_bit(61)|get_bit(62))):
+                        if not self.attacked(60, True) and not self.attacked(61,True) and not self.attacked(62,True):
+                            yield (60, 62, None, None, 'k', True)
+                    if (self.castle & 8) and not (occ & (get_bit(57)|get_bit(58)|get_bit(59))):
+                        if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
+                            yield (60, 58, None, None, 'k', True)
 
     def king_safety(self, white):
         k = self.king_square(white)
@@ -618,27 +630,27 @@ class Board:
                 
         return score / 2
     
-    def pawn_structure_penalty(self, pawns):
-        return -15 * sum(
-                    # Walrus operator to capture count 'k'
-                    (k := ((pawns >> f) & A_FILE_MASK).bit_count())
-                    and (
-                        # Penalty 1: (k - 1) for doubled pawns (if k=1, this is 0)
-                        (k - 1) 
-                        # Penalty 2: +1 if isolated (no neighbors)
-                        # We use conditional shifts to safely check neighbors without wrapping or self-matching
-                        + (not (pawns & (
-                            (A_FILE_MASK << (f - 1) if f else 0) | (A_FILE_MASK << (f + 1) if f < 7 else 0)
-                        )))
-                    )
-                    for f in range(8)
-                )
+    # def pawn_structure_penalty(self, pawns):
+    #     return -15 * sum(
+    #                 # Walrus operator to capture count 'k'
+    #                 (k := ((pawns >> f) & A_FILE_MASK).bit_count())
+    #                 and (
+    #                     # Penalty 1: (k - 1) for doubled pawns (if k=1, this is 0)
+    #                     (k - 1) 
+    #                     # Penalty 2: +1 if isolated (no neighbors)
+    #                     # We use conditional shifts to safely check neighbors without wrapping or self-matching
+    #                     + (not (pawns & (
+    #                         (A_FILE_MASK << (f - 1) if f else 0) | (A_FILE_MASK << (f + 1) if f < 7 else 0)
+    #                     )))
+    #                 )
+    #                 for f in range(8)
+    #             )
 
     def evaluate(self):
         score = self.eval_material()
         score += self.king_safety(True) - self.king_safety(False)
         
-        score += self.pawn_structure_penalty(self.P[0]) - self.pawn_structure_penalty(self.P[6])
+        # score += self.pawn_structure_penalty(self.P[0]) - self.pawn_structure_penalty(self.P[6])
         
         score += self.eval_position()
 

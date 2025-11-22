@@ -4,7 +4,7 @@ import math, time
 #    entry ('key', 'g_score', 's_depth', 'flag', 't_move')
 
 class TranspositionTable:
-    size = 2**31 // 32
+    size = 2**20
     table = [None] * size
 
     def store(self, key, s_depth, g_score, flag, t_move):
@@ -78,14 +78,32 @@ class Search:
         print(f"bestmove {uci_move}", flush=True)
 
     def threefold(self):
-        move_count = 1
-        
-        for entry in self.board.stack:
-            move_count += entry[-1] == self.board.hash
-            if move_count >= 3:
-                return True
+            # We only need to check back as far as the last irreversible move
+            # (pawn move or capture), which is tracked by the halfmove_clock.
+            limit = min(self.board.halfmove_clock, len(self.board.stack))
             
-        return False
+            if limit < 4: # Need at least 4 plies (2 full moves) to repeat start pos
+                return False
+
+            h = self.board.hash
+            count = 0
+            
+            # Iterate backwards only up to the limit
+            # stack entry: (mv, captured_idx, is_ep, old_ep, old_castle, old_clock, old_hash)
+            # We want entry[6] -> old_hash
+            for i in range(1, limit + 1):
+                # Look at the N-th most recent entry
+                entry = self.board.stack[-i]
+                
+                if entry[6] == h:
+                    count += 1
+                    if count >= 1: # Found 1 previous instance + current = 2 repetitions? 
+                        # NOTE: Strict rules require 3 occurrences (count >= 2 here).
+                        # However, many engines prune at 2 to avoid the draw trap early.
+                        # Use '>= 2' for strict rule compliance, '>= 1' for safety.
+                        return True
+                        
+            return False
 
     def search(self, s_depth, alpha, beta, ply):
         if self.time_up or (self.time_limit and time.time() >= self.end_time):
@@ -152,44 +170,24 @@ class Search:
                 self.board.unmake_move()
                 continue
 
-            # is_quiet = not t_move[3] and not t_move[2]
+            d = s_depth - 1
+            if d > 1 and played_moves > 4 and not (in_check or t_move[2] or t_move[3]):
+                d -= 1 + (played_moves > 15) + (s_depth > 7)
 
-            # # -------------------------------
-            # # Late Move Reductions
-            # # -------------------------------
-            # if (played_moves > 1 and is_quiet and not in_check
-            #     and s_depth >= 3 and played_moves >= 4):
+            # 2. First Search (PV gets full window, others get Zero Window + Reduced Depth)
+            g_score = -self.search(d, -alpha - 1 if played_moves > 1 else -beta, -alpha, ply + 1)
 
-            #     reduction = 1 + (s_depth > 3) + (played_moves > 3)
-            #     reduced_depth = s_depth - 1 - reduction
+            # 3. Re-Searches (Only if the cheap search failed low/high incorrectly)
+            if played_moves > 1 and g_score > alpha:
+                # Research 1: If we reduced depth but the move is good, verify at full depth (Zero Window)
+                if d < s_depth - 1:
+                    g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
+                
+                # Research 2: If the move beats Alpha (and we are in a PV node), verify at Full Window
+                if g_score < beta:
+                    g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
-            # else:
-            #     reduced_depth = s_depth - 1
-
-            # # -------------------------------
-            # # PVS / zero-width search
-            # # -------------------------------
-            # if played_moves == 1:
-            #     # Full PV window
-            #     g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
-
-            # else:
-            #     # Zero-width search
-            #     g_score = -self.search(reduced_depth, -alpha - 1, -alpha, ply + 1)
-
-            #     # ---------------------------
-            #     # LMR re-search
-            #     # ---------------------------
-            #     if reduced_depth < s_depth - 1 and g_score > alpha:
-            #         g_score = -self.search(s_depth - 1, -alpha - 1, -alpha, ply + 1)
-
-            #     # ---------------------------
-            #     # Full-window re-search
-            #     # ---------------------------
-            #     if g_score > alpha and g_score < beta:
-            #         g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
-
-            g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
+            # g_score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
             # print(f"{self.board.move_to_uci(t_move)} {self.board.evaluate()} {g_score}")
 
@@ -241,22 +239,17 @@ class Search:
 
         stand_pat = self.board.evaluate()
 
-        if q_depth >= 30 or stand_pat >= beta:
+        if q_depth >= 8 or stand_pat >= beta:
             return stand_pat
+
+        if stand_pat >= beta:
+            return beta
+        if alpha < stand_pat:
+            alpha = stand_pat
 
         alpha = max(alpha, stand_pat)
 
-        in_check = self.board.in_check()
-        
-        if not in_check and stand_pat >= beta:
-            return beta
-        if not in_check and alpha < stand_pat:
-            alpha = stand_pat
-
-        for t_move in sorted(self.board.gen_pseudo_legal(), key=self.board.score_move, reverse=True):
-            if not in_check and not t_move[2] and not t_move[3] and not t_move[5]:
-                continue
-
+        for t_move in sorted(self.board.gen_pseudo_legal(True), key=self.board.score_move, reverse=True):
             self.board.make_move(t_move)
             
             if self.board.in_check(False):
@@ -270,11 +263,10 @@ class Search:
             if self.time_up:
                 break
 
+            if g_score >= beta:
+                return g_score
             if g_score > alpha:
                 alpha = g_score
-                
-                if alpha >= beta:
-                    return alpha
             
         return alpha
     
