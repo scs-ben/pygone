@@ -200,13 +200,28 @@ class Board:
 
     # make/unmake minimal for legality checking
     def make_move(self, mv):
-        if not mv:
-            return
-        frm, to, promo, _, _, _ = mv
-        us = self.white_to_move
-        
         # 1. CACHE OLD STATE
         old_ep, old_castle, old_clock, old_hash = self.ep, self.castle, self.halfmove_clock, self.hash
+
+        # --- NULL MOVE HANDLING ---
+        if not mv:
+            # Toggle side in hash
+            self.hash ^= SIDE_KEY
+            
+            # Clear EP in hash and state
+            if self.ep != -1:
+                self.hash ^= EP_KEYS[self.ep & 7]
+                self.ep = -1
+            
+            self.white_to_move = not self.white_to_move
+            
+            # Push null-move state to stack (mv is None)
+            self.stack.append((None, -1, False, old_ep, old_castle, old_clock, old_hash))
+            return
+        # --------------------------
+
+        frm, to, promo, _, _, _ = mv
+        us = self.white_to_move
 
         # 2. IDENTIFY MOVING PIECE
         # (We assume you still have get_bit or use 1<<frm)
@@ -298,6 +313,11 @@ class Board:
         mv, c_idx, is_ep, self.ep, self.castle, self.halfmove_clock, self.hash = self.stack.pop()
         self.white_to_move = not self.white_to_move
         
+        # --- NULL MOVE HANDLING ---
+        if not mv:
+            return # State variables restored above, no pieces to move
+        # --------------------------
+
         f, t, pr, _, _, _ = mv
         
         # 1. Pull piece back (t -> f)

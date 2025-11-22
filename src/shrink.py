@@ -129,6 +129,7 @@ REPLACEMENTS = {
     "START_FEN": "dy",
     "A_FILE_MASK": "dz",
     "CR_MASK": "dA",
+    "PROMO_MAP": "dB",
     
     "piece_bb": "F1",
     "piece_index": "F2",
@@ -228,6 +229,8 @@ REPLACEMENTS = {
     "king": "p7",
     "pawn_structure_penalty": "p8",
     "get_square_indices": "p9",
+    "bm_w": "pa",
+    "bm_b": "pb",
     
     "bb_name": "q1",
     
@@ -246,6 +249,10 @@ REPLACEMENTS = {
     # Built-ins / keywords
     "True": "1",
     "False": "0",
+
+    "LOWERBOUND": "0",
+    "EXACT": "1",
+    "UPPERBOUND": "2",
 }
 
 def remove_blank_lines(text):
@@ -257,12 +264,9 @@ def process_fstring(text, mapping):
     identifiers inside the curly braces only.
     """
     # Regex to match {expression} inside the string
-    # Looks for { followed by anything that isn't a } followed by }
-    # (?<!\{) and (?!\}) handle double brace escaping {{ }}
     pattern = re.compile(r'(?<!\{)\{(.*?)\}(?!\})')
     
     # Regex to match whole words in the mapping
-    # We compile this once for efficiency
     keys = sorted(mapping.keys(), key=len, reverse=True) 
     map_pattern = re.compile(r'\b(' + '|'.join(map(re.escape, keys)) + r')\b')
 
@@ -274,34 +278,61 @@ def process_fstring(text, mapping):
 
     return pattern.sub(replace_expression_content, text)
 
+def replace_literal_string(token_string, mapping):
+    """
+    Checks if a string literal (e.g. 'EXACT') matches a key in the map.
+    If so, replaces it with the mapped value (e.g. 'E').
+    """
+    # Basic sanity check for quotes
+    if len(token_string) < 2: 
+        return None
+        
+    quote = token_string[0]
+    # Ensure it's a simple string wrapped in matching quotes
+    if quote in ['"', "'"] and token_string.endswith(quote):
+        content = token_string[1:-1]
+        if content in mapping:
+            return f"{quote}{mapping[content]}{quote}"
+            
+    return None
+
 def apply_safe_replacements(source_code, mapping):
     """
-    Uses tokenize to replace identifiers AND variables inside f-strings.
+    Uses tokenize to replace identifiers, variables inside f-strings,
+    AND exact string literals (e.g. 'EXACT').
     """
     tokens = list(tokenize.tokenize(io.BytesIO(source_code.encode('utf-8')).readline))
     
     modified_tokens = []
     for t in tokens:
-        # 1. Handle Standard Variables
+        # 1. Handle Standard Variables (NAME tokens)
         if t.type == tokenize.NAME and t.string in mapping:
             new_t = (t.type, mapping[t.string], t.start, t.end, t.line)
             modified_tokens.append(new_t)
             
-        # 2. Handle 'print' if mapped (optional)
+        # 2. Handle 'print' if mapped
         elif t.type == tokenize.NAME and t.string == 'print' and 'print' in mapping:
             new_t = (t.type, mapping[t.string], t.start, t.end, t.line)
             modified_tokens.append(new_t)
             
-        # 3. Handle F-STRINGS (The fix!)
+        # 3. Handle STRINGS
         elif t.type == tokenize.STRING:
             # Check for f-string prefix (f', f", F', F")
             prefix = t.string[:2].lower()
+            
             if 'f' in prefix and (prefix.startswith('f') or prefix.startswith('fr') or prefix.startswith('rf')):
+                # It is an f-string: Replace vars inside {}
                 new_val = process_fstring(t.string, mapping)
                 new_t = (t.type, new_val, t.start, t.end, t.line)
                 modified_tokens.append(new_t)
             else:
-                modified_tokens.append(t)
+                # It is a normal string: Check if it's a literal we want to replace (e.g. 'EXACT')
+                new_val = replace_literal_string(t.string, mapping)
+                if new_val:
+                    new_t = (t.type, new_val, t.start, t.end, t.line)
+                    modified_tokens.append(new_t)
+                else:
+                    modified_tokens.append(t)
                 
         else:
             modified_tokens.append(t)
@@ -317,8 +348,8 @@ def main():
 
     raw_code = input_path.read_text()
 
-    # 2. Apply Safe Renaming (Tokenizer + F-String Parser)
-    print("Applying safe attribute renaming (including f-strings)...")
+    # 2. Apply Safe Renaming (Tokenizer + F-String + String Literal)
+    print("Applying safe attribute renaming...")
     renamed_code = apply_safe_replacements(raw_code, REPLACEMENTS)
 
     # 3. Minify
