@@ -73,7 +73,7 @@ class Search:
             return 0
 
         in_check = self.board.in_check()
-        
+
         # --- CHECK EXTENSION ---
         if in_check and depth < 4: 
              depth += 1
@@ -169,7 +169,10 @@ class Search:
         if (self.s_nodes & 2047) == 0 and time.time() > self.end_time:
             self.time_up = True
             return 0
-            
+        
+        if self.threefold() or self.board.halfmove_clock >= 100 or self.board.is_insufficient_material(): 
+            return 0
+
         self.s_nodes += 1
         
         # TT Probe (Q-Search)
