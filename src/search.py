@@ -1,4 +1,4 @@
-import time, math
+import time
 
 class Search:
     def __init__(self, board):
@@ -70,17 +70,15 @@ class Search:
             self.time_up = True
             return 0
             
-        if self.threefold() or self.board.halfmove_clock >= 100 or self.board.is_insufficient_material(): 
+        if self.threefold() or self.board.halfmove_clock >= 100: # or self.board.is_insufficient_material(): 
             return 0
 
         # --- MOVED UP: In Check Detection ---
-        in_check = self.board.in_check()
+        
 
         # --- CHECK EXTENSION ---
-        # If we are in check, we must search deeper to find an escape (or mate).
-        # We do not reduce depth here.
-        if in_check:
-            depth += 1
+        # if in_check and depth < 4: 
+        #      depth += 1
             
         if depth <= 0: 
             return self.q_search(alpha, beta)
@@ -90,12 +88,16 @@ class Search:
         # --- TT PROBE ---
         tt_idx = self.board.hash % 1048576
         entry = self.tt[tt_idx]
-        if entry and entry[0] == self.board.hash and entry[2] >= depth:
-            if entry[3] == 0: return entry[1]
-            if entry[3] == 1 and entry[1] >= beta: return entry[1]
-            if entry[3] == 2 and entry[1] <= alpha: return entry[1]
+        tt_move = None
+        if entry and entry[0] == self.board.hash:
+            tt_move = entry[4]
+            # (Existing cutoff logic remains here...)
+            if entry[2] >= depth:
+                if entry[3] == 0: return entry[1]
+                if entry[3] == 1 and entry[1] >= beta: return entry[1]
+                if entry[3] == 2 and entry[1] <= alpha: return entry[1]
 
-        # (Removed the duplicate in_check = self.board.in_check() call that was here)
+        in_check = self.board.in_check()
 
         # --- NULL MOVE PRUNING ---
         # Disable NMP if in check
@@ -117,7 +119,11 @@ class Search:
         best_move = None
         
         # Generate and sort moves
-        moves = sorted(self.board.gen_pseudo_legal(), key=self.board.score_move, reverse=True)
+        moves = sorted(
+            self.board.gen_pseudo_legal(), 
+            key=lambda m: self.board.score_move(m, tt_move), 
+            reverse=True
+        )
         
         if not moves:
             return -320000 + ply if in_check else 0

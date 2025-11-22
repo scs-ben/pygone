@@ -21,14 +21,14 @@ CR_MASK[60] = 3   # e8 (Remove BK-4, BQ-8)
 CR_MASK[63] = 11  # h8 (Remove BK-4)
 
 UNIFIED_PST = [
-    -50,-40,-30,-30,-30,-30,-40,-50, # Rank 1/8
-    -40,-20, 0, 0, 0, 0,-20,-40,
-    -30, 0, 10, 15, 15, 10, 0,-30,
-    -30, 5, 15, 20, 20, 15, 5,-30, # Center ranks
-    -30, 5, 15, 20, 20, 15, 5,-30,
-    -30, 0, 10, 15, 15, 10, 0,-30,
-    -40,-20, 0, 0, 0, 0,-20,-40,
-    -50,-40,-30,-30,-30,-30,-40,-50 # Rank 8/1
+    -50,-40,-30,-30,-30,-30,-40,-50,
+    -40,-20,  0,  0,  0,  0,-20,-40,
+    -30,  0, 10, 15, 15, 10,  0,-30,
+    -30,  5, 15, 30, 30, 15,  5,-30,
+    -30,  5, 15, 30, 30, 15,  5,-30,
+    -30,  0, 10, 15, 15, 10,  0,-30,
+    -40,-20,  0,  0,  0,  0,-20,-40,
+    -50,-40,-30,-30,-30,-30,-40,-50 
 ]
 PAWN_PST = [
      0,  0,  0,  0,  0,  0,  0,  0,   # Rank 1
@@ -629,33 +629,30 @@ class Board:
                     
         return score
     
-    def is_insufficient_material(self):
-        # 1. If any Pawns, Rooks, or Queens exist, it's not insufficient.
-        # White Pawns(0) | Black Pawns(6) | W Rooks(3) | W Queens(4) | B Rooks(9) | B Queens(10)
-        if (self.P[0] | self.P[6] | self.P[3] | self.P[4] | self.P[9] | self.P[10]):
-            return False
+    # def is_insufficient_material(self):
+    #     # 1. If any Pawns, Rooks, or Queens exist, it's not insufficient.
+    #     # White Pawns(0) | Black Pawns(6) | W Rooks(3) | W Queens(4) | B Rooks(9) | B Queens(10)
+    #     if (self.P[0] | self.P[6] | self.P[3] | self.P[4] | self.P[9] | self.P[10]):
+    #         return False
         
-        # 2. If we are here, only Kings, Knights, and Bishops remain.
-        # Calculate total minor pieces.
-        # W Knights(1) | W Bishops(2) | B Knights(7) | B Bishops(8)
-        minors = (self.P[1] | self.P[2] | self.P[7] | self.P[8])
+    #     # 2. If we are here, only Kings, Knights, and Bishops remain.
+    #     # Calculate total minor pieces.
+    #     # W Knights(1) | W Bishops(2) | B Knights(7) | B Bishops(8)
+    #     minors = (self.P[1] | self.P[2] | self.P[7] | self.P[8])
         
-        # If no minors (K vs K) or only 1 minor total (K+N vs K), it's a draw.
-        # We can use bit_count() since you already use it in pawn_structure_score
-        if minors.bit_count() < 2:
-            return True
+    #     # If no minors (K vs K) or only 1 minor total (K+N vs K), it's a draw.
+    #     # We can use bit_count() since you already use it in pawn_structure_score
+    #     if minors.bit_count() < 2:
+    #         return True
             
-        # Note: K+B vs K+B (opposite colors) is a theoretical draw but tricky 
-        # for engines to prove. K+N vs K+N is mostly drawn but can checkmate. 
-        # Keeping it simple (count < 2) covers the vast majority of cases 
-        # with 0 performance cost.
+    #     # Note: K+B vs K+B (opposite colors) is a theoretical draw but tricky 
+    #     # for engines to prove. K+N vs K+N is mostly drawn but can checkmate. 
+    #     # Keeping it simple (count < 2) covers the vast majority of cases 
+    #     # with 0 performance cost.
         
-        return False
+    #     return False
 
     def evaluate(self):
-        if self.is_insufficient_material():
-            return 0
-        
         score = self.eval_material()
         score += self.eval_king(True) - self.eval_king(False)
         
@@ -665,16 +662,11 @@ class Board:
 
         return score if self.white_to_move else -score
 
-    def score_move(self, m):
-        # m: (from, to, promo, cap_piece, moved_piece, castle_flag)
-        return (
-            # MVV-LVA: Capture Value * 100 - Attacker Value
-            (self.PIECE_VALUES[m[3]] * 100 - self.PIECE_VALUES[m[4]] if m[3] else 0)
-            # Promotion: Huge bonus
-            + (self.PIECE_VALUES[m[2]] * 1000 if m[2] else 0)
-            # Castle: Moderate bonus
-            + (500 if m[5] else 0)
-        )
+    def score_move(self, m, tt_move=None):
+        if m == tt_move: return 20000
+        return ((self.PIECE_VALUES[m[3]] * 100 - self.PIECE_VALUES[m[4]] if m[3] else 0) + 
+                (self.PIECE_VALUES[m[2]] * 1000 if m[2] else 0) + (500 if m[5] else 0) - 
+                int(max(abs(m[1]//8 - 3.5), abs(m[1]%8 - 3.5)) * 5))
 
     def piece_on(self, sq):
         idx = self.piece_map[sq]

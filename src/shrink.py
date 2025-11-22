@@ -198,8 +198,7 @@ REPLACEMENTS = {
     "print_to_terminal": "hk",
     "print_string": "hl",
     "sq_to_uci": "hm",
-    "unmake_move": "hn1",
-    "make_move": "hn",
+    "unmake_move": "hn",
     "eval_material": "ho",
     "attacked": "hp",
     "get_bit": "hq",
@@ -210,6 +209,7 @@ REPLACEMENTS = {
     "hq_length": "hv",
     "castle": "hw",
     "stack": "hx",
+    "make_move": "hy",
     
     "rook_from": "o1",
     "rook_to": "o2",
@@ -258,6 +258,11 @@ REPLACEMENTS = {
     "LOWERBOUND": "0",
     "EXACT": "1",
     "UPPERBOUND": "2",
+}
+
+REPLACEMENTS2 = {
+    "import random": "",
+    "import sys,time": "import sys,time,random",
 }
 
 def remove_blank_lines(text):
@@ -366,10 +371,15 @@ def main():
         hoist_literals=False,
         remove_annotations=True,
         remove_literal_statements=True,
+        combine_imports=True,
     )
 
     # 4. Final Cleanup (Tabs/Blank Lines)
     print("Performing final cleanup...")
+    
+    minified_code = minified_code.replace('import random', '')
+    minified_code = minified_code.replace('import sys,time', 'import sys,time,random')
+
     final_code = minified_code.replace('\t', ' ')
     final_code = remove_blank_lines(final_code)
 
