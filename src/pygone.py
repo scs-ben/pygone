@@ -26,7 +26,29 @@ def main():
             #UNITremove
             elif line == "unit":
                 unit = Unit()
-                unit.run()
+                b = Board()
+                unit.unit_hash(b)
+                b = Board()
+                perft = Perft(b)
+                unit.unit_perft(perft)
+                b = Board()
+                b.set_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
+                perft = Perft(b)
+                unit.unit_perft2(perft)
+                b = Board()
+                unit.unit_moves(b)
+                b = Board()
+                unit.unit_scoring(b)
+                b = Board()
+                unit.unit_castling(b)
+                b = Board()
+                unit.unit_ep(b)
+                b = Board()
+                unit.unit_promo(b)
+                b = Board()
+                b.set_fen("r1bqk1nr/2p2ppp/1pp5/2b1p3/p3P3/2NP1N2/PPP2PPP/R1BQ1RK1 w kq - 0 9")
+                s = Search(b)
+                unit.unit_search(b, s)
             #UNITendremove
             #remove
             elif line.startswith("position fen"):

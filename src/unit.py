@@ -1,11 +1,7 @@
 #!/usr/bin/env pypy3
-from search import Search
-from board import Board
-from perft import Perft
 
 class Unit:
-    def run(self):
-        b = Board()
+    def unit_hash(self, b):
         orig_hash = b.hash
         mv = list(b.gen_pseudo_legal())[0]   # some legal move
         b.make_move(mv)
@@ -15,7 +11,6 @@ class Unit:
         assert b.hash == orig_hash, "Zobrist mismatch after make/unmake"
 
         # 2) Compute from scratch vs incremental
-        b = Board()
         orig_hash = b.compute_hash()
         # do a sequence of moves
         moves = list(b.gen_pseudo_legal())[:4]
@@ -28,9 +23,15 @@ class Unit:
         
         assert h_inc == h_scratch, "Incremental != recompute"
 
+    def parse_move(self, mv, b):
+        from_sq = b.algebraic_to_sq(mv[:2])
+        to_sq = b.algebraic_to_sq(mv[2:4])
+
+        return (from_sq, to_sq, None, None, None, False)
+
+
+    def unit_perft(self, perft):
         print("Perft")
-        b = Board()
-        perft = Perft(b)
         results = perft.run(1, True)
         assert results == (1, 20, 0, 0)
         results = perft.run(2, True)
@@ -40,10 +41,7 @@ class Unit:
         results = perft.run(4, True)
         assert results == (4, 197281, 1576, 469)
 
-        b = Board()
-        b.set_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
-        
-        perft = Perft(b)
+    def unit_perft2(self, perft):
         results = perft.run(1, True)
         assert results == (1, 48, 8, 0)
         results = perft.run(2, True)
@@ -51,21 +49,14 @@ class Unit:
         results = perft.run(3, True)
         assert results == (3, 97862, 17102, 993)
 
-        def parse_move(mv):
-            b = Board()
-            from_sq = b.algebraic_to_sq(mv[:2])
-            to_sq = b.algebraic_to_sq(mv[2:4])
-
-            return (from_sq, to_sq, None, None, None, False)
-
+    def unit_moves(self, b):
         print("Check moves")
         # 3) Board State Integrity Check
-        b = Board()
         b.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         orig_fen = b.get_fen() # Assuming you have a get_fen() method
 
         # Simple non-capture move
-        mv = parse_move("e2e4") 
+        mv = self.parse_move("e2e4", b) 
         b.make_move(mv)
         b.unmake_move()
 
@@ -74,14 +65,14 @@ class Unit:
         # Test a capture move
         b.set_fen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
         orig_fen = b.get_fen()
-        mv = parse_move("g8f6") # Test a non-capture
+        mv = self.parse_move("g8f6", b) # Test a non-capture
         b.make_move(mv)
         b.unmake_move()
         assert b.get_fen() == orig_fen, "Board FEN mismatch after capture make/unmake"
 
+    def unit_scoring(self, b):
         print('Scoring')
         # 4) Basic Evaluation Consistency
-        b = Board()
         b.set_fen("8/8/8/8/8/8/8/R7 w - - 0 1") # Rook vs no pieces
         score_r = b.evaluate()
 
@@ -96,11 +87,11 @@ class Unit:
         score_br = b.evaluate()
         assert score_r + score_br == 0, "Evaluation is not symmetrical"
 
+    def unit_castling(self, b):
         print("Testing Castling & EP")
         # ---------------------------------------
         # 5) Castling Integrity (Tests CR_MASK & Rook Move)
         # ---------------------------------------
-        b = Board()
         # White has full rights. Rooks on a1/h1, King e1.
         b.set_fen("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1") 
         orig_hash = b.hash
@@ -124,10 +115,10 @@ class Unit:
         assert b.piece_map[2] == -1, "c1 not empty"
         assert b.hash == orig_hash, "Hash mismatch after Castle Unmake"
 
+    def unit_ep(self, b):
         # ---------------------------------------
         # 6) En Passant Integrity (Tests _x helper & Capture)
         # ---------------------------------------
-        b = Board()
         # White Pawn e5, Black Pawn d5. EP Target is d6 (index 21)
         # White to move.
         b.set_fen("8/8/8/3pP3/8/8/8/k6K w - d6 0 1")
@@ -150,11 +141,11 @@ class Unit:
         assert b.ep == 43, "EP Square not restored"
         assert b.hash == orig_hash, "Hash mismatch after EP Unmake"
         
+    def unit_promo(self, b):
         print("Testing Promotion & Reversal")
         # ---------------------------------------
         # 7) Promotion Integrity
         # ---------------------------------------
-        b = Board()
         # White Pawn on a7, Black King far away.
         b.set_fen("8/P7/8/8/8/8/8/k6K w - - 0 1")
         orig_hash = b.hash
@@ -205,11 +196,9 @@ class Unit:
 
         print("Promotion unit test passed.")
 
+    def unit_search(self, b, s):
         # Check Search
-        b = Board()
-        b.set_fen("r1bqk1nr/2p2ppp/1pp5/2b1p3/p3P3/2NP1N2/PPP2PPP/R1BQ1RK1 w kq - 0 9")
         orig_fen = b.get_fen()
-        s = Search(b)
 
         orig_hash = b.hash
 
