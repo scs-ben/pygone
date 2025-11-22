@@ -1,66 +1,87 @@
 #!/usr/bin/env pypy3
 
 class Unit:
+    def _fail(self, msg):
+        print(f"\nFAILED: {msg}")
+
     def unit_hash(self, b):
+        print("Testing Hashing...", end="", flush=True)
         orig_hash = b.hash
         mv = list(b.gen_pseudo_legal())[0]   # some legal move
         b.make_move(mv)
         b.unmake_move()
 
-        print("Check hash")
-        assert b.hash == orig_hash, "Zobrist mismatch after make/unmake"
+        if b.hash != orig_hash:
+            self._fail(f"Zobrist mismatch after make/unmake. Start: {orig_hash}, End: {b.hash}")
+            return
 
         # 2) Compute from scratch vs incremental
         orig_hash = b.compute_hash()
-        # do a sequence of moves
         moves = list(b.gen_pseudo_legal())[:4]
         for m in moves:
             b.make_move(m)
             b.unmake_move()
-        # now compute from scratch and compare
+            
         h_inc = b.hash
         h_scratch = b.compute_hash()
         
-        assert h_inc == h_scratch, "Incremental != recompute"
+        if h_inc != h_scratch:
+            self._fail(f"Incremental != recompute. Inc: {h_inc}, Scratch: {h_scratch}")
+            return
+            
+        print(" Passed!", flush=True)
 
     def parse_move(self, mv, b):
         from_sq = b.algebraic_to_sq(mv[:2])
         to_sq = b.algebraic_to_sq(mv[2:4])
-
         return (from_sq, to_sq, None, None, None, False)
 
+    def unit_perft(self, perft, b):
+        print("Testing Perft (Extended Suite)...", end="", flush=True)
+        
+        # Format: (FEN, Depth, (Depth, Nodes, Captures, Checks))
+        test_cases = [
+            # 1 Start Pos
+            ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 4, (4, 197281, 1576, 469)),
+            # 2 Kiwipete
+            ("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ", 3, (3, 97862, 17102, 993)),
+            # Position 3: Tricky En Passant & Pins
+            # 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -
+            ("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -", 4, (4, 43238, 3316, 1680)),
 
-    def unit_perft(self, perft):
-        print("Perft")
-        results = perft.run(1, True)
-        assert results == (1, 20, 0, 0)
-        results = perft.run(2, True)
-        assert results == (2, 400, 0, 0)
-        results = perft.run(3, True)
-        assert results == (3, 8902, 34, 12)
-        results = perft.run(4, True)
-        assert results == (4, 197281, 1576, 469)
+            # Position 4: "The Mirror" - Complex Castling & Promotions
+            # r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1
+            ("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1", 4, (4, 422333, 66854, 1692)),
 
-    def unit_perft2(self, perft):
-        results = perft.run(1, True)
-        assert results == (1, 48, 8, 0)
-        results = perft.run(2, True)
-        assert results == (2, 2039, 351, 3)
-        results = perft.run(3, True)
-        assert results == (3, 97862, 17102, 993)
+            # Position 5: "Buggy" - Promotions out of check
+            # rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8
+            ("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8", 3, (3, 62379, 5605, 2570)),
+        ]
+
+        for fen, depth, expected in test_cases:
+            b.set_fen(fen)
+            results = perft.run(depth, True) # Assumes perft tracks context from board
+            
+            if results != expected:
+                self._fail(f"\nFEN: {fen}\nDepth {depth}. Expected {expected}, Got {results}")
+                return
+
+        print(" Passed!", flush=True)
 
     def unit_moves(self, b):
-        print("Check moves")
+        print("Testing Move Gen Integrity...", end="", flush=True)
         # 3) Board State Integrity Check
         b.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-        orig_fen = b.get_fen() # Assuming you have a get_fen() method
+        orig_fen = b.get_fen()
 
         # Simple non-capture move
         mv = self.parse_move("e2e4", b) 
         b.make_move(mv)
         b.unmake_move()
 
-        assert b.get_fen() == orig_fen, "Board FEN mismatch after quiet make/unmake"
+        if b.get_fen() != orig_fen:
+            self._fail("Board FEN mismatch after quiet make/unmake")
+            return
 
         # Test a capture move
         b.set_fen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
@@ -68,153 +89,173 @@ class Unit:
         mv = self.parse_move("g8f6", b) # Test a non-capture
         b.make_move(mv)
         b.unmake_move()
-        assert b.get_fen() == orig_fen, "Board FEN mismatch after capture make/unmake"
+        
+        if b.get_fen() != orig_fen:
+            self._fail("Board FEN mismatch after capture make/unmake")
+            return
+
+        print(" Passed!", flush=True)
 
     def unit_scoring(self, b):
-        print('Scoring')
-        # 4) Basic Evaluation Consistency
+        print('Testing Scoring...', end="", flush=True)
+        
         b.set_fen("8/8/8/8/8/8/8/R7 w - - 0 1") # Rook vs no pieces
         score_r = b.evaluate()
 
         b.set_fen("8/8/8/8/8/8/8/N7 w - - 0 1") # Knight vs no pieces
         score_n = b.evaluate()
 
-        # A Rook is worth more than a Knight
-        assert score_r > score_n, "Material scoring error: Rook should be worth more than Knight"
+        if score_r <= score_n:
+            self._fail(f"Material Error: Rook ({score_r}) <= Knight ({score_n})")
+            return
 
         # Check symmetry (White score should be -Black score)
         b.set_fen("r7/8/8/8/8/8/8/8 w - - 0 1") # Black Rook vs no pieces
         score_br = b.evaluate()
-        assert score_r + score_br == 0, "Evaluation is not symmetrical"
+        
+        if score_r + score_br != 0:
+            self._fail(f"Symmetry Error: White {score_r} + Black {score_br} != 0")
+            return
+
+        print(" Passed!", flush=True)
 
     def unit_castling(self, b):
-        print("Testing Castling & EP")
+        print("Testing Castling...", end="", flush=True)
         # ---------------------------------------
-        # 5) Castling Integrity (Tests CR_MASK & Rook Move)
+        # 5) Castling Integrity
         # ---------------------------------------
-        # White has full rights. Rooks on a1/h1, King e1.
         b.set_fen("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1") 
         orig_hash = b.hash
         
         # Move: White Castles Queenside (e1 -> c1)
-        # Indices: e1=4, c1=2
         mv = (4, 2, None, None, None, None)
         b.make_move(mv)
         
         # Checks:
-        assert b.piece_map[2] == 5, "King not on c1"
-        assert b.piece_map[3] == 3, "Rook not on d1 (auto-move failed)"
-        assert b.piece_map[0] == -1, "Rook still on a1"
-        assert (b.castle & 3) == 0, "White castling rights not cleared"
+        if b.piece_map[2] != 5:  self._fail("King not on c1"); return
+        if b.piece_map[3] != 3:  self._fail("Rook not on d1"); return
+        if b.piece_map[0] != -1: self._fail("Rook still on a1"); return
+        if (b.castle & 3) != 0:  self._fail("White castling rights not cleared"); return
         
         b.unmake_move()
         
         # Restore checks:
-        assert b.piece_map[4] == 5, "King not back on e1"
-        assert b.piece_map[0] == 3, "Rook not back on a1"
-        assert b.piece_map[2] == -1, "c1 not empty"
-        assert b.hash == orig_hash, "Hash mismatch after Castle Unmake"
+        if b.piece_map[4] != 5:  self._fail("King not back on e1"); return
+        if b.piece_map[0] != 3:  self._fail("Rook not back on a1"); return
+        if b.piece_map[2] != -1: self._fail("c1 not empty"); return
+        if b.hash != orig_hash:  self._fail("Hash mismatch after Castle Unmake"); return
+
+        print(" Passed!", flush=True)
 
     def unit_ep(self, b):
+        print("Testing En Passant...", end="", flush=True)
         # ---------------------------------------
-        # 6) En Passant Integrity (Tests _x helper & Capture)
+        # 6) En Passant Integrity
         # ---------------------------------------
-        # White Pawn e5, Black Pawn d5. EP Target is d6 (index 21)
-        # White to move.
         b.set_fen("8/8/8/3pP3/8/8/8/k6K w - d6 0 1")
         orig_hash = b.hash
         
         # Move: e5 -> d6 (En Passant Capture)
-        # Indices: e5=36, d6=43
         mv = (36, 43, None, None, None, None)
         b.make_move(mv)
         
         # Checks:
-        assert b.piece_map[43] == 0, "White pawn not on d6"
-        assert b.piece_map[35] == -1, "Black pawn on d5 (35) not removed"
+        if b.piece_map[43] != 0:  self._fail("White pawn not on d6"); return
+        if b.piece_map[35] != -1: self._fail("Black pawn on d5 not removed"); return
         
         b.unmake_move()
         
         # Restore checks:
-        assert b.piece_map[36] == 0, "White pawn not back on e5"
-        assert b.piece_map[35] == 6, "Black pawn not back on d5"
-        assert b.ep == 43, "EP Square not restored"
-        assert b.hash == orig_hash, "Hash mismatch after EP Unmake"
+        if b.piece_map[36] != 0:  self._fail("White pawn not back on e5"); return
+        if b.piece_map[35] != 6:  self._fail("Black pawn not back on d5"); return
+        if b.ep != 43:            self._fail("EP Square not restored"); return
+        if b.hash != orig_hash:   self._fail("Hash mismatch after EP Unmake"); return
         
+        print(" Passed!", flush=True)
+
     def unit_promo(self, b):
-        print("Testing Promotion & Reversal")
-        # ---------------------------------------
-        # 7) Promotion Integrity
-        # ---------------------------------------
-        # White Pawn on a7, Black King far away.
+        print("Testing Promotion...", end="", flush=True)
         b.set_fen("8/P7/8/8/8/8/8/k6K w - - 0 1")
         orig_hash = b.hash
 
         # Find the move: a7 -> a8 (Queen promotion)
-        # Algebraic: a7=48, a8=56
-        # Gen pseudo legal moves to find the specific promotion tuple
         moves = list(b.gen_pseudo_legal())
         promo_move = None
         for m in moves:
-            # m format: (from, to, promo, capture, piece, is_castle)
-            # We look for promo == 'q' (Queen)
             if m[0] == 48 and m[1] == 56 and m[2] == 'q':
                 promo_move = m
                 break
         
-        assert promo_move is not None, "Could not generate a7a8q move"
+        if promo_move is None:
+            self._fail("Could not generate a7a8q move")
+            return
         
         # --- EXECUTE MAKE ---
         b.make_move(promo_move)
 
-        # Checks after Make:
-        # 1. Target square (a8/56) should have White Queen (index 4)
-        # If the bug exists, this will likely fail or crash before here
-        assert b.piece_map[56] == 4, f"Expected White Queen (4) at a8, got {b.piece_map[56]}"
+        if b.piece_map[56] != 4:
+            self._fail(f"Expected White Queen (4) at a8, got {b.piece_map[56]}")
+            return
         
-        # 2. Source square (a7/48) should be empty (-1)
-        assert b.piece_map[48] == -1, "Source square a7 was not cleared"
+        if b.piece_map[48] != -1:
+            self._fail("Source square a7 was not cleared")
+            return
         
-        # 3. Bitboard check: The White Queen bitboard (P[4]) should have bit 56 set
-        assert (b.P[4] & (1 << 56)), "White Queen bitboard not updated"
-        
-        # 4. Bitboard check: The White Pawn bitboard (P[0]) should NOT have bit 48 set
-        assert not (b.P[0] & (1 << 48)), "White Pawn bitboard not cleared"
+        if not (b.P[4] & (1 << 56)):
+            self._fail("White Queen bitboard not updated")
+            return
+
+        if (b.P[0] & (1 << 48)):
+            self._fail("White Pawn bitboard not cleared")
+            return
 
         # --- EXECUTE UNMAKE ---
         b.unmake_move()
 
-        # Checks after Unmake:
-        # 1. Target square (a8/56) should be empty
-        assert b.piece_map[56] == -1, "Promotion square a8 not cleared after unmake"
+        if b.piece_map[56] != -1:
+            self._fail("Promotion square a8 not cleared after unmake")
+            return
         
-        # 2. Source square (a7/48) should be a White Pawn (index 0) again
-        assert b.piece_map[48] == 0, f"Expected White Pawn (0) at a7, got {b.piece_map[48]}"
+        if b.piece_map[48] != 0:
+            self._fail(f"Expected White Pawn (0) at a7, got {b.piece_map[48]}")
+            return
         
-        # 3. Hash check
-        assert b.hash == orig_hash, "Hash mismatch after Promotion Unmake"
+        if b.hash != orig_hash:
+            self._fail("Hash mismatch after Promotion Unmake")
+            return
 
-        print("Promotion unit test passed.")
+        print(" Passed!", flush=True)
 
     def unit_search(self, s, b):
-        # Check Search
+        print("Testing Search Stability...", end="", flush=True)
         orig_fen = b.get_fen()
-
         orig_hash = b.hash
 
+        # Silent search (suppress prints inside search if possible, or just ignore output)
         s.set_time_limit(1e8)
         s.set_depth(6)
-        s.iterative_search()
+        
+        # Capture stdout if you wanted to hide search info, 
+        # but for now we just run it.
+        try:
+            s.iterative_search()
+        except Exception as e:
+            self._fail(f"Search crashed with exception: {e}")
+            return
 
-        assert b.hash == orig_hash, "Hash mismatch after search"
-        print(b.get_fen())
-        assert b.get_fen() == orig_fen, "FEN mismatch (Board corruption) after search"
+        if b.hash != orig_hash:
+            self._fail("Hash mismatch after search")
+            return
+            
+        if b.get_fen() != orig_fen:
+            self._fail("FEN mismatch (Board corruption) after search")
+            return
 
-        print ("Unit complete")
+        print(" Passed!", flush=True)
 
     def unit_threefold(self, s, b):
-        print("Testing Threefold Repetition")
-        # Helper to find and make a move by string
+        print("Testing Threefold Repetition...", end="", flush=True)
+        
         def make_uci(move_str, b):
             found = False
             for m in b.gen_pseudo_legal():
@@ -222,41 +263,157 @@ class Unit:
                     b.make_move(m)
                     found = True
                     break
-            assert found, f"Illegal or invalid move: {move_str}"
+            return found
 
-        # Sequence to repeat the starting position:
-        # 1. White Knight out, Black Knight out
-        # 2. White Knight back, Black Knight back
         repeat_seq = ["g1f3", "g8f6", "f3g1", "f6g8"]
 
-        # --- OCCURRENCE 1: Start Position ---
-        # (Count = 1)
-        assert s.threefold() == False, "Start pos is not 3-fold"
+        if s.threefold():
+            self._fail("Start pos is not 3-fold")
+            return
 
-        # --- OCCURRENCE 2: After moves ---
-        for m in repeat_seq: make_uci(m, b)
+        # --- OCCURRENCE 2 ---
+        for m in repeat_seq: 
+            if not make_uci(m, b): self._fail(f"Illegal move {m}"); return
         
-        # Check: If you implemented STRICT 3-fold, this must be False.
-        # (If you implemented 2-fold search pruning, this would be True).
-        assert s.threefold() == False, "2nd occurrence should not trigger strict 3-fold"
+        if s.threefold():
+            self._fail("2nd occurrence should not trigger strict 3-fold")
+            return
 
-        # --- OCCURRENCE 3: After moves again ---
-        for m in repeat_seq: make_uci(m, b)
+        # --- OCCURRENCE 3 ---
+        for m in repeat_seq: 
+            if not make_uci(m, b): self._fail(f"Illegal move {m}"); return
         
-        # Check: This MUST be True now.
-        assert s.threefold() == True, "3rd occurrence must trigger 3-fold"
+        if not s.threefold():
+            self._fail("3rd occurrence must trigger 3-fold")
+            return
         
         # --- IRREVERSIBLE MOVE TEST ---
-        # Make a pawn push. This resets the halfmove clock.
-        # Even if we repeat the knights now, it is a NEW position because the pawn structure changed.
-        make_uci("e2e4", b) 
-        make_uci("e7e5", b)
+        if not make_uci("e2e4", b): self._fail("e2e4 illegal"); return
+        if not make_uci("e7e5", b): self._fail("e7e5 illegal"); return
         
         # Repeat knights again
         for m in repeat_seq: make_uci(m, b)
         for m in repeat_seq: make_uci(m, b)
         
-        # Should be False because the pawn push made the previous occurrences unreachable
-        assert s.threefold() == False, "Irreversible move (pawn push) should have reset counter"
+        if s.threefold():
+            self._fail("Irreversible move (pawn push) should have reset counter")
+            return
 
-        print("Threefold unit test passed.")
+        print(" Passed!", flush=True)
+
+    def unit_insufficient_material(self, b):
+        print("Testing Insufficient Material...", end="", flush=True)
+        
+        test_cases = [
+            ("8/8/8/8/8/4k3/8/4K3 w - - 0 1", True, "K vs K"),
+            ("8/8/8/8/8/4k3/8/4K1N1 w - - 0 1", True, "K+N vs K"),
+            ("8/8/8/8/8/4k3/8/4K1B1 w - - 0 1", True, "K+B vs K"),
+            ("8/8/8/8/8/4k3/8/4K1n1 w - - 0 1", True, "K vs K+n"),
+            ("8/8/8/8/8/4k3/8/4K1b1 w - - 0 1", True, "K vs K+b"),
+            
+            ("8/8/8/8/8/4k3/8/4K1Q1 w - - 0 1", False, "K+Q vs K"),
+            ("8/8/8/8/8/4k3/8/4K1R1 w - - 0 1", False, "K+R vs K"),
+            ("8/8/8/8/8/4k3/8/4K1P1 w - - 0 1", False, "K+P vs K"),
+            ("8/8/8/8/8/4k3/8/4K1nn w - - 0 1", False, "K vs K+n+n"), 
+            ("8/8/8/8/8/4k3/3b4/4K1N1 w - - 0 1", False, "K+N vs K+b")
+        ]
+
+        for fen, expected_draw, desc in test_cases:
+            b.set_fen(fen)
+            
+            is_draw = b.is_insufficient_material()
+            if is_draw != expected_draw:
+                self._fail(f"{desc}. Expected {expected_draw}, got {is_draw}")
+                return
+
+            if expected_draw:
+                score = b.evaluate()
+                if score != 0:
+                    self._fail(f"Score Error {desc}. Expected 0, got {score}")
+                    return
+
+        print(" Passed!", flush=True)
+
+    def unit_game_end(self, b):
+        print("Testing Game End Detection...", end="", flush=True)
+        
+        # Helper to count strictly legal moves
+        def count_legal_moves(board):
+            count = 0
+            # active=False generates all pseudo-legal moves (quiet + captures)
+            for m in board.gen_pseudo_legal(active=False):
+                board.make_move(m)
+                
+                # FIX: check(False) checks the "passive" side (the one that just moved)
+                if not board.in_check(False):
+                    count += 1
+                
+                board.unmake_move()
+            return count
+
+        # 1. Checkmate (Fool's Mate Pattern)
+        # White is in checkmate
+        b.set_fen("rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3")
+        
+        if not b.in_check(): 
+            self._fail("Fool's Mate: White should be in check"); return
+        if count_legal_moves(b) != 0: 
+            self._fail("Fool's Mate: White should have 0 legal moves"); return
+
+        # 2. Stalemate
+        # White King at h1, Black Queen at g3. White to move.
+        b.set_fen("8/8/8/8/8/6q1/8/7K w - - 0 1")
+        
+        if b.in_check(): 
+            self._fail("Stalemate: White should NOT be in check"); return
+        if count_legal_moves(b) != 0: 
+            self._fail("Stalemate: White should have 0 legal moves"); return
+
+        print(" Passed!", flush=True)
+
+    def unit_mate_in_n(self, s, b):
+        print("Testing Mate Search...", end="", flush=True)
+        import io
+        import sys
+        
+        # (FEN, Depth, Expected Move String)
+        tests = [
+            # Mate in 1: White Rook to a8 (The only winning move)
+            ("7k/R7/8/8/8/8/8/7K w - - 0 1", 2, "a7a8"),
+            
+            # Mate in 1: Scholar's Mate (Qf7#)
+            ("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4", 2, "f3f7")
+        ]
+
+        for fen, depth, expected in tests:
+            b.set_fen(fen)
+            s.set_board(b)
+            s.set_depth(depth)
+            s.set_time_limit(1000) # 1 second is plenty
+
+            # Capture standard output to read "bestmove"
+            capture = io.StringIO()
+            old_stdout = sys.stdout
+            sys.stdout = capture
+            
+            try:
+                s.iterative_search()
+            finally:
+                # Always restore stdout so we can see errors if it crashes
+                sys.stdout = old_stdout
+            
+            # Parse output
+            output = capture.getvalue()
+            found_move = ""
+            for line in output.splitlines():
+                if line.startswith("bestmove"):
+                    parts = line.split()
+                    if len(parts) > 1:
+                        found_move = parts[1]
+                    break
+            
+            if found_move != expected:
+                self._fail(f"FEN: {fen}\nExpected {expected}, Got '{found_move}'")
+                return
+
+        print(" Passed!", flush=True)

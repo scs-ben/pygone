@@ -85,6 +85,7 @@ REPLACEMENTS = {
     "score_move": "cn",
     "time_limit": "co",
     "end_time": "cp",
+    "is_insufficient_material": "cq",
     
     "search": "cu",
     "Zobrist": "cv",

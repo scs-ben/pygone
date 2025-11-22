@@ -30,11 +30,7 @@ def main():
                 unit.unit_hash(b)
                 b = Board()
                 perft = Perft(b)
-                unit.unit_perft(perft)
-                b = Board()
-                b.set_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
-                perft = Perft(b)
-                unit.unit_perft2(perft)
+                unit.unit_perft(perft, b)
                 b = Board()
                 unit.unit_moves(b)
                 b = Board()
@@ -52,6 +48,13 @@ def main():
                 b = Board()
                 s = Search(b)
                 unit.unit_threefold(s, b)
+                b = Board()
+                unit.unit_insufficient_material(b)
+                b = Board()
+                unit.unit_game_end(b)
+                b = Board()
+                s = Search(b)
+                unit.unit_mate_in_n(s, b)
             #UNITendremove
             #remove
             elif line.startswith("position fen"):

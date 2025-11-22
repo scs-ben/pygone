@@ -628,8 +628,34 @@ class Board:
                     score -= 15
                     
         return score
+    
+    def is_insufficient_material(self):
+        # 1. If any Pawns, Rooks, or Queens exist, it's not insufficient.
+        # White Pawns(0) | Black Pawns(6) | W Rooks(3) | W Queens(4) | B Rooks(9) | B Queens(10)
+        if (self.P[0] | self.P[6] | self.P[3] | self.P[4] | self.P[9] | self.P[10]):
+            return False
+        
+        # 2. If we are here, only Kings, Knights, and Bishops remain.
+        # Calculate total minor pieces.
+        # W Knights(1) | W Bishops(2) | B Knights(7) | B Bishops(8)
+        minors = (self.P[1] | self.P[2] | self.P[7] | self.P[8])
+        
+        # If no minors (K vs K) or only 1 minor total (K+N vs K), it's a draw.
+        # We can use bit_count() since you already use it in pawn_structure_score
+        if minors.bit_count() < 2:
+            return True
+            
+        # Note: K+B vs K+B (opposite colors) is a theoretical draw but tricky 
+        # for engines to prove. K+N vs K+N is mostly drawn but can checkmate. 
+        # Keeping it simple (count < 2) covers the vast majority of cases 
+        # with 0 performance cost.
+        
+        return False
 
     def evaluate(self):
+        if self.is_insufficient_material():
+            return 0
+        
         score = self.eval_material()
         score += self.eval_king(True) - self.eval_king(False)
         
