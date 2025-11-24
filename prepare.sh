@@ -1,12 +1,12 @@
-cat > pygone <<'EOF'
+cat > ./dist/pygone <<'EOF'
 #!/bin/sh
 t=$(mktemp);tail -n+3 $0 | xz -d > $t;chmod +x $t;(sleep 3; rm $t)&exec $t
 EOF
 
 # Append the binary xz payload
-cat pygone.xz >> pygone
+cat ./dist/pygone.xz >> ./dist/pygone
 
-rm pygone.xz
+rm ./dist/pygone.xz
 
 # Make it executable
-chmod +x pygone
+chmod +x ./dist/pygone

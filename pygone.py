@@ -17,7 +17,7 @@ def main():
             if line == "quit":
                 sys.exit()
             elif line == "uci":
-                print("pygone2.0\nuciok", flush=True)
+                print("pygone2\nuciok", flush=True)
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher = Search(game_board)
@@ -70,14 +70,15 @@ def main():
                     fen, moves_section = fen_section, ""
                 game_board.set_fen(fen)
                 
-                cmd = moves_section
-                
-                for position_move in cmd:
-                    from_sq = game_board.algebraic_to_sq(position_move[:2])
-                    to_sq = game_board.algebraic_to_sq(position_move[2:4])
-                    promo = position_move[4] if len(position_move) == 5 else None
+                if moves_section:
+                    cmd = moves_section.split(" ")
                     
-                    game_board.make_move((from_sq, to_sq, promo, None, None, False))
+                    for position_move in cmd:
+                        from_sq = game_board.algebraic_to_sq(position_move[:2])
+                        to_sq = game_board.algebraic_to_sq(position_move[2:4])
+                        promo = position_move[4] if len(position_move) == 5 else None
+                        
+                        game_board.make_move((from_sq, to_sq, promo, None, None, False))
             #endremove
             elif line.startswith("position"):
                 game_board = Board()
