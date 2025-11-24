@@ -18,9 +18,11 @@ def main():
                 sys.exit()
             elif line == "uci":
                 print("pygone2\nuciok", flush=True)
+            #remove
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher = Search(game_board)
+            #endremove
             elif line == "isready":
                 print("readyok", flush=True)
             #UNITremove

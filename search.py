@@ -188,6 +188,8 @@ class Search:
         
         # Active Moves Only (Captures/Promotions)
         for move in sorted(self.board.gen_pseudo_legal(True), key=self.board.score_move, reverse=True):
+            if move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 200) < alpha and not move[2]: continue
+
             self.board.make_move(move)
             
             if self.board.in_check(False):
