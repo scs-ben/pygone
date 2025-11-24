@@ -1,15 +1,8 @@
-pygone
+pygone v2
 
 Created as a way to learn more python and to see how hard it is to build a chess engine.
 This engine is created to have a Unix executable binary that is <= 4,096 bytes.
 
-For shell scripts, may need to execute: `sed -i -e 's/\r$//' file.sh` to clean up line endings
+This is intended to be run on Linux. `python_minifier` is a dependency that should be installed with `pip`. The engine will perform better with `pypy3` but will run fine with `python3`.
 
-To build: `cd src`
-`make`
-
-This will produce an executable in `bin`
-
-In `prepare.sh` need to set `NUMBER_OF_LINES` to the length of the binary (around 24 lines). The file needs to have a blank line added at the end to work properly.
-
-This file needs to be further shrunk by running `bin/prepare.sh`
+The Makefile will strip down the functionality of pygone to bare minimums but if you just run `pypy3 pygone.py` it will have access to more bells and whistles.
