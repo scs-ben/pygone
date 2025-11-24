@@ -1,6 +1,0 @@
-#!/bin/sh
-E=/tmp/$$
-tail -n N $0 | gunzip -c -q > $E
-chmod +x $E
-(sleep 5;rm $E)&
-exec $E
