@@ -2,7 +2,7 @@
     -debug \
     -engine \
         name=pygone \
-        cmd=/home/ben/pygone/bin/pygone \
+        cmd=/home/ben/pygone/dist/pygone \
         proto=uci \
     -engine \
         name=stockfish100 \

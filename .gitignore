@@ -9,3 +9,4 @@ pygone-combined*.py
 ruff.toml
 dist/*
 bin/*
+test/cutechess-cli
