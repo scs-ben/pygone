@@ -8,6 +8,8 @@ pygone-mini*.py*
 pygone-combined*.py
 ruff.toml
 bin/*
+build/*
 test/cutechess-cli
 test/debug.log
 test/games.pgn
+dist/pygone/*
