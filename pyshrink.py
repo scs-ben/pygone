@@ -24,6 +24,7 @@ for module_name, module_path in imports_to_inline:
         continue
 
     module_code = module_path.read_text().strip()
+    module_code = module_code.replace("\\", "\\\\")
     wrapped = (
         f"# === Start of {module_name}.py ===\n"
         f"{module_code}\n"
