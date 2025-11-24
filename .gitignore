@@ -7,7 +7,6 @@ pygone-final*.py*
 pygone-mini*.py*
 pygone-combined*.py
 ruff.toml
-dist/*
 bin/*
 test/cutechess-cli
 test/debug.log
