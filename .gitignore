@@ -12,4 +12,3 @@ build/*
 test/cutechess-cli
 test/debug.log
 test/games.pgn
-dist/pygone/*
