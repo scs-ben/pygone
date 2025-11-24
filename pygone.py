@@ -18,11 +18,9 @@ def main():
                 sys.exit()
             elif line == "uci":
                 print("pygone2\nuciok", flush=True)
-            #remove
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher = Search(game_board)
-            #endremove
             elif line == "isready":
                 print("readyok", flush=True)
             #UNITremove
@@ -99,8 +97,8 @@ def main():
                 move_time = 1e8
                 side_time = 1e8
                 is_white = game_board.white_to_move
-                v_depth = 0
                 #remove
+                v_depth = 0
                 perft_depth = 0
                 #endremove
                 
@@ -108,9 +106,9 @@ def main():
                 for key, arg in enumerate(args):
                     if arg == 'wtime' and is_white or arg == 'btime' and not is_white:
                         side_time = int(args[key + 1]) / 1e3
+                    #remove
                     elif arg == 'depth':
                         v_depth = int(args[key + 1])
-                    #remove
                     elif arg == 'perft':
                         perft_depth = int(args[key + 1])
                     #endremove
@@ -129,9 +127,11 @@ def main():
 
                 searcher.set_time_limit(move_time)
                 
+                #remove
                 if v_depth > 0:
                     searcher.set_time_limit(1e8)
                     searcher.set_depth(v_depth)
+                #endremove
 
                 searcher.iterative_search()
             #remove
