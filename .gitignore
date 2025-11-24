@@ -10,3 +10,5 @@ ruff.toml
 dist/*
 bin/*
 test/cutechess-cli
+test/debug.log
+test/games.pgn
