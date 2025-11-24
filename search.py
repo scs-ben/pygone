@@ -37,6 +37,43 @@ class Search:
     def set_board(self, board): 
         self.board = board
 
+    #remove
+    def get_pv_line(self, max_depth):
+        pv_moves = []
+        
+        # We will make moves on the board to traverse the TT, 
+        # so we must count them to unmake them later.
+        for _ in range(max_depth):
+            tt_idx = self.board.hash % 1048576
+            entry = self.tt[tt_idx]
+            
+            # Stop if: 
+            # 1. No entry
+            # 2. Hash collision (entry doesn't match current board)
+            # 3. No best_move stored in entry
+            if not entry or entry[0] != self.board.hash or not entry[4]:
+                break
+            
+            move = entry[4]
+            
+            if move not in self.board.gen_pseudo_legal():
+                break
+
+            pv_moves.append(move)
+            self.board.make_move(move)
+            
+            # If the move we just made ends the game (mate/stalemate), stop.
+            if self.board.is_insufficient_material(): # or checkmate check
+                break
+
+        # RESTORE THE BOARD
+        # We must unmake every move we made to return the board to the root state
+        for _ in range(len(pv_moves)):
+            self.board.unmake_move()
+            
+        return pv_moves
+    #endremove
+
     def iterative_search(self):
         start_time = time.time()
         self.s_nodes = 0
@@ -59,6 +96,17 @@ class Search:
             elapsed = max(1, int((time.time() - start_time) * 1000))
             pv_str = self.board.move_to_uci(best_move) if best_move else ""
             nps = int(self.s_nodes * 1000 / elapsed)
+            
+            #remove
+            pv_moves = self.get_pv_line(depth)
+            
+            if pv_moves:
+                best_move = pv_moves[0] # The first move is the one we'll actually play
+                # Convert all moves in the list to UCI strings and join them
+                pv_str = " ".join([self.board.move_to_uci(m) for m in pv_moves])
+            else:
+                pv_str = ""
+            #endremove
             
             print(f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}", flush=True)
 
