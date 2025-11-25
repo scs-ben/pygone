@@ -107,10 +107,6 @@ REPLACEMENTS = {
     # Built-ins / keywords
     "True": "1",
     "False": "0",
-
-    "LOWERBOUND": "0",
-    "EXACT": "1",
-    "UPPERBOUND": "2",
 }
 
 REPLACEMENTS2 = {

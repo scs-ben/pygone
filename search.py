@@ -275,7 +275,4 @@ class Search:
             if score >= beta: return beta
             if score > alpha: alpha = score
         
-        if moves_played == 0 and in_check:
-            return -320000
-        
-        return alpha
+        return -320000 if in_check and not moves_played else alpha

@@ -119,7 +119,7 @@ def main():
                     
                 searcher.set_board(game_board)
             elif line[:2]=="go":
-                side_time = move_time = 1e8
+                side_time = 1e8
                 #remove
                 v_depth = 0
                 perft_depth = 0
@@ -145,10 +145,8 @@ def main():
                 #remove
                 searcher.set_depth(50)
                 #endremove
-                    
-                move_time = max(2, ((side_time / 50) + 2.8))
 
-                searcher.set_time_limit(move_time)
+                searcher.set_time_limit(max(2, ((side_time / 50) + 2.8)))
                 
                 #remove
                 if v_depth > 0:
