@@ -8,4 +8,4 @@ This is intended to be run on Linux. `python_minifier` is a dependency that shou
 The Makefile will strip down the functionality of pygone to bare minimums but if you just run `pypy3 pygone.py` it will have access to more bells and whistles.
 
 Building on Windows (does not result in 4kb compatable file):
-`pyinstaller --distpath=dist/pygone_windows  --onefile pygone.py`
+`pyinstaller --distpath=dist/pygone_windows --onefile pygone.py`
