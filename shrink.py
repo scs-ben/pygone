@@ -82,7 +82,7 @@ REPLACEMENTS = {
     "Board": "au",
     "piece_map": "av",
     "castle": "aw",
-    "eval_score": "ax",
+    "score_pst": "ax",
     "bm_w": "ay",
     "bm_b": "az",
     "side_white": "A0",
@@ -100,8 +100,9 @@ REPLACEMENTS = {
     "piece_on": "Ac",
     "eval_king": "Ad",
     "pawn_structure_score": "Ae",
-    "score_move": "Af",
+    "score_mat": "Af",
     "pawns": "Ag",  
+    "pst": "Ah",  
 
     # Built-ins / keywords
     "True": "1",
@@ -230,7 +231,7 @@ def main():
     print("Performing final cleanup...")
     
     minified_code = minified_code.replace('import random', '')
-    minified_code = minified_code.replace('import sys,time', 'import sys,time,random')
+    minified_code = minified_code.replace('import time', 'import time,random')
     minified_code = minified_code.replace('__init__(A,fen=None)', '__init__(A)')
 
     final_code = minified_code.replace('\t', ' ')

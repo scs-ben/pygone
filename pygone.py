@@ -14,7 +14,6 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import sys
 from search import Search
 from board import Board
 #UNITremove
@@ -27,10 +26,12 @@ def main():
     searcher = Search(game_board)
 
     while 1:
+        #remove
         try:
+        #endremove
             line = input()
             if line == "quit":
-                sys.exit()
+                return
             elif line == "uci":
                 print("pygone2\nuciok", flush=True)
             #remove
@@ -156,12 +157,14 @@ def main():
             elif line.startswith('print'):
                 game_board.print_board()
             #endremove
+        #remove
         except Exception as exc:
             print(exc, flush=True)
             raise
+        #endremove
         #remove
         except (KeyboardInterrupt, SystemExit):
-            sys.exit()
+            return
         #endremove
 
 main()
