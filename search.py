@@ -31,8 +31,10 @@ class Search:
         self.end_time = time.time() + seconds
         self.time_up = False
 
+    #UNITremove
     def set_depth(self, depth): 
         self.s_depth = depth
+    #UNITendremove
 
     def set_board(self, board): 
         self.board = board
@@ -56,7 +58,7 @@ class Search:
             
             move = entry[4]
             
-            if move not in self.board.gen_pseudo_legal():
+            if move not in [m[1] for m in self.board.gen_pseudo_legal()]:
                 break
 
             pv_moves.append(move)
@@ -111,8 +113,7 @@ class Search:
             print(f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}", flush=True)
 
         # Final Best Move
-        final_move = self.board.move_to_uci(best_move) if best_move else "0000"
-        print(f"bestmove {final_move}", flush=True)
+        print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
 
     def threefold(self):
         # Check every 2nd ply up to the halfmove clock (irreversible move) limit
@@ -127,7 +128,7 @@ class Search:
                 if count >= 2: return True
         return False
 
-    def search(self, depth, alpha, beta, ply):
+    def search(self, s_depth, alpha, beta, ply):
         # Check time every 2048 nodes
         if (self.s_nodes & 2047) == 0 and time.time() > self.end_time:
             self.time_up = True
@@ -139,10 +140,10 @@ class Search:
         in_check = self.board.in_check()
 
         # --- CHECK EXTENSION ---
-        if in_check and depth < 4: 
-             depth += 1
+        if in_check and s_depth < 4: 
+             s_depth += 1
             
-        if depth <= 0: 
+        if s_depth <= 0: 
             return self.q_search(alpha, beta)
         
         self.s_nodes += 1
@@ -150,16 +151,16 @@ class Search:
         # --- TT PROBE ---
         tt_idx = self.board.hash % 1048576
         entry = self.tt[tt_idx]
-        if entry and entry[0] == self.board.hash and entry[2] >= depth:
+        if entry and entry[0] == self.board.hash and entry[2] >= s_depth:
             if entry[3] == 0: return entry[1]
             if entry[3] == 1 and entry[1] >= beta: return entry[1]
             if entry[3] == 2 and entry[1] <= alpha: return entry[1]
 
         # --- NULL MOVE PRUNING ---
         # Disable NMP if in check
-        if depth >= 3 and not in_check:
+        if s_depth >= 3 and not in_check:
             self.board.make_move(None)
-            score = -self.search(depth - 3, -beta, -beta + 1, ply + 1)
+            score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
             self.board.unmake_move()
             
             if self.time_up: return 0
@@ -168,14 +169,14 @@ class Search:
         # --- REVERSE FUTILITY PRUNING ---
         # Disable RFP if in check
         stand_pat = self.board.evaluate()
-        if depth < 4 and not in_check and stand_pat >= beta + depth * 80:
+        if s_depth < 4 and not in_check and stand_pat >= beta + s_depth * 80:
             return stand_pat
 
         best_score = -320000
         best_move = None
         
         # Generate and sort moves
-        moves = sorted(self.board.gen_pseudo_legal(), key=self.board.score_move, reverse=True)
+        moves = self.board.gen_pseudo_legal(); moves.sort(reverse=True)
         
         if not moves:
             return -320000 + ply if in_check else 0
@@ -183,7 +184,7 @@ class Search:
         moves_played = 0
         original_alpha = alpha
         
-        for move in moves:
+        for _, move in moves:
             self.board.make_move(move)
             
             if self.board.in_check(False):
@@ -195,17 +196,17 @@ class Search:
             # --- LMR + PVS LOGIC ---
             reduction = 0
             # Don't reduce if in check, or if the move gives check (heuristic), or captures
-            if depth > 2 and moves_played > 4 and not (in_check or move[2] or move[3]):
+            if s_depth > 2 and moves_played > 4 and not (in_check or move[2] or move[3]):
                 reduction = 1 + (moves_played > 15)
             
-            new_depth = depth - 1 - reduction
+            new_depth = s_depth - 1 - reduction
             
             if moves_played > 1:
                 score = -self.search(new_depth, -alpha - 1, -alpha, ply + 1)
-                if score > alpha and (score < beta or new_depth != depth - 1):
-                    score = -self.search(depth - 1, -beta, -alpha, ply + 1)
+                if score > alpha and (score < beta or new_depth != s_depth - 1):
+                    score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
             else:
-                score = -self.search(depth - 1, -beta, -alpha, ply + 1)
+                score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
             self.board.unmake_move()
             
@@ -218,14 +219,14 @@ class Search:
             if score > alpha:
                 alpha = score
                 if alpha >= beta:
-                    self.tt[tt_idx] = [self.board.hash, alpha, depth, 1, move]
+                    self.tt[tt_idx] = [self.board.hash, alpha, s_depth, 1, move]
                     return alpha
         
         if moves_played == 0:
             return -320000 + ply
 
         flag = 0 if alpha > original_alpha else 2
-        self.tt[tt_idx] = [self.board.hash, alpha, depth, flag, best_move]
+        self.tt[tt_idx] = [self.board.hash, alpha, s_depth, flag, best_move]
         
         return alpha
 
@@ -250,8 +251,10 @@ class Search:
         if stand_pat >= beta: return beta
         if stand_pat > alpha: alpha = stand_pat
         
+        moves = self.board.gen_pseudo_legal(True); moves.sort(reverse=True)
+        
         # Active Moves Only (Captures/Promotions)
-        for move in sorted(self.board.gen_pseudo_legal(True), key=self.board.score_move, reverse=True):
+        for _, move in moves:
             if move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 200) < alpha and not move[2]: continue
 
             self.board.make_move(move)

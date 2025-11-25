@@ -37,7 +37,7 @@ class Perft:
         captures = 0
         checks = 0
         
-        for move in self.board.gen_pseudo_legal():
+        for _, move in self.board.gen_pseudo_legal():
             is_capture = move[3]
             
             self.board.make_move(move)
@@ -80,7 +80,7 @@ class Perft:
         self.total_checks = 0
         total_nodes = 0
 
-        for move in self.board.gen_pseudo_legal():
+        for _, move in self.board.gen_pseudo_legal():
             is_capture = move[3]
             
             self.board.make_move(move)
