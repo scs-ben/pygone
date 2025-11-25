@@ -724,7 +724,7 @@ class Board:
         return False
 
     def evaluate(self):
-        if self.is_insufficient_material(): return 0
+        if self.is_insufficient_material() or self.halfmove_clock >= 100: return 0
         
         piece_count = self.all_occupied().bit_count()
         phase = min(1.0, max(0.0, (piece_count - 12) / 20.0))

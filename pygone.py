@@ -73,6 +73,12 @@ def main():
                 b = Board()
                 s = Search(b)
                 unit.unit_mate_in_n(s, b)
+                b = Board()
+                unit.unit_fifty_move(b)
+                b = Board()
+                unit.unit_legality(b)
+                b = Board()
+                unit.unit_attack_resolution(b)
                 print("Unit testing completed")
             #UNITendremove
             #remove

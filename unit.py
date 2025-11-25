@@ -446,3 +446,117 @@ class Unit:
                 return
 
         print(" Passed!", flush=True)
+
+    def unit_fifty_move(self, b):
+        print("Testing Fifty-Move Rule...", end="", flush=True)
+        
+        # 1. Verify Draw at 100
+        b.set_fen("8/8/8/8/8/4k3/4P3/4K3 w - - 0 1")
+        b.halfmove_clock = 99
+        
+        # Make a quiet king move: e1 -> f1
+        f = b.algebraic_to_sq("e1")
+        t = b.algebraic_to_sq("f1")
+        b.make_move((f, t, None, None, 'k', False))
+        
+        if b.halfmove_clock != 100:
+            self._fail(f"Clock did not increment to 100. Got {b.halfmove_clock}")
+            return
+        
+        # In search/eval, this should now score 0 (Draw)
+        score = b.evaluate()
+        if score != 0:
+            self._fail(f"Board did not evaluate to 0 (Draw) at 100 halfmoves. Got {score}")
+            return
+            
+        b.unmake_move()
+        
+        # 2. Verify Reset on Pawn Move
+        b.halfmove_clock = 99
+        # Move pawn: e2 -> e4
+        f = b.algebraic_to_sq("e2")
+        t = b.algebraic_to_sq("e4")
+        b.make_move((f, t, None, None, 'p', False))
+        
+        if b.halfmove_clock != 0:
+            self._fail(f"Clock did not reset on pawn move. Got {b.halfmove_clock}")
+            return
+            
+        print(" Passed!", flush=True)
+
+    def unit_legality(self, b):
+        print("Testing Legality Checking...", end="", flush=True)
+
+        # ABSOLUTE PIN
+        # White King on e1, White Rook on e2, Black Rook on e8.
+        b.set_fen("4r3/8/8/8/8/8/4R3/4K3 w - - 0 1")
+
+        # Try to move the pinned Rook (e2 -> d2)
+        f = b.algebraic_to_sq("e2")
+        t = b.algebraic_to_sq("d2")
+        illegal_move = (f, t, None, None, 'r', False)
+        
+        b.make_move(illegal_move)
+        
+        # After move, we check if the PASSIVE side (White, who just moved) is in check
+        if not b.in_check(False):
+            self._fail("Failed to detect illegal move (Moving pinned piece)")
+            return
+            
+        b.unmake_move()
+
+        # KING INTO CHECK
+        # White King e1. Black Rook d8.
+        b.set_fen("3r4/8/8/8/8/8/8/4K3 w - - 0 1")
+        
+        # Try moving King into check (e1 -> d1)
+        f = b.algebraic_to_sq("e1")
+        t = b.algebraic_to_sq("d1")
+        illegal_king_move = (f, t, None, None, 'k', False)
+        
+        b.make_move(illegal_king_move)
+        
+        if not b.in_check(False):
+            self._fail("Failed to detect illegal move (King moving into check)")
+            return
+            
+        b.unmake_move()
+        
+        print(" Passed!", flush=True)
+
+    def unit_attack_resolution(self, b):
+        print("Testing Attack Resolution...", end="", flush=True)
+
+        # White Rook on a1. Black Pawn on a4.
+        b.set_fen("8/8/8/8/p7/8/8/R7 w - - 0 1")
+        
+        sq_a2 = b.algebraic_to_sq("a2")
+        sq_a3 = b.algebraic_to_sq("a3")
+        sq_a4 = b.algebraic_to_sq("a4")
+        sq_a5 = b.algebraic_to_sq("a5")
+        
+        # 1. Rook should attack a2, a3, a4.
+        if not b.attacked(sq_a2, True): self._fail("Rook a1 should attack a2"); return
+        if not b.attacked(sq_a3, True): self._fail("Rook a1 should attack a3"); return
+        if not b.attacked(sq_a4, True): self._fail("Rook a1 should attack capture target a4"); return
+        
+        # 2. Rook should NOT attack a5 (Blocked by pawn at a4)
+        if b.attacked(sq_a5, True): self._fail("Rook a1 should be blocked at a5"); return
+
+        # 3. X-Ray / Battery Check
+        b.set_fen("k7/8/8/8/8/8/R7/R7 w - - 0 1")
+        # King a8, Rooks a2, a1
+        sq_k = b.algebraic_to_sq("a8")
+        
+        if not b.attacked(sq_k, True): self._fail("Battery: King a8 not attacked"); return
+        
+        # Check diagonal blocking
+        # White Bishop a1. Black Pawn b2. Square c3.
+        b.set_fen("8/8/8/8/8/8/1p6/B7 w - - 0 1")
+        sq_b2 = b.algebraic_to_sq("b2")
+        sq_c3 = b.algebraic_to_sq("c3")
+        
+        if not b.attacked(sq_b2, True): self._fail("Bishop a1 should attack b2 (capture)"); return
+        if b.attacked(sq_c3, True): self._fail("Bishop a1 should NOT attack c3 (blocked)"); return
+
+        print(" Passed!", flush=True)
