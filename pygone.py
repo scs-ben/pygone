@@ -33,9 +33,11 @@ def main():
                 sys.exit()
             elif line == "uci":
                 print("pygone2\nuciok", flush=True)
+            #remove
             elif line == "ucinewgame":
                 game_board = Board()
                 searcher = Search(game_board)
+            #endremove
             elif line == "isready":
                 print("readyok", flush=True)
             #UNITremove
@@ -70,6 +72,7 @@ def main():
                 b = Board()
                 s = Search(b)
                 unit.unit_mate_in_n(s, b)
+                print("Unit testing completed")
             #UNITendremove
             #remove
             elif line.startswith("position fen"):

@@ -18,13 +18,14 @@ import io
 import contextlib
 
 class Unit:
-    def _fal(self, msg):
+    def _fail(self, msg):
         print(f"\nFAILED: {msg}")
 
     def unit_hash(self, b):
         print("Testing Hashing...", end="", flush=True)
         orig_hash = b.hash
-        mv = list(b.gen_pseudo_legal())[0]   # some legal move
+        moves = b.gen_pseudo_legal()
+        mv = moves[0][1]   # some legal move
         b.make_move(mv)
         b.unmake_move()
 
@@ -33,7 +34,8 @@ class Unit:
             return
 
         orig_hash = b.compute_hash()
-        moves = list(b.gen_pseudo_legal())[:4]
+        moves = b.gen_pseudo_legal()
+        moves = [m[1] for m in moves[:4]]
         for m in moves:
             b.make_move(m)
             b.unmake_move()
@@ -203,9 +205,9 @@ class Unit:
         orig_hash = b.hash
 
         # Find the move: a7 -> a8 (Queen promotion)
-        moves = list(b.gen_pseudo_legal())
+        moves = b.gen_pseudo_legal()
         promo_move = None
-        for m in moves:
+        for _, m in moves:
             if m[0] == 48 and m[1] == 56 and m[2] == 'q':
                 promo_move = m
                 break
@@ -285,7 +287,7 @@ class Unit:
         
         def make_uci(move_str, b):
             found = False
-            for m in b.gen_pseudo_legal():
+            for _, m in b.gen_pseudo_legal():
                 if b.move_to_uci(m) == move_str:
                     b.make_move(m)
                     found = True
@@ -368,7 +370,7 @@ class Unit:
         def count_legal_moves(board):
             count = 0
             # active=False generates all pseudo-legal moves (quiet + captures)
-            for m in board.gen_pseudo_legal(active=False):
+            for _, m in board.gen_pseudo_legal(active=False):
                 board.make_move(m)
                 
                 # FIX: check(False) checks the "passive" side (the one that just moved)
