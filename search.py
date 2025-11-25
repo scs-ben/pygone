@@ -91,7 +91,8 @@ class Search:
             
             # Retrieve Best Move from TT using current hash
             entry = self.tt[self.board.hash % 1048576]
-            if entry: 
+
+            if entry and entry[0] == self.board.hash: 
                 best_move = entry[4]
             
             # Minimal UCI Reporting
