@@ -14,7 +14,6 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import sys
 from search import Search
 from board import Board
 #UNITremove
@@ -27,10 +26,12 @@ def main():
     searcher = Search(game_board)
 
     while 1:
+        #remove
         try:
+        #endremove
             line = input()
             if line == "quit":
-                sys.exit()
+                return
             elif line == "uci":
                 print("pygone2\nuciok", flush=True)
             #remove
@@ -72,6 +73,12 @@ def main():
                 b = Board()
                 s = Search(b)
                 unit.unit_mate_in_n(s, b)
+                b = Board()
+                unit.unit_fifty_move(b)
+                b = Board()
+                unit.unit_legality(b)
+                b = Board()
+                unit.unit_attack_resolution(b)
                 print("Unit testing completed")
             #UNITendremove
             #remove
@@ -98,37 +105,31 @@ def main():
                         
                         game_board.make_move((from_sq, to_sq, promo, None, None, False))
             #endremove
-            elif line.startswith("position"):
+            elif line[:8]=="position":
                 game_board = Board()
                 
                 moves = line.split()
                 
-                for position_move in moves[3:]:
-                    from_sq = game_board.algebraic_to_sq(position_move[:2])
-                    to_sq = game_board.algebraic_to_sq(position_move[2:4])
-                    promo = position_move[4] if len(position_move) == 5 else None
-                    
-                    game_board.make_move((from_sq, to_sq, promo, None, None, False))
+                for position_move in moves[3:]:                    
+                    game_board.make_move((game_board.algebraic_to_sq(position_move[:2]), game_board.algebraic_to_sq(position_move[2:4]), position_move[4] if len(position_move) == 5 else None, None, None, False))
                     
                 searcher.set_board(game_board)
-            elif line.startswith("go"):
-                move_time = 1e8
+            elif line[:2]=="go":
                 side_time = 1e8
-                is_white = game_board.white_to_move
                 #remove
                 v_depth = 0
                 perft_depth = 0
                 #endremove
                 
                 args = line.split()
-                for key, arg in enumerate(args):
-                    if arg == 'wtime' and is_white or arg == 'btime' and not is_white:
-                        side_time = int(args[key + 1]) / 1e3
+                for k, a in enumerate(args):
+                    if a == 'wtime' and game_board.white_to_move or a == 'btime' and not game_board.white_to_move:
+                        side_time = int(args[k + 1]) / 1e3
                     #remove
-                    elif arg == 'depth':
-                        v_depth = int(args[key + 1])
-                    elif arg == 'perft':
-                        perft_depth = int(args[key + 1])
+                    elif a == 'depth':
+                        v_depth = int(args[k + 1])
+                    elif a == 'perft':
+                        perft_depth = int(args[k + 1])
                     #endremove
                 #remove
                 if perft_depth:
@@ -140,10 +141,8 @@ def main():
                 #remove
                 searcher.set_depth(50)
                 #endremove
-                    
-                move_time = max(2, side_time / 28)
 
-                searcher.set_time_limit(move_time)
+                searcher.set_time_limit(max(2, ((side_time / 50) + 2.8)))
                 
                 #remove
                 if v_depth > 0:
@@ -156,12 +155,14 @@ def main():
             elif line.startswith('print'):
                 game_board.print_board()
             #endremove
+        #remove
         except Exception as exc:
             print(exc, flush=True)
             raise
+        #endremove
         #remove
         except (KeyboardInterrupt, SystemExit):
-            sys.exit()
+            return
         #endremove
 
 main()

@@ -91,7 +91,8 @@ class Search:
             
             # Retrieve Best Move from TT using current hash
             entry = self.tt[self.board.hash % 1048576]
-            if entry: 
+
+            if entry and entry[0] == self.board.hash: 
                 best_move = entry[4]
             
             # Minimal UCI Reporting
@@ -115,7 +116,9 @@ class Search:
         # Final Best Move
         print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
 
-    def threefold(self):
+    def drawn(self):
+        if self.board.halfmove_clock >= 100 or self.board.is_insufficient_material():
+            return True
         # Check every 2nd ply up to the halfmove clock (irreversible move) limit
         current_hash = self.board.hash
         limit = min(self.board.halfmove_clock, len(self.board.stack))
@@ -126,6 +129,7 @@ class Search:
                 count += 1
                 # We need 2 past occurrences + current one = 3 total
                 if count >= 2: return True
+                
         return False
 
     def search(self, s_depth, alpha, beta, ply):
@@ -134,7 +138,7 @@ class Search:
             self.time_up = True
             return 0
             
-        if self.threefold() or self.board.halfmove_clock >= 100 or self.board.is_insufficient_material(): 
+        if self.drawn(): 
             return 0
 
         in_check = self.board.in_check()
@@ -177,9 +181,6 @@ class Search:
         
         # Generate and sort moves
         moves = self.board.gen_pseudo_legal(); moves.sort(reverse=True)
-        
-        if not moves:
-            return -320000 + ply if in_check else 0
 
         moves_played = 0
         original_alpha = alpha
@@ -223,7 +224,7 @@ class Search:
                     return alpha
         
         if moves_played == 0:
-            return -320000 + ply
+            return -320000 + ply if in_check else 0
 
         flag = 0 if alpha > original_alpha else 2
         self.tt[tt_idx] = [self.board.hash, alpha, s_depth, flag, best_move]
@@ -235,7 +236,7 @@ class Search:
             self.time_up = True
             return 0
         
-        if self.threefold() or self.board.halfmove_clock >= 100 or self.board.is_insufficient_material(): 
+        if self.drawn(): 
             return 0
 
         self.s_nodes += 1
@@ -247,26 +248,31 @@ class Search:
             if entry[3] == 1 and entry[1] >= beta: return entry[1]
             if entry[3] == 2 and entry[1] <= alpha: return entry[1]
 
+        in_check = self.board.in_check()
+
         stand_pat = self.board.evaluate()
-        if stand_pat >= beta: return beta
-        if stand_pat > alpha: alpha = stand_pat
+        if not in_check and stand_pat >= beta: return beta
+        if not in_check and stand_pat > alpha: alpha = stand_pat
         
-        moves = self.board.gen_pseudo_legal(True); moves.sort(reverse=True)
+        moves = self.board.gen_pseudo_legal(not in_check); moves.sort(reverse=True)
         
+        moves_played = 0
+
         # Active Moves Only (Captures/Promotions)
         for _, move in moves:
-            if move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 200) < alpha and not move[2]: continue
+            if not in_check and move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 200) < alpha and not move[2]: continue
 
             self.board.make_move(move)
             
             if self.board.in_check(False):
                 self.board.unmake_move()
                 continue
-                
+            
+            moves_played += 1
             score = -self.q_search(-beta, -alpha)
             self.board.unmake_move()
             
             if score >= beta: return beta
             if score > alpha: alpha = score
-            
-        return alpha
+        
+        return -320000 if in_check and not moves_played else alpha
