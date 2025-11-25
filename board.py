@@ -466,9 +466,6 @@ class Board:
         # Target masks
         step_targets = their if active else ~our
         
-        # Fast local lookups
-        piece_vals = self.PIECE_VALUES
-        
         # --- PAWNS ---
         pawns = self.P[self.side_index(us, 0)]
         
@@ -525,7 +522,7 @@ class Board:
                 if their & tgt_bit:
                     # Capture
                     victim_char = self.piece_on(tgt)
-                    victim_val = piece_vals[victim_char] if victim_char else 0
+                    victim_val = self.PIECE_VALUES[victim_char] if victim_char else 0
                     
                     # MVV/LVA: Victim * 100 - Attacker (Pawn=100)
                     score = (victim_val * 100) - 100 + CENTER_SCORE[tgt]
@@ -560,7 +557,7 @@ class Board:
                 
                 victim_char = self.piece_on(tgt)
                 if victim_char:
-                    score = (piece_vals[victim_char] * 100) - 320 + CENTER_SCORE[tgt]
+                    score = (self.PIECE_VALUES[victim_char] * 100) - 320 + CENTER_SCORE[tgt]
                 else:
                     score = CENTER_SCORE[tgt]
                 
@@ -595,7 +592,7 @@ class Board:
                         victim_char = self.piece_on(curr)
                         if victim_char:
                             # Capture
-                            score = (piece_vals[victim_char] * 100) - val_attacker + CENTER_SCORE[curr]
+                            score = (self.PIECE_VALUES[victim_char] * 100) - val_attacker + CENTER_SCORE[curr]
                             moves.append((score, (sq, curr, None, victim_char, p_char, False)))
                             break # Blocked by capture
                         elif not active:
@@ -618,7 +615,7 @@ class Board:
                 victim_char = self.piece_on(tgt)
                 if victim_char:
                      # King captures are risky but valuable if safe; simple MVV/LVA here
-                    score = (piece_vals[victim_char] * 100) + CENTER_SCORE[tgt]
+                    score = (self.PIECE_VALUES[victim_char] * 100) + CENTER_SCORE[tgt]
                 else:
                     score = CENTER_SCORE[tgt]
                 

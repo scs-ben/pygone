@@ -116,7 +116,9 @@ class Search:
         # Final Best Move
         print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
 
-    def threefold(self):
+    def drawn(self):
+        if self.board.halfmove_clock >= 100 or self.board.is_insufficient_material():
+            return True
         # Check every 2nd ply up to the halfmove clock (irreversible move) limit
         current_hash = self.board.hash
         limit = min(self.board.halfmove_clock, len(self.board.stack))
@@ -127,6 +129,7 @@ class Search:
                 count += 1
                 # We need 2 past occurrences + current one = 3 total
                 if count >= 2: return True
+                
         return False
 
     def search(self, s_depth, alpha, beta, ply):
@@ -135,7 +138,7 @@ class Search:
             self.time_up = True
             return 0
             
-        if self.threefold() or self.board.halfmove_clock >= 100 or self.board.is_insufficient_material(): 
+        if self.drawn(): 
             return 0
 
         in_check = self.board.in_check()
@@ -233,7 +236,7 @@ class Search:
             self.time_up = True
             return 0
         
-        if self.threefold() or self.board.halfmove_clock >= 100 or self.board.is_insufficient_material(): 
+        if self.drawn(): 
             return 0
 
         self.s_nodes += 1

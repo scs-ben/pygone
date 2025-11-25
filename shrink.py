@@ -67,7 +67,7 @@ REPLACEMENTS = {
     "hash": "af",
     "search": "ag",
     "move_to_uci": "ah",
-    "threefold": "ai",
+    "drawn": "ai",
     "stack": "aj",
     "original_alpha": "ak",
     "alpha": "al",
