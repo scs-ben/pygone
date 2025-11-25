@@ -93,7 +93,20 @@ class Search:
             entry = self.tt[self.board.hash % 1048576]
 
             if entry and entry[0] == self.board.hash: 
-                best_move = entry[4]
+                is_legal_tt = False
+                # Quick check: is it in our pseudo-legal list?
+                # (Re-generating is cheap compared to losing the game)
+                pms = self.board.gen_pseudo_legal()
+                for _, pm in pms:
+                    if pm == entry[4]:
+                        self.board.make_move(pm)
+                        if not self.board.in_check(False):
+                            is_legal_tt = True
+                        self.board.unmake_move()
+                        break
+                
+                if is_legal_tt:
+                    best_move = entry[4]
             
             # Minimal UCI Reporting
             elapsed = max(1, int((time.time() - start_time) * 1000))
