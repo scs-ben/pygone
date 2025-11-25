@@ -684,26 +684,31 @@ class Board:
         return (m, z) if i < 6 else (-m, -z)
 
     def pawn_structure_score(self, pawns):
-        score = 0
-        # Avoid loop overhead if possible, or optimize the loop body
-        for f in range(8):
-            file_mask = A_FILE_MASK << f
-            file_pawns = pawns & file_mask
-            
-            if not file_pawns: continue # fast skip
-            
-            cnt = file_pawns.bit_count() # FAST C-level count
-            
-            if cnt > 1: score -= (cnt - 1) * 15
-            
-            # Check Isolated
-            # (Your existing logic is fine, just ensure you use bitwise logic, not function calls)
-            neighbors = ((file_mask << 1) & 0xFEFEFEFEFEFEFEFE) | \
-                        ((file_mask >> 1) & 0x7F7F7F7F7F7F7F7F)
-            
-            if not (pawns & neighbors): score -= 15
-                    
-        return score
+        # 1. Collapse all pawns to Rank 1 (bits 0-7) to find occupied files
+        # We "smear" the bits down: Rank 8->4, then 4->2, then 2->1.
+        x = pawns
+        x |= x >> 32
+        x |= x >> 16
+        x |= x >> 8
+        file_occ = x & 0xFF  # 8 bits, 1 if file has ANY pawn, 0 otherwise
+
+        # 2. Doubled Pawns Calculation
+        # Original Logic: for every file, penalty = (pawn_count - 1) * 15
+        # Bitwise Logic: (Total Pawns - Count of Occupied Files) * 15
+        # Example: 3 pawns on A-file. bit_count=3, file_occ=1. (3-1) = 2 penalties. Matches.
+        doubled_penalty = (pawns.bit_count() - file_occ.bit_count()) * 15
+
+        # 3. Isolated Pawns Calculation
+        # A file is isolated if it is occupied (file_occ) but its neighbors (left/right) are empty.
+        # We project neighbor occupancy onto the current file slots.
+        neighbor_occ = (file_occ << 1) | (file_occ >> 1)
+        
+        # Isolated = Occupied AND NOT Neighbor_Occupied
+        isolated_mask = file_occ & ~neighbor_occ
+        
+        isolated_penalty = isolated_mask.bit_count() * 15
+
+        return -(doubled_penalty + isolated_penalty)
     
     def is_insufficient_material(self):
         # 1. If any Pawns, Rooks, or Queens exist, it's not insufficient.

@@ -105,7 +105,7 @@ def main():
                         
                         game_board.make_move((from_sq, to_sq, promo, None, None, False))
             #endremove
-            elif line.startswith("position"):
+            elif line[:8]=="position":
                 game_board = Board()
                 
                 moves = line.split()
@@ -118,24 +118,22 @@ def main():
                     game_board.make_move((from_sq, to_sq, promo, None, None, False))
                     
                 searcher.set_board(game_board)
-            elif line.startswith("go"):
-                move_time = 1e8
-                side_time = 1e8
-                is_white = game_board.white_to_move
+            elif line[:2]=="go":
+                side_time = move_time = 1e8
                 #remove
                 v_depth = 0
                 perft_depth = 0
                 #endremove
                 
                 args = line.split()
-                for key, arg in enumerate(args):
-                    if arg == 'wtime' and is_white or arg == 'btime' and not is_white:
-                        side_time = int(args[key + 1]) / 1e3
+                for k, a in enumerate(args):
+                    if a == 'wtime' and game_board.white_to_move or a == 'btime' and not game_board.white_to_move:
+                        side_time = int(args[k + 1]) / 1e3
                     #remove
-                    elif arg == 'depth':
-                        v_depth = int(args[key + 1])
-                    elif arg == 'perft':
-                        perft_depth = int(args[key + 1])
+                    elif a == 'depth':
+                        v_depth = int(args[k + 1])
+                    elif a == 'perft':
+                        perft_depth = int(args[k + 1])
                     #endremove
                 #remove
                 if perft_depth:
