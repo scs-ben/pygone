@@ -296,7 +296,7 @@ class Unit:
 
         repeat_seq = ["g1f3", "g8f6", "f3g1", "f6g8"]
 
-        if s.threefold():
+        if s.drawn():
             self._fail("Start pos is not 3-fold")
             return
 
@@ -304,7 +304,7 @@ class Unit:
         for m in repeat_seq: 
             if not make_uci(m, b): self._fail(f"Illegal move {m}"); return
         
-        if s.threefold():
+        if s.drawn():
             self._fail("2nd occurrence should not trigger strict 3-fold")
             return
 
@@ -312,7 +312,7 @@ class Unit:
         for m in repeat_seq: 
             if not make_uci(m, b): self._fail(f"Illegal move {m}"); return
         
-        if not s.threefold():
+        if not s.drawn():
             self._fail("3rd occurrence must trigger 3-fold")
             return
         
@@ -324,7 +324,7 @@ class Unit:
         for m in repeat_seq: make_uci(m, b)
         for m in repeat_seq: make_uci(m, b)
         
-        if s.threefold():
+        if s.drawn():
             self._fail("Irreversible move (pawn push) should have reset counter")
             return
 
