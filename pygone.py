@@ -110,12 +110,8 @@ def main():
                 
                 moves = line.split()
                 
-                for position_move in moves[3:]:
-                    from_sq = game_board.algebraic_to_sq(position_move[:2])
-                    to_sq = game_board.algebraic_to_sq(position_move[2:4])
-                    promo = position_move[4] if len(position_move) == 5 else None
-                    
-                    game_board.make_move((from_sq, to_sq, promo, None, None, False))
+                for position_move in moves[3:]:                    
+                    game_board.make_move((game_board.algebraic_to_sq(position_move[:2]), game_board.algebraic_to_sq(position_move[2:4]), position_move[4] if len(position_move) == 5 else None, None, None, False))
                     
                 searcher.set_board(game_board)
             elif line[:2]=="go":
