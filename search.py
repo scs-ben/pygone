@@ -65,8 +65,8 @@ class Search:
             self.board.make_move(move)
             
             # If the move we just made ends the game (mate/stalemate), stop.
-            if self.board.is_insufficient_material(): # or checkmate check
-                break
+            # if self.board.is_insufficient_material(): # or checkmate check
+            #     break
 
         # RESTORE THE BOARD
         # We must unmake every move we made to return the board to the root state
@@ -130,7 +130,7 @@ class Search:
         print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
 
     def drawn(self):
-        if self.board.halfmove_clock >= 100 or self.board.is_insufficient_material():
+        if self.board.halfmove_clock >= 100: # or self.board.is_insufficient_material():
             return True
         # Check every 2nd ply up to the halfmove clock (irreversible move) limit
         current_hash = self.board.hash
