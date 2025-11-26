@@ -113,15 +113,15 @@ class Search:
             
             elapsed = max(1, int((time.time() - start_time) * 1000))
             nps = int(self.s_nodes * 1000 / elapsed)
-            best_move = self.board.move_to_uci(best_move) if best_move else None
-            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {best_move}"
+            move = self.board.move_to_uci(best_move) if best_move else None
+            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {move}"
 
             #remove
             # Minimal UCI Reporting
             pv_moves = self.get_pv_line(depth)
             
             if pv_moves:
-                best_move = self.board.move_to_uci(pv_moves[0]) # The first move is the one we'll actually play
+                best_move = pv_moves[0] # The first move is the one we'll actually play
                 # Convert all moves in the list to UCI strings and join them
                 pv_str = " ".join([self.board.move_to_uci(m) for m in pv_moves])
             else:
@@ -136,7 +136,7 @@ class Search:
                 print(output, flush=True)
 
         # Final Best Move
-        print(f"bestmove {best_move}", flush=True)
+        print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
 
     def drawn(self):
         if self.board.halfmove_clock >= 100: # or self.board.is_insufficient_material():

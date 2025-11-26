@@ -16,6 +16,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from search import Search
 from board import Board
+#remove
+import sys, traceback
+#endremove
 #UNITremove
 from perft import Perft
 from unit import Unit
@@ -157,6 +160,8 @@ def main():
             #endremove
         #remove
         except Exception as exc:
+            print(exc, flush=True)
+            traceback.print_stack(limit=2, file=sys.stdout)
             print(exc, flush=True)
             raise
         except (KeyboardInterrupt, SystemExit):
