@@ -724,17 +724,14 @@ class Board:
     def mobility(self):
         saved_turn = self.white_to_move
         
-        # 2. Count White's moves
         self.white_to_move = True
         w_mobility = len(self.gen_pseudo_legal())
         
-        # 3. Count Black's moves
         self.white_to_move = False
         b_mobility = len(self.gen_pseudo_legal())
         
-        # 4. Restore turn and apply bonus (e.g., 5 centipawns per extra move)
         self.white_to_move = saved_turn
-        return (w_mobility - b_mobility) * 5
+        return (w_mobility - b_mobility)
 
     def evaluate(self):
         if self.halfmove_clock >= 100: return 0

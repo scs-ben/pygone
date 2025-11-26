@@ -112,12 +112,12 @@ class Search:
                 self.tt[self.board.hash % (2**23)]
             
             elapsed = max(1, int((time.time() - start_time) * 1000))
+            nps = int(self.s_nodes * 1000 / elapsed)
             best_move = self.board.move_to_uci(best_move) if best_move else None
-            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} pv {best_move}"
+            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {best_move}"
 
             #remove
             # Minimal UCI Reporting
-            nps = int(self.s_nodes * 1000 / elapsed)
             pv_moves = self.get_pv_line(depth)
             
             if pv_moves:
