@@ -120,10 +120,10 @@ SIDE_KEY = random.getrandbits(64)
 class Board:
     PIECE_VALUES = {
         'p': 100,
-        'n': 320,
+        'n': 305,
         'b': 330,
-        'r': 500,
-        'q': 900,
+        'r': 525,
+        'q': 1000,
         'k': 0
     }
     
@@ -139,8 +139,7 @@ class Board:
         self.castle = 0  # bits: wk(1), wq(2), bk(4), bq(8)
         self.ep = -1
         self.halfmove_clock = 0
-        self.score_mat = 0
-        self.score_pst = 0
+        self.eval_score = 0
         # state stack for unmake
         self.stack = []
         # this is for standard start pos, we can remove set_fen and compute hash for 4k
@@ -155,8 +154,7 @@ class Board:
 
     #UNITremove
     def recompute_evaluation(self):
-        self.score_mat = 0
-        self.score_pst = 0
+        self.eval_score = 0
         
         for i in range(12):
             bb = self.P[i]
@@ -164,9 +162,8 @@ class Board:
                 lsb = bb & -bb
                 sq = lsb.bit_length() - 1
                 bb ^= lsb
-                m,p = self._get_piece_val(i, sq)
-                self.score_mat += m
-                self.score_pst += p
+                m = self._get_piece_val(i, sq)
+                self.eval_score += m
     #UNITendremove
     
     #UNITremove
@@ -250,7 +247,7 @@ class Board:
     # make/unmake minimal for legality checking
     def make_move(self, mv):
         # 1. CACHE OLD STATE
-        old_ep, old_castle, old_clock, old_hash, old_mat, old_pst = self.ep, self.castle, self.halfmove_clock, self.hash, self.score_mat, self.score_pst
+        old_ep, old_castle, old_clock, old_hash, old_eval_score = self.ep, self.castle, self.halfmove_clock, self.hash, self.eval_score
 
         # --- NULL MOVE HANDLING ---
         if not mv:
@@ -265,7 +262,7 @@ class Board:
             self.white_to_move = not self.white_to_move
             
             # Push null-move state to stack (mv is None)
-            self.stack.append((None, -1, False, old_ep, old_castle, old_clock, old_hash, old_mat, old_pst))
+            self.stack.append((None, -1, False, old_ep, old_castle, old_clock, old_hash, old_eval_score))
             return
         # --------------------------
 
@@ -286,7 +283,7 @@ class Board:
                 moved_piece_idx = idx
                 break
             
-        m,p = self._get_piece_val(moved_piece_idx, frm); self.score_mat -= m; self.score_pst -= p
+        self.eval_score -= self._get_piece_val(moved_piece_idx, frm)
                 
         # 3. HANDLE CAPTURES & EN PASSANT
         captured_idx = -1
@@ -297,7 +294,7 @@ class Board:
             cap_sq = to - 8 if us else to + 8
             captured_idx = self.side_index(not us, 0)
             
-            m,p = self._get_piece_val(captured_idx, cap_sq); self.score_mat -= m; self.score_pst -= p
+            self.eval_score -= self._get_piece_val(captured_idx, cap_sq)
             
             # USE HELPER: Remove EP Pawn
             self._x(captured_idx, cap_sq) 
@@ -308,7 +305,7 @@ class Board:
                 if self.P[e_idx] & to_mask:
                     captured_idx = e_idx
                     
-                    m,p = self._get_piece_val(captured_idx, to); self.score_mat -= m; self.score_pst -= p
+                    self.eval_score -= self._get_piece_val(captured_idx, to)
                     
                     # USE HELPER: Remove Captured Piece
                     self._x(e_idx, to) 
@@ -316,7 +313,7 @@ class Board:
         
         # 4. PUSH TO STACK
         # (Assuming you are using the optimized stack from previous steps)
-        self.stack.append((mv, captured_idx, is_ep_capture, old_ep, old_castle, old_clock, old_hash, old_mat, old_pst))
+        self.stack.append((mv, captured_idx, is_ep_capture, old_ep, old_castle, old_clock, old_hash, old_eval_score))
 
         # 5. UPDATE MOVING PIECE
         # USE HELPER: Remove from 'from'
@@ -333,7 +330,7 @@ class Board:
         self._x(target_idx, to)
         self.piece_map[to] = target_idx
         
-        m,p = self._get_piece_val(target_idx, to); self.score_mat += m; self.score_pst += p
+        self.eval_score += self._get_piece_val(target_idx, to)
 
         # 6. UPDATE CLOCKS & SIDE
         self.hash ^= SIDE_KEY
@@ -353,8 +350,8 @@ class Board:
             
             rook_idx = self.side_index(us, 3)
             
-            m,p = self._get_piece_val(rook_idx, r_from); self.score_mat -= m; self.score_pst -= p
-            m,p = self._get_piece_val(rook_idx, r_to); self.score_mat += m; self.score_pst += p
+            self.eval_score -= self._get_piece_val(rook_idx, r_from)
+            self.eval_score += self._get_piece_val(rook_idx, r_to)
             
             # USE HELPER: Move Rook (Remove old, Place new)
             self._x(rook_idx, r_from)
@@ -372,7 +369,7 @@ class Board:
     def unmake_move(self):
         if not self.stack: return
         # Pop all state. Note: We handle 'is_ep' logic inside the index check now to save vars
-        mv, c_idx, is_ep, self.ep, self.castle, self.halfmove_clock, self.hash, self.score_mat, self.score_pst = self.stack.pop()
+        mv, c_idx, is_ep, self.ep, self.castle, self.halfmove_clock, self.hash, self.eval_score = self.stack.pop()
         
         self.white_to_move = not self.white_to_move
         
@@ -674,11 +671,10 @@ class Board:
         # (t >> 3 == 6) is the same as (t // 8 == 6)
         v = 20 * (t >> 3 == 6) if p == 3 else (PAWN_PST if p == 0 else UNIFIED_PST)[t]
         
-        m = self.PIECE_VALUES[IDX_TO_PIECE[p]]
-        z = v * PST_WEIGHTS[p] // 2
+        m = self.PIECE_VALUES[IDX_TO_PIECE[p]] + v * PST_WEIGHTS[p] // 2
         
         # Return tuple with correct sign
-        return (m, z) if i < 6 else (-m, -z)
+        return m if i < 6 else -m
 
     def pawn_structure_score(self, pawns):
         # 1. Collapse all pawns to Rank 1 (bits 0-7) to find occupied files
@@ -725,14 +721,26 @@ class Board:
         
     #     return False
 
+    def mobility(self):
+        saved_turn = self.white_to_move
+        
+        # 2. Count White's moves
+        self.white_to_move = True
+        w_mobility = len(self.gen_pseudo_legal())
+        
+        # 3. Count Black's moves
+        self.white_to_move = False
+        b_mobility = len(self.gen_pseudo_legal())
+        
+        # 4. Restore turn and apply bonus (e.g., 5 centipawns per extra move)
+        self.white_to_move = saved_turn
+        return (w_mobility - b_mobility) * 5
+
     def evaluate(self):
         if self.halfmove_clock >= 100: return 0
         # if self.is_insufficient_material(): return 0
         
-        piece_count = self.all_occupied().bit_count()
-        phase = min(1.0, max(0.0, (piece_count - 12) / 20.0))
-        
-        score = self.score_mat + int(self.score_pst * phase) + self.eval_king(True) - self.eval_king(False) + self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
+        score = self.eval_score + self.eval_king(True) - self.eval_king(False) + self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
 
         return score if self.white_to_move else -score
 
@@ -842,13 +850,13 @@ class Board:
         
         score = self.evaluate()
         
-        mat_score = self.score_mat
-        pst_score = self.score_pst
+        mat_score = self.eval_score
+        mob_score = self.mobility()
         king_score = self.eval_king(True) - self.eval_king(False)
         
         pawn_score = self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
 
         print(f"Turn: {('W' if self.white_to_move else 'B')} 50c: {self.halfmove_clock} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
-        print(f"Mat: {mat_score} Pos: {pst_score} King: {king_score} Pawn: {pawn_score}")
+        print(f"Mat: {mat_score} Mob: {mob_score} King: {king_score} Pawn: {pawn_score}")
         print(f"Fen: {self.get_fen()}")
     #endremove
