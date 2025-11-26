@@ -66,8 +66,8 @@ def main():
                 b = Board()
                 s = Search(b)
                 unit.unit_threefold(s, b)
-                b = Board()
-                unit.unit_insufficient_material(b)
+                # b = Board()
+                # unit.unit_insufficient_material(b)
                 b = Board()
                 unit.unit_game_end(b)
                 b = Board()
@@ -142,7 +142,7 @@ def main():
                 searcher.set_depth(50)
                 #endremove
 
-                searcher.set_time_limit(max(2, ((side_time / 50) + 2.8)))
+                searcher.set_time_limit(side_time / 50)
                 
                 #remove
                 if v_depth > 0:
@@ -159,8 +159,6 @@ def main():
         except Exception as exc:
             print(exc, flush=True)
             raise
-        #endremove
-        #remove
         except (KeyboardInterrupt, SystemExit):
             return
         #endremove
