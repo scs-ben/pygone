@@ -26,7 +26,9 @@ def main():
     searcher = Search(game_board)
 
     while 1:
+        #remove
         try:
+        #endremove
             line = input()
             if line == "quit":
                 return
@@ -153,10 +155,10 @@ def main():
             elif line.startswith('print'):
                 game_board.print_board()
             #endremove
+        #remove
         except Exception as exc:
             print(exc, flush=True)
             raise
-        #remove
         except (KeyboardInterrupt, SystemExit):
             return
         #endremove

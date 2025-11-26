@@ -842,12 +842,13 @@ class Board:
         
         score = self.evaluate()
         
-        mat_score = self.eval_score
+        mat_score = self.score_mat
+        pst_score = self.score_pst
         king_score = self.eval_king(True) - self.eval_king(False)
         
         pawn_score = self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
 
         print(f"Turn: {('W' if self.white_to_move else 'B')} 50c: {self.halfmove_clock} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
-        print(f"Mat: {mat_score} King: {king_score} Pawn: {pawn_score}")
+        print(f"Mat: {mat_score} Pos: {pst_score} King: {king_score} Pawn: {pawn_score}")
         print(f"Fen: {self.get_fen()}")
     #endremove

@@ -19,9 +19,9 @@ import time
 class Search:
     def __init__(self, board):
         self.board = board
-        # Optimized TT: Simple list (2^20 entries). 
+        # Optimized TT: Simple list (2^23 entries). 
         # Entry: [hash, score, depth, flag(0=Exact, 1=Lower, 2=Upper), best_move]
-        self.tt = [None] * (2**20) 
+        self.tt = [None] * (2**23) 
         self.s_nodes = 0
         self.time_up = False
         self.end_time = 0
@@ -46,7 +46,7 @@ class Search:
         # We will make moves on the board to traverse the TT, 
         # so we must count them to unmake them later.
         for _ in range(max_depth):
-            tt_idx = self.board.hash % 1048576
+            tt_idx = self.board.hash % (2**23)
             entry = self.tt[tt_idx]
             
             # Stop if: 
@@ -90,7 +90,7 @@ class Search:
             if self.time_up: break
             
             # Retrieve Best Move from TT using current hash
-            entry = self.tt[self.board.hash % 1048576]
+            entry = self.tt[self.board.hash % (2**23)]
 
             if entry and entry[0] == self.board.hash: 
                 is_legal_tt = False
@@ -103,17 +103,21 @@ class Search:
                         if not self.board.in_check(False):
                             is_legal_tt = True
                         self.board.unmake_move()
+                        best_move = pm
                         break
                 
                 if is_legal_tt:
                     best_move = entry[4]
+            else:
+                self.tt[self.board.hash % (2**23)]
             
-            # Minimal UCI Reporting
             elapsed = max(1, int((time.time() - start_time) * 1000))
-            pv_str = self.board.move_to_uci(best_move) if best_move else ""
-            nps = int(self.s_nodes * 1000 / elapsed)
-            
+            move = self.board.move_to_uci(best_move) if best_move else None
+            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} pv {move}"
+
             #remove
+            # Minimal UCI Reporting
+            nps = int(self.s_nodes * 1000 / elapsed)
             pv_moves = self.get_pv_line(depth)
             
             if pv_moves:
@@ -122,12 +126,18 @@ class Search:
                 pv_str = " ".join([self.board.move_to_uci(m) for m in pv_moves])
             else:
                 pv_str = ""
+
+                output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}"
             #endremove
             
-            print(f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}", flush=True)
+            print(output, flush=True)
+
+            if not best_move:
+                self.tt = [None] * (2**23)
 
         # Final Best Move
-        print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
+        # move = self.board.move_to_uci(best_move) if best_move else None
+        print(f"bestmove {move}", flush=True)
 
     def drawn(self):
         if self.board.halfmove_clock >= 100: # or self.board.is_insufficient_material():
@@ -166,7 +176,7 @@ class Search:
         self.s_nodes += 1
         
         # --- TT PROBE ---
-        tt_idx = self.board.hash % 1048576
+        tt_idx = self.board.hash % (2**23)
         entry = self.tt[tt_idx]
         if entry and entry[0] == self.board.hash and entry[2] >= s_depth:
             if entry[3] == 0: return entry[1]
@@ -255,7 +265,7 @@ class Search:
         self.s_nodes += 1
         
         # TT Probe (Q-Search)
-        entry = self.tt[self.board.hash % 1048576]
+        entry = self.tt[self.board.hash % (2**23)]
         if entry and entry[0] == self.board.hash:
             if entry[3] == 0: return entry[1]
             if entry[3] == 1 and entry[1] >= beta: return entry[1]
