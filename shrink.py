@@ -30,7 +30,7 @@ REPLACEMENTS = {
     "RANKS": "F",
     "IDX_TO_PIECE": "G",
     "PROMO_MAP": "H",
-    "A_FILE_MASK": "I",
+    "FILE_MASK": "I",
     "CR_MASK": "J",
     "UNIFIED_PST": "K",
     "PAWN_PST": "L",
@@ -82,7 +82,7 @@ REPLACEMENTS = {
     "Board": "au",
     "piece_map": "av",
     "castle": "aw",
-    "score_pst": "ax",
+    "eval_score": "ax",
     "bm_w": "ay",
     "bm_b": "az",
     "side_white": "A0",
@@ -103,7 +103,7 @@ REPLACEMENTS = {
     "score_mat": "Af",
     "pawns": "Ag",  
     "pst": "Ah",  
-    "mobility": "Ai",  
+    "eval_rooks": "Ai",  
 
     # Built-ins / keywords
     "True": "1",

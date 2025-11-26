@@ -26,7 +26,7 @@ FILES = "abcdefgh"
 RANKS = "12345678"
 IDX_TO_PIECE = ['p','n','b','r','q','k']
 PROMO_MAP = {'q': 4, 'r': 3, 'b': 2, 'n': 1}
-A_FILE_MASK = 0x0101010101010101
+FILE_MASK = [0x0101010101010101 << i for i in range(8)]
 
 CR_MASK = [15] * 64
 CR_MASK[0] = 13   # a1 (Remove WQ-2)
@@ -120,10 +120,10 @@ SIDE_KEY = random.getrandbits(64)
 class Board:
     PIECE_VALUES = {
         'p': 100,
-        'n': 305,
+        'n': 320,
         'b': 330,
-        'r': 525,
-        'q': 1000,
+        'r': 500,
+        'q': 900,
         'k': 0
     }
     
@@ -676,32 +676,32 @@ class Board:
         # Return tuple with correct sign
         return m if i < 6 else -m
 
-    def pawn_structure_score(self, pawns):
-        # 1. Collapse all pawns to Rank 1 (bits 0-7) to find occupied files
-        # We "smear" the bits down: Rank 8->4, then 4->2, then 2->1.
-        x = pawns
-        x |= x >> 32
-        x |= x >> 16
-        x |= x >> 8
-        file_occ = x & 0xFF  # 8 bits, 1 if file has ANY pawn, 0 otherwise
+    # def pawn_structure_score(self, pawns):
+    #     # 1. Collapse all pawns to Rank 1 (bits 0-7) to find occupied files
+    #     # We "smear" the bits down: Rank 8->4, then 4->2, then 2->1.
+    #     x = pawns
+    #     x |= x >> 32
+    #     x |= x >> 16
+    #     x |= x >> 8
+    #     file_occ = x & 0xFF  # 8 bits, 1 if file has ANY pawn, 0 otherwise
 
-        # 2. Doubled Pawns Calculation
-        # Original Logic: for every file, penalty = (pawn_count - 1) * 15
-        # Bitwise Logic: (Total Pawns - Count of Occupied Files) * 15
-        # Example: 3 pawns on A-file. bit_count=3, file_occ=1. (3-1) = 2 penalties. Matches.
-        doubled_penalty = (pawns.bit_count() - file_occ.bit_count()) * 15
+    #     # 2. Doubled Pawns Calculation
+    #     # Original Logic: for every file, penalty = (pawn_count - 1) * 15
+    #     # Bitwise Logic: (Total Pawns - Count of Occupied Files) * 15
+    #     # Example: 3 pawns on A-file. bit_count=3, file_occ=1. (3-1) = 2 penalties. Matches.
+    #     doubled_penalty = (pawns.bit_count() - file_occ.bit_count()) * 15
 
-        # 3. Isolated Pawns Calculation
-        # A file is isolated if it is occupied (file_occ) but its neighbors (left/right) are empty.
-        # We project neighbor occupancy onto the current file slots.
-        neighbor_occ = (file_occ << 1) | (file_occ >> 1)
+    #     # 3. Isolated Pawns Calculation
+    #     # A file is isolated if it is occupied (file_occ) but its neighbors (left/right) are empty.
+    #     # We project neighbor occupancy onto the current file slots.
+    #     neighbor_occ = (file_occ << 1) | (file_occ >> 1)
         
-        # Isolated = Occupied AND NOT Neighbor_Occupied
-        isolated_mask = file_occ & ~neighbor_occ
+    #     # Isolated = Occupied AND NOT Neighbor_Occupied
+    #     isolated_mask = file_occ & ~neighbor_occ
         
-        isolated_penalty = isolated_mask.bit_count() * 15
+    #     isolated_penalty = isolated_mask.bit_count() * 15
 
-        return -(doubled_penalty + isolated_penalty)
+    #     return -(doubled_penalty + isolated_penalty)
     
     # def is_insufficient_material(self):
     #     # 1. If any Pawns, Rooks, or Queens exist, it's not insufficient.
@@ -721,23 +721,39 @@ class Board:
         
     #     return False
 
-    def mobility(self):
-        saved_turn = self.white_to_move
+    def eval_rooks(self, white):
+        """Rewards Rooks on semi-open and open files."""
+        rooks = self.P[3] if white else self.P[9]
+        my_pawns = self.P[0] if white else self.P[6]
+        their_pawns = self.P[6] if white else self.P[0]
+        score = 0
         
-        self.white_to_move = True
-        w_mobility = len(self.gen_pseudo_legal())
-        
-        self.white_to_move = False
-        b_mobility = len(self.gen_pseudo_legal())
-        
-        self.white_to_move = saved_turn
-        return (w_mobility - b_mobility)
+        while rooks:
+            lsb = rooks & -rooks
+            sq = lsb.bit_length() - 1
+            rooks ^= lsb
+            
+            f = sq % 8
+            # Check if file is semi-open (no friendly pawns)
+            if not (my_pawns & FILE_MASK[f]):
+                score += 10
+                # Check if file is fully open (no pawns at all)
+                if not (their_pawns & FILE_MASK[f]):
+                    score += 15 # Total 25 for open file
+        return score
 
     def evaluate(self):
         if self.halfmove_clock >= 100: return 0
         # if self.is_insufficient_material(): return 0
         
-        score = self.eval_score + self.eval_king(True) - self.eval_king(False) + self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
+        score = self.eval_score + self.eval_king(True) - self.eval_king(False) + self.eval_rooks(True) - self.eval_rooks(False)
+
+        if not (self.P[4] | self.P[10]):
+            wk = self.king_square(True)
+            bk = self.king_square(False)
+            # Add center score to White, subtract for Black
+            # Weight it (e.g., * 2) to make the King walk
+            score += (CENTER_SCORE[wk] * 2) - (CENTER_SCORE[bk] * 2)
 
         return score if self.white_to_move else -score
 
@@ -848,7 +864,7 @@ class Board:
         score = self.evaluate()
         
         mat_score = self.eval_score
-        mob_score = self.mobility()
+        mob_score = 0
         king_score = self.eval_king(True) - self.eval_king(False)
         
         pawn_score = self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
