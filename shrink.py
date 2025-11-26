@@ -103,6 +103,7 @@ REPLACEMENTS = {
     "score_mat": "Af",
     "pawns": "Ag",  
     "pst": "Ah",  
+    "mobility": "Ai",  
 
     # Built-ins / keywords
     "True": "1",
