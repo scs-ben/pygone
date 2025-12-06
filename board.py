@@ -775,6 +775,11 @@ class Board:
             # Add center score to White, subtract for Black
             # Weight it (e.g., * 2) to make the King walk
             score += (CENTER_SCORE[wk] * 2) - (CENTER_SCORE[bk] * 2)
+		
+        # White bishop pair
+        if bin(self.P[2]).count('1') >= 2: score += 50
+        # Black bishop pair
+        if bin(self.P[8]).count('1') >= 2: score -= 50
 
         return score if self.white_to_move else -score
 
