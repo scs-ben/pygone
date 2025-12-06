@@ -21,7 +21,7 @@ class Search:
         self.board = board
         # Optimized TT: Simple list (2^23 entries). 
         # Entry: [hash, score, depth, flag(0=Exact, 1=Lower, 2=Upper), best_move]
-        self.tt = [None] * (2**23) 
+        self.tt = [None] * (2**27) 
         self.s_nodes = 0
         self.time_up = False
         self.end_time = 0
@@ -47,7 +47,7 @@ class Search:
         # We will make moves on the board to traverse the TT, 
         # so we must count them to unmake them later.
         for _ in range(max_depth):
-            tt_idx = self.board.hash % (2**23)
+            tt_idx = self.board.hash % (2**27)
             entry = self.tt[tt_idx]
             
             # Stop if: 
@@ -82,6 +82,14 @@ class Search:
         self.s_nodes = 0
         best_move = None
 
+        moves = self.board.gen_pseudo_legal()
+        for _, mv in moves:
+            self.board.make_move(mv)
+            if not self.board.in_check(False):
+                best_move = mv
+            self.board.unmake_move()
+            if best_move: break
+
         for depth in range(1, self.s_depth + 1):
             if self.time_up: break
             
@@ -91,15 +99,20 @@ class Search:
             if self.time_up: break
             
             # Retrieve Best Move from TT using current hash
-            entry = self.tt[self.board.hash % (2**23)]
+            entry = self.tt[self.board.hash % (2**27)]
 
-            if entry and entry[0] == self.board.hash: 
+            current_best_move = None
+
+            if entry and entry[0] == self.board.hash and entry[4]:
+                current_best_move = entry[4]
+
+            if current_best_move:
                 is_legal_tt = False
                 # Quick check: is it in our pseudo-legal list?
                 # (Re-generating is cheap compared to losing the game)
-                pms = self.board.gen_pseudo_legal(killers=self.killers[depth])
+                pms = self.board.gen_pseudo_legal()
                 for _, pm in pms:
-                    if pm == entry[4]:
+                    if pm == current_best_move:
                         self.board.make_move(pm)
                         if not self.board.in_check(False):
                             is_legal_tt = True
@@ -108,18 +121,16 @@ class Search:
                         break
                 
                 if is_legal_tt:
-                    best_move = entry[4]
-            else:
-                self.tt[self.board.hash % (2**23)]
+                    best_move = current_best_move
             
             # elapsed = max(1, int((time.time() - start_time) * 1000))
             # nps = int(self.s_nodes * 1000 / elapsed)
             # move = self.board.move_to_uci(best_move) if best_move else None
             # output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {move}"
             # output = f"info depth {depth} score cp {score} time {elapsed} nodes {self.s_nodes}"
-            output = f"info depth {depth} score cp {score} nodes {self.s_nodes}"
+            # output = f"info depth {depth} score cp {score} nodes {self.s_nodes}"
             # output = f"info depth {depth} score cp {score} time {elapsed}"
-            # output = f"info depth {depth} score cp {score}"
+            output = f"info depth {depth} score cp {score}"
 
             #remove
             elapsed = max(1, int((time.time() - start_time) * 1000))
@@ -137,10 +148,7 @@ class Search:
             output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}"
             #endremove
 
-            if not best_move:
-                self.tt = [None] * (2**23)
-            else:
-                print(output, flush=True)
+            print(output, flush=True)
 
         # Final Best Move
         print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
@@ -182,7 +190,7 @@ class Search:
         self.s_nodes += 1
         
         # --- TT PROBE ---
-        tt_idx = self.board.hash % (2**23)
+        tt_idx = self.board.hash % (2**27)
         entry = self.tt[tt_idx]
         if entry and entry[0]==self.board.hash and entry[2] >= s_depth:
             if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
@@ -275,7 +283,7 @@ class Search:
         self.s_nodes += 1
         
         # TT Probe (Q-Search)
-        entry = self.tt[self.board.hash % (2**23)]
+        entry = self.tt[self.board.hash % (2**27)]
         if entry and entry[0]==self.board.hash:
             if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
                 return entry[1]
@@ -292,7 +300,7 @@ class Search:
 
         # Active Moves Only (Captures/Promotions)
         for _, move in moves:
-            if not in_check and move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 200) < alpha and not move[2]: continue
+            if not in_check and move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 50) < alpha and not move[2]: continue
 
             self.board.make_move(move)
             

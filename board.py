@@ -504,14 +504,7 @@ class Board:
                     # Quiet Push
                     score = CENTER_SCORE[tgt]
 
-                    move = (sq, tgt, None, None, 'p', False)
-
-                    if killers:
-                        k0, k1 = killers
-                        if move == k0: score += 7000 # High score, below captures
-                        elif move == k1: score += 6000
-
-                    moves.append((score, move))
+                    moves.append((score, (sq, tgt, None, None, 'p', False)))
                     
                     # Double Push
                     if rank == start_rank:
@@ -651,6 +644,16 @@ class Board:
                     if (self.castle & 8) and not (occ & 1008806316530991104): # b8+c8+d8
                         if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
                             moves.append((500, (60, 58, None, None, 'k', True)))
+        
+        if killers:
+            k0, k1 = killers
+            new_moves = []
+            for score, move in moves:
+                if move == k0: score += 1000000
+                elif move == k1: score += 900000
+                new_moves.append((score, move))
+            moves = new_moves
+
         return moves
 
     def _get_piece_val(self, i, s):
@@ -772,6 +775,11 @@ class Board:
             # Add center score to White, subtract for Black
             # Weight it (e.g., * 2) to make the King walk
             score += (CENTER_SCORE[wk] * 2) - (CENTER_SCORE[bk] * 2)
+		
+        # White bishop pair
+        if bin(self.P[2]).count('1') >= 2: score += 50
+        # Black bishop pair
+        if bin(self.P[8]).count('1') >= 2: score -= 50
 
         return score if self.white_to_move else -score
 
