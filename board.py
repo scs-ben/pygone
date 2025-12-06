@@ -604,7 +604,7 @@ class Board:
                             # Capture
                             score = self.static_exchange_evaluation(victim_char, p_char)
                     
-                            score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
+                            score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[curr]
 
                             moves.append((score, (sq, curr, None, victim_char, p_char, False)))
                             break # Blocked by capture
@@ -883,9 +883,9 @@ class Board:
         
         mat_score = self.eval_score
         mob_score = 0
-        king_score = self.eval_king(True) - self.eval_king(False)
+        king_score = 0 # self.eval_king(True) - self.eval_king(False)
         
-        pawn_score = self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
+        pawn_score = 0 # self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
 
         print(f"Turn: {('W' if self.white_to_move else 'B')} 50c: {self.halfmove_clock} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
         print(f"Mat: {mat_score} Mob: {mob_score} King: {king_score} Pawn: {pawn_score}")
