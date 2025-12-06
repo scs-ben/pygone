@@ -145,7 +145,7 @@ def main():
                 searcher.set_depth(50)
                 #endremove
 
-                searcher.set_time_limit(side_time / 50)
+                searcher.set_time_limit(side_time // 50 + 3)
                 
                 #remove
                 if v_depth > 0:
