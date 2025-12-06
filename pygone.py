@@ -36,7 +36,7 @@ def main():
             if line == "quit":
                 return
             elif line == "uci":
-                print("pygone2\nuciok", flush=True)
+                print("pygone\nuciok", flush=True)
             #remove
             elif line == "ucinewgame":
                 game_board = Board()
@@ -145,7 +145,7 @@ def main():
                 searcher.set_depth(50)
                 #endremove
 
-                searcher.set_time_limit(side_time / 50)
+                searcher.set_time_limit(side_time // 50 + 3)
                 
                 #remove
                 if v_depth > 0:

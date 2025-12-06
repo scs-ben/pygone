@@ -10,7 +10,7 @@
         proto=uci \
 	nodes=100 \
     -each \
-        tc=0/60+2 \
+        tc=0/30+2 \
         timemargin=10000 \
         restart=on \
         -openings file=balance.pgn \

@@ -26,6 +26,7 @@ class Search:
         self.time_up = False
         self.end_time = 0
         self.s_depth = 50
+        self.killers = [[None, None] for _ in range(64)]
 
     def set_time_limit(self, seconds): 
         self.end_time = time.time() + seconds
@@ -96,7 +97,7 @@ class Search:
                 is_legal_tt = False
                 # Quick check: is it in our pseudo-legal list?
                 # (Re-generating is cheap compared to losing the game)
-                pms = self.board.gen_pseudo_legal()
+                pms = self.board.gen_pseudo_legal(killers=self.killers[depth])
                 for _, pm in pms:
                     if pm == entry[4]:
                         self.board.make_move(pm)
@@ -111,12 +112,18 @@ class Search:
             else:
                 self.tt[self.board.hash % (2**23)]
             
-            elapsed = max(1, int((time.time() - start_time) * 1000))
-            nps = int(self.s_nodes * 1000 / elapsed)
-            move = self.board.move_to_uci(best_move) if best_move else None
-            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {move}"
+            # elapsed = max(1, int((time.time() - start_time) * 1000))
+            # nps = int(self.s_nodes * 1000 / elapsed)
+            # move = self.board.move_to_uci(best_move) if best_move else None
+            # output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {move}"
+            # output = f"info depth {depth} score cp {score} time {elapsed} nodes {self.s_nodes}"
+            output = f"info depth {depth} score cp {score} nodes {self.s_nodes}"
+            # output = f"info depth {depth} score cp {score} time {elapsed}"
+            # output = f"info depth {depth} score cp {score}"
 
             #remove
+            elapsed = max(1, int((time.time() - start_time) * 1000))
+            nps = int(self.s_nodes * 1000 / elapsed)
             # Minimal UCI Reporting
             pv_moves = self.get_pv_line(depth)
             
@@ -127,7 +134,7 @@ class Search:
             else:
                 pv_str = ""
 
-                output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}"
+            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}"
             #endremove
 
             if not best_move:
@@ -156,7 +163,7 @@ class Search:
 
     def search(self, s_depth, alpha, beta, ply):
         # Check time every 2048 nodes
-        if (self.s_nodes & 2047) == 0 and time.time() > self.end_time:
+        if time.time() > self.end_time:
             self.time_up = True
             return 0
             
@@ -177,10 +184,9 @@ class Search:
         # --- TT PROBE ---
         tt_idx = self.board.hash % (2**23)
         entry = self.tt[tt_idx]
-        if entry and entry[0] == self.board.hash and entry[2] >= s_depth:
-            if entry[3] == 0: return entry[1]
-            if entry[3] == 1 and entry[1] >= beta: return entry[1]
-            if entry[3] == 2 and entry[1] <= alpha: return entry[1]
+        if entry and entry[0]==self.board.hash and entry[2] >= s_depth:
+            if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
+                return entry[1]
 
         # --- NULL MOVE PRUNING ---
         # Disable NMP if in check
@@ -202,7 +208,7 @@ class Search:
         best_move = None
         
         # Generate and sort moves
-        moves = self.board.gen_pseudo_legal(); moves.sort(reverse=True)
+        moves = self.board.gen_pseudo_legal(killers=self.killers[ply]); moves.sort(reverse=True)
 
         moves_played = 0
         original_alpha = alpha
@@ -242,6 +248,11 @@ class Search:
             if score > alpha:
                 alpha = score
                 if alpha >= beta:
+                    if move[3] is None and not move[2]: # If it's a quiet move
+                        _, k0 = self.killers[ply]
+                        if move != k0:
+                            self.killers[ply] = [move, k0]
+
                     self.tt[tt_idx] = [self.board.hash, alpha, s_depth, 1, move]
                     return alpha
         
@@ -254,7 +265,7 @@ class Search:
         return alpha
 
     def q_search(self, alpha, beta):
-        if (self.s_nodes & 2047) == 0 and time.time() > self.end_time:
+        if time.time() > self.end_time:
             self.time_up = True
             return 0
         
@@ -265,10 +276,9 @@ class Search:
         
         # TT Probe (Q-Search)
         entry = self.tt[self.board.hash % (2**23)]
-        if entry and entry[0] == self.board.hash:
-            if entry[3] == 0: return entry[1]
-            if entry[3] == 1 and entry[1] >= beta: return entry[1]
-            if entry[3] == 2 and entry[1] <= alpha: return entry[1]
+        if entry and entry[0]==self.board.hash:
+            if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
+                return entry[1]
 
         in_check = self.board.in_check()
 

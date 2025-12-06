@@ -452,8 +452,13 @@ class Board:
     def in_check(self, white=True):
         return self.attacked(self.king_square(self.white_to_move), not self.white_to_move) if white else self.attacked(self.king_square(not self.white_to_move), self.white_to_move)
 
+    def static_exchange_evaluation(self, cap_char, piece_char):
+        victim_val = self.PIECE_VALUES[cap_char] if cap_char else 0
+        attacker_val = self.PIECE_VALUES[piece_char] if piece_char else 0
+        return victim_val - attacker_val
+
     # --- move generation -------------------------------------------------
-    def gen_pseudo_legal(self, active=False):
+    def gen_pseudo_legal(self, active=False, killers=None):
         moves = []
         us = self.white_to_move
         occ = self.all_occupied()
@@ -498,7 +503,15 @@ class Board:
                 elif not active:
                     # Quiet Push
                     score = CENTER_SCORE[tgt]
-                    moves.append((score, (sq, tgt, None, None, 'p', False)))
+
+                    move = (sq, tgt, None, None, 'p', False)
+
+                    if killers:
+                        k0, k1 = killers
+                        if move == k0: score += 7000 # High score, below captures
+                        elif move == k1: score += 6000
+
+                    moves.append((score, move))
                     
                     # Double Push
                     if rank == start_rank:
@@ -519,18 +532,16 @@ class Board:
                 if their & tgt_bit:
                     # Capture
                     victim_char = self.piece_on(tgt)
-                    victim_val = self.PIECE_VALUES[victim_char] if victim_char else 0
                     
-                    # MVV/LVA: Victim * 100 - Attacker (Pawn=100)
-                    score = (victim_val * 100) - 100 + CENTER_SCORE[tgt]
+                    score = self.static_exchange_evaluation(victim_char, 'p')
                     
                     if rank == promo_rank:
-                        # Capture + Promo = Huge Score
-                        moves.append((score + 9000, (sq, tgt, 'q', victim_char, 'p', False)))
-                        moves.append((score + 5000, (sq, tgt, 'r', victim_char, 'p', False)))
-                        moves.append((score + 3300, (sq, tgt, 'b', victim_char, 'p', False)))
-                        moves.append((score + 3200, (sq, tgt, 'n', victim_char, 'p', False)))
+                        moves.append((score + 20900 + CENTER_SCORE[tgt], (sq, tgt, 'q', victim_char, 'p', False)))
+                        moves.append((score + 20500 + CENTER_SCORE[tgt], (sq, tgt, 'r', victim_char, 'p', False)))
+                        moves.append((score + 20330 + CENTER_SCORE[tgt], (sq, tgt, 'b', victim_char, 'p', False)))
+                        moves.append((score + 20320 + CENTER_SCORE[tgt], (sq, tgt, 'n', victim_char, 'p', False)))
                     else:
+                        score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                         moves.append((score, (sq, tgt, None, victim_char, 'p', False)))
 
                 # 3. En Passant
@@ -554,7 +565,9 @@ class Board:
                 
                 victim_char = self.piece_on(tgt)
                 if victim_char:
-                    score = (self.PIECE_VALUES[victim_char] * 100) - 320 + CENTER_SCORE[tgt]
+                    score = self.static_exchange_evaluation(victim_char, 'n')
+                    
+                    score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
                     score = CENTER_SCORE[tgt]
                 
@@ -568,7 +581,7 @@ class Board:
             (4, DIRS_ROOK + DIRS_BISHOP, 900, 'q')
         ]
         
-        for p_type, dirs, val_attacker, p_char in sliders:
+        for p_type, dirs, _, p_char in sliders:
             pieces = self.P[self.side_index(us, p_type)]
             while pieces:
                 lsb = pieces & -pieces
@@ -589,7 +602,10 @@ class Board:
                         victim_char = self.piece_on(curr)
                         if victim_char:
                             # Capture
-                            score = (self.PIECE_VALUES[victim_char] * 100) - val_attacker + CENTER_SCORE[curr]
+                            score = self.static_exchange_evaluation(victim_char, p_char)
+                    
+                            score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[curr]
+
                             moves.append((score, (sq, curr, None, victim_char, p_char, False)))
                             break # Blocked by capture
                         elif not active:
@@ -611,8 +627,9 @@ class Board:
                 
                 victim_char = self.piece_on(tgt)
                 if victim_char:
-                     # King captures are risky but valuable if safe; simple MVV/LVA here
-                    score = (self.PIECE_VALUES[victim_char] * 100) + CENTER_SCORE[tgt]
+                    score = self.static_exchange_evaluation(victim_char, 'k')
+                    
+                    score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
                     score = CENTER_SCORE[tgt]
                 
@@ -635,32 +652,6 @@ class Board:
                         if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
                             moves.append((500, (60, 58, None, None, 'k', True)))
         return moves
-
-    def eval_king(self, white):
-        k = self.king_square(white)
-        f, r = k % 8, k // 8
-        d, bb = (1, 0) if white else (-1, 6) 
-        
-        # 1. Pawn Shield (Defending pawns in front of King)
-        # Using generator to save space
-        pawn_shield = 10 * sum(
-            1 for df in (-1, 0, 1) 
-            if 0 <= (nf := f + df) < 8 
-            and 0 <= (nr := r + d) < 8
-            and (self.P[bb] & (1 << (nr * 8 + nf)))
-        )
-        
-        # 2. Castling Bonus (Huge incentive to castle)
-        # King on g/c file (castled positions) gets +60
-        castle_pos_score = 0
-        if (white and k in (6, 2)) or (not white and k in (62, 58)):
-            castle_pos_score += 60
-            
-        # Penalties for losing rights (remains small)
-        if not (self.castle & (1 if white else 4)): castle_pos_score -= 10
-        if not (self.castle & (2 if white else 8)): castle_pos_score -= 5
-        
-        return pawn_shield + castle_pos_score
 
     def _get_piece_val(self, i, s):
         p = i % 6
@@ -721,32 +712,59 @@ class Board:
         
     #     return False
 
-    def eval_rooks(self, white):
-        """Rewards Rooks on semi-open and open files."""
-        rooks = self.P[3] if white else self.P[9]
-        my_pawns = self.P[0] if white else self.P[6]
-        their_pawns = self.P[6] if white else self.P[0]
-        score = 0
-        
-        while rooks:
-            lsb = rooks & -rooks
-            sq = lsb.bit_length() - 1
-            rooks ^= lsb
-            
-            f = sq % 8
-            # Check if file is semi-open (no friendly pawns)
-            if not (my_pawns & FILE_MASK[f]):
-                score += 10
-                # Check if file is fully open (no pawns at all)
-                if not (their_pawns & FILE_MASK[f]):
-                    score += 15 # Total 25 for open file
-        return score
-
     def evaluate(self):
+        def eval_rooks(white):
+            """Rewards Rooks on semi-open and open files."""
+            rooks = self.P[3] if white else self.P[9]
+            my_pawns = self.P[0] if white else self.P[6]
+            their_pawns = self.P[6] if white else self.P[0]
+            score = 0
+            
+            while rooks:
+                lsb = rooks & -rooks
+                sq = lsb.bit_length() - 1
+                rooks ^= lsb
+                
+                f = sq % 8
+                # Check if file is semi-open (no friendly pawns)
+                if not (my_pawns & FILE_MASK[f]):
+                    score += 10
+                    # Check if file is fully open (no pawns at all)
+                    if not (their_pawns & FILE_MASK[f]):
+                        score += 15 # Total 25 for open file
+            return score
+
+        def eval_king(white):
+            k = self.king_square(white)
+            # f, r = k % 8, k // 8
+            # d, bb = (1, 0) if white else (-1, 6) 
+            
+            # 1. Pawn Shield (Defending pawns in front of King)
+            # Using generator to save space
+            # pawn_shield = 10 * sum(
+            #     1 for df in (-1, 0, 1) 
+            #     if 0 <= (nf := f + df) < 8 
+            #     and 0 <= (nr := r + d) < 8
+            #     and (self.P[bb] & (1 << (nr * 8 + nf)))
+            # )
+            
+            # 2. Castling Bonus (Huge incentive to castle)
+            # King on g/c file (castled positions) gets +60
+            castle_pos_score = 0
+            if (white and k in (6, 2)) or (not white and k in (62, 58)):
+                castle_pos_score += 60
+                
+            # Penalties for losing rights (remains small)
+            if not (self.castle & (1 if white else 4)): castle_pos_score -= 10
+            if not (self.castle & (2 if white else 8)): castle_pos_score -= 5
+            
+            # return pawn_shield + castle_pos_score
+            return castle_pos_score
+            
         if self.halfmove_clock >= 100: return 0
         # if self.is_insufficient_material(): return 0
         
-        score = self.eval_score + self.eval_king(True) - self.eval_king(False) + self.eval_rooks(True) - self.eval_rooks(False)
+        score = self.eval_score + eval_king(True) - eval_king(False) + eval_rooks(True) - eval_rooks(False)
 
         if not (self.P[4] | self.P[10]):
             wk = self.king_square(True)
@@ -865,9 +883,9 @@ class Board:
         
         mat_score = self.eval_score
         mob_score = 0
-        king_score = self.eval_king(True) - self.eval_king(False)
+        king_score = 0 # self.eval_king(True) - self.eval_king(False)
         
-        pawn_score = self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
+        pawn_score = 0 # self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
 
         print(f"Turn: {('W' if self.white_to_move else 'B')} 50c: {self.halfmove_clock} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
         print(f"Mat: {mat_score} Mob: {mob_score} King: {king_score} Pawn: {pawn_score}")
