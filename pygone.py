@@ -36,7 +36,7 @@ def main():
             if line == "quit":
                 return
             elif line == "uci":
-                print("pygone2\nuciok", flush=True)
+                print("pygone\nuciok", flush=True)
             #remove
             elif line == "ucinewgame":
                 game_board = Board()
