@@ -105,6 +105,10 @@ REPLACEMENTS = {
     "pst": "Ah",  
     "eval_rooks": "Ai",  
     "killers": "Aj",  
+    "static_exchange_evaluation": "Ak",  
+    "piece_char": "Al",  
+    "cap_char": "Am",  
+    "active": "An",  
 
     # Built-ins / keywords
     "True": "1",

@@ -116,7 +116,10 @@ class Search:
             # nps = int(self.s_nodes * 1000 / elapsed)
             # move = self.board.move_to_uci(best_move) if best_move else None
             # output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {move}"
-            output = f"info depth {depth} score cp {score}"
+            # output = f"info depth {depth} score cp {score} time {elapsed} nodes {self.s_nodes}"
+            output = f"info depth {depth} score cp {score} nodes {self.s_nodes}"
+            # output = f"info depth {depth} score cp {score} time {elapsed}"
+            # output = f"info depth {depth} score cp {score}"
 
             #remove
             elapsed = max(1, int((time.time() - start_time) * 1000))
