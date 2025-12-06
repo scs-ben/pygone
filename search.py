@@ -292,7 +292,7 @@ class Search:
 
         # Active Moves Only (Captures/Promotions)
         for _, move in moves:
-            if not in_check and move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 200) < alpha and not move[2]: continue
+            if not in_check and move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 50) < alpha and not move[2]: continue
 
             self.board.make_move(move)
             
