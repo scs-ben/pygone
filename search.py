@@ -131,7 +131,7 @@ class Search:
             else:
                 pv_str = ""
 
-                output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}"
+            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}"
             #endremove
 
             if not best_move:
@@ -160,7 +160,7 @@ class Search:
 
     def search(self, s_depth, alpha, beta, ply):
         # Check time every 2048 nodes
-        if (self.s_nodes & 2047) == 0 and time.time() > self.end_time:
+        if time.time() > self.end_time:
             self.time_up = True
             return 0
             
@@ -181,10 +181,9 @@ class Search:
         # --- TT PROBE ---
         tt_idx = self.board.hash % (2**23)
         entry = self.tt[tt_idx]
-        if entry and entry[0] == self.board.hash and entry[2] >= s_depth:
-            if entry[3] == 0: return entry[1]
-            if entry[3] == 1 and entry[1] >= beta: return entry[1]
-            if entry[3] == 2 and entry[1] <= alpha: return entry[1]
+        if entry and entry[0]==self.board.hash and entry[2] >= s_depth:
+            if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
+                return entry[1]
 
         # --- NULL MOVE PRUNING ---
         # Disable NMP if in check
@@ -263,7 +262,7 @@ class Search:
         return alpha
 
     def q_search(self, alpha, beta):
-        if (self.s_nodes & 2047) == 0 and time.time() > self.end_time:
+        if time.time() > self.end_time:
             self.time_up = True
             return 0
         
@@ -274,10 +273,9 @@ class Search:
         
         # TT Probe (Q-Search)
         entry = self.tt[self.board.hash % (2**23)]
-        if entry and entry[0] == self.board.hash:
-            if entry[3] == 0: return entry[1]
-            if entry[3] == 1 and entry[1] >= beta: return entry[1]
-            if entry[3] == 2 and entry[1] <= alpha: return entry[1]
+        if entry and entry[0]==self.board.hash:
+            if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
+                return entry[1]
 
         in_check = self.board.in_check()
 
