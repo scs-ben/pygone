@@ -104,6 +104,7 @@ REPLACEMENTS = {
     "pawns": "Ag",  
     "pst": "Ah",  
     "eval_rooks": "Ai",  
+    "killers": "Aj",  
 
     # Built-ins / keywords
     "True": "1",

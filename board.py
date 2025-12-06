@@ -453,7 +453,7 @@ class Board:
         return self.attacked(self.king_square(self.white_to_move), not self.white_to_move) if white else self.attacked(self.king_square(not self.white_to_move), self.white_to_move)
 
     # --- move generation -------------------------------------------------
-    def gen_pseudo_legal(self, active=False):
+    def gen_pseudo_legal(self, active=False, killers=None):
         moves = []
         us = self.white_to_move
         occ = self.all_occupied()
@@ -498,7 +498,15 @@ class Board:
                 elif not active:
                     # Quiet Push
                     score = CENTER_SCORE[tgt]
-                    moves.append((score, (sq, tgt, None, None, 'p', False)))
+
+                    move = (sq, tgt, None, None, 'p', False)
+
+                    if killers:
+                        k0, k1 = killers
+                        if move == k0: score += 7000 # High score, below captures
+                        elif move == k1: score += 6000
+
+                    moves.append((score, move))
                     
                     # Double Push
                     if rank == start_rank:

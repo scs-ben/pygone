@@ -26,6 +26,7 @@ class Search:
         self.time_up = False
         self.end_time = 0
         self.s_depth = 50
+        self.killers = [[None, None] for _ in range(64)]
 
     def set_time_limit(self, seconds): 
         self.end_time = time.time() + seconds
@@ -96,7 +97,7 @@ class Search:
                 is_legal_tt = False
                 # Quick check: is it in our pseudo-legal list?
                 # (Re-generating is cheap compared to losing the game)
-                pms = self.board.gen_pseudo_legal()
+                pms = self.board.gen_pseudo_legal(killers=self.killers[depth])
                 for _, pm in pms:
                     if pm == entry[4]:
                         self.board.make_move(pm)
@@ -111,12 +112,15 @@ class Search:
             else:
                 self.tt[self.board.hash % (2**23)]
             
-            elapsed = max(1, int((time.time() - start_time) * 1000))
-            nps = int(self.s_nodes * 1000 / elapsed)
-            move = self.board.move_to_uci(best_move) if best_move else None
-            output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {move}"
+            # elapsed = max(1, int((time.time() - start_time) * 1000))
+            # nps = int(self.s_nodes * 1000 / elapsed)
+            # move = self.board.move_to_uci(best_move) if best_move else None
+            # output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {move}"
+            output = f"info depth {depth} score cp {score}"
 
             #remove
+            elapsed = max(1, int((time.time() - start_time) * 1000))
+            nps = int(self.s_nodes * 1000 / elapsed)
             # Minimal UCI Reporting
             pv_moves = self.get_pv_line(depth)
             
@@ -202,7 +206,7 @@ class Search:
         best_move = None
         
         # Generate and sort moves
-        moves = self.board.gen_pseudo_legal(); moves.sort(reverse=True)
+        moves = self.board.gen_pseudo_legal(killers=self.killers[ply]); moves.sort(reverse=True)
 
         moves_played = 0
         original_alpha = alpha
@@ -242,6 +246,11 @@ class Search:
             if score > alpha:
                 alpha = score
                 if alpha >= beta:
+                    if move[3] is None and not move[2]: # If it's a quiet move
+                        _, k0 = self.killers[ply]
+                        if move != k0:
+                            self.killers[ply] = [move, k0]
+
                     self.tt[tt_idx] = [self.board.hash, alpha, s_depth, 1, move]
                     return alpha
         
