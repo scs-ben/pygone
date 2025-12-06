@@ -82,7 +82,7 @@ class Search:
         self.s_nodes = 0
         best_move = None
 
-        moves = self.board.gen_pseudo_legal(killers = self.killers[1])
+        moves = self.board.gen_pseudo_legal()
         for _, mv in moves:
             self.board.make_move(mv)
             if not self.board.in_check(False):
@@ -103,7 +103,7 @@ class Search:
 
             current_best_move = None
 
-            if entry and entry[0] == self.board.hash and entry[4] is not None:
+            if entry and entry[0] == self.board.hash and entry[4]:
                 current_best_move = entry[4]
 
             if current_best_move:
