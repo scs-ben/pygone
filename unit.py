@@ -16,6 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import io
 import contextlib
+import time
 
 class Unit:
     def _fail(self, msg):
@@ -258,8 +259,8 @@ class Unit:
         orig_hash = b.hash
 
         # Silent search (suppress prints inside search if possible, or just ignore output)
-        s.set_time_limit(1e8)
-        s.set_depth(6)
+        s.end_time = time.time() + 1e8; s.time_up = False
+        s.set_depth(8)
         
         # Capture stdout to a dummy stream
         captured_output = io.StringIO()
@@ -418,7 +419,7 @@ class Unit:
             b.set_fen(fen)
             s.set_board(b)
             s.set_depth(depth)
-            s.set_time_limit(1000) # 1 second is plenty
+            s.end_time = time.time() + 1000; s.time_up = False
 
             # Capture standard output to read "bestmove"
             capture = io.StringIO()

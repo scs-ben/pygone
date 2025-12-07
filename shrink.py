@@ -232,6 +232,7 @@ def main():
     # 4. Final Cleanup (Tabs/Blank Lines)
     print("Performing final cleanup...")
     
+    minified_code = minified_code.replace('import time,time', 'import time')
     minified_code = minified_code.replace('import random', '')
     minified_code = minified_code.replace('import time', 'import time,random')
     minified_code = minified_code.replace('__init__(A,fen=None)', '__init__(A)')

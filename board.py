@@ -22,8 +22,6 @@ import random
 # Move = Tuple[int,int,str,str,str,int]  # from, to, promotion or None, capture or None, piece moving, castling
 
 # --- helpers --------------------------------------------------------------
-FILES = "abcdefgh"
-RANKS = "12345678"
 IDX_TO_PIECE = ['p','n','b','r','q','k']
 PROMO_MAP = {'q': 4, 'r': 3, 'b': 2, 'n': 1}
 FILE_MASK = [0x0101010101010101 << i for i in range(8)]
@@ -56,7 +54,6 @@ PAWN_PST = [
     50, 50, 50, 50, 50, 50, 50, 50,   # Rank 7
      0,  0,  0,  0,  0,  0,  0,  0    # Rank 8
 ]
-PST_WEIGHTS = [1, 2, 2, 1, 1, 0]
 
 CENTER_SCORE = [
     -17,-17,-17,-17,-17,-17,-17,-17,
@@ -238,7 +235,7 @@ class Board:
     #UNITendremove
 
     def algebraic_to_sq(self, s:str):
-        return FILES.index(s[0]) + 8*int(s[1])-8
+        return "abcdefgh".index(s[0]) + 8*int(s[1])-8
 
     def _x(self, i, s):
         self.P[i] ^= (1 << s)
@@ -529,10 +526,10 @@ class Board:
                     score = self.static_exchange_evaluation(victim_char, 'p')
                     
                     if rank == promo_rank:
-                        moves.append((score + 20900 + CENTER_SCORE[tgt], (sq, tgt, 'q', victim_char, 'p', False)))
-                        moves.append((score + 20500 + CENTER_SCORE[tgt], (sq, tgt, 'r', victim_char, 'p', False)))
-                        moves.append((score + 20330 + CENTER_SCORE[tgt], (sq, tgt, 'b', victim_char, 'p', False)))
-                        moves.append((score + 20320 + CENTER_SCORE[tgt], (sq, tgt, 'n', victim_char, 'p', False)))
+                        moves.append((score + 20000 + self.PIECE_VALUES['q'] + CENTER_SCORE[tgt], (sq, tgt, 'q', victim_char, 'p', False)))
+                        moves.append((score + 20000 + self.PIECE_VALUES['r'] + CENTER_SCORE[tgt], (sq, tgt, 'r', victim_char, 'p', False)))
+                        moves.append((score + 20000 + self.PIECE_VALUES['b'] + CENTER_SCORE[tgt], (sq, tgt, 'b', victim_char, 'p', False)))
+                        moves.append((score + 20000 + self.PIECE_VALUES['n'] + CENTER_SCORE[tgt], (sq, tgt, 'n', victim_char, 'p', False)))
                     else:
                         score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                         moves.append((score, (sq, tgt, None, victim_char, 'p', False)))
@@ -569,9 +566,9 @@ class Board:
         # --- SLIDERS (Bishops, Rooks, Queens) ---
         # Helper lists
         sliders = [
-            (2, DIRS_BISHOP, 330, 'b'),
-            (3, DIRS_ROOK, 500, 'r'),
-            (4, DIRS_ROOK + DIRS_BISHOP, 900, 'q')
+            (2, DIRS_BISHOP, self.PIECE_VALUES['b'], 'b'),
+            (3, DIRS_ROOK, self.PIECE_VALUES['r'], 'r'),
+            (4, DIRS_ROOK + DIRS_BISHOP, self.PIECE_VALUES['q'], 'q')
         ]
         
         for p_type, dirs, _, p_char in sliders:
@@ -665,7 +662,7 @@ class Board:
         # (t >> 3 == 6) is the same as (t // 8 == 6)
         v = 20 * (t >> 3 == 6) if p == 3 else (PAWN_PST if p == 0 else UNIFIED_PST)[t]
         
-        m = self.PIECE_VALUES[IDX_TO_PIECE[p]] + v * PST_WEIGHTS[p] // 2
+        m = self.PIECE_VALUES[IDX_TO_PIECE[p]] + v * [1, 2, 2, 1, 1, 0][p] // 2
         
         # Return tuple with correct sign
         return m if i < 6 else -m
@@ -788,7 +785,7 @@ class Board:
         return IDX_TO_PIECE[idx % 6] if idx != -1 else None
 
     def move_to_uci(self, mv):
-        base = (FILES[mv[0] % 8] + RANKS[mv[0] // 8]) + (FILES[mv[1] % 8] + RANKS[mv[1] // 8])
+        base = ("abcdefgh"[mv[0] % 8] + "12345678"[mv[0] // 8]) + ("abcdefgh"[mv[1] % 8] + "12345678"[mv[1] // 8])
         if mv[2]: return base + mv[2]
         return base
     
@@ -848,7 +845,7 @@ class Board:
             fen_ep = '-'
         else:
             # Assumes you have a method to convert square index to algebraic notation
-            fen_ep = FILES[self.ep % 8] + RANKS[self.ep // 8]
+            fen_ep = "abcdefgh"[self.ep % 8] + "12345678"[self.ep // 8]
             
         # --- 5. Halfmove and Fullmove Clocks (Parts 5 & 6 of FEN) ---
         # These were not in your set_fen, so we default to standard values.
