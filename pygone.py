@@ -1,6 +1,6 @@
 #!/usr/bin/env pypy3
 #  pygone - A Python Chess Engine
-#  Copyright (C) 2025 [Your Name/Handle]
+#  Copyright (C) 2026 scs-ben
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import time
 from search import Search
 from board import Board
 #remove
@@ -145,11 +146,12 @@ def main():
                 searcher.set_depth(50)
                 #endremove
 
-                searcher.set_time_limit(side_time // 50 + 3)
+                searcher.end_time = time.time() + (side_time // 50 + 3); searcher.time_up = False
                 
                 #remove
                 if v_depth > 0:
-                    searcher.set_time_limit(1e8)
+                    searcher.end_time = time.time() + (side_time // 50 + 3)
+                    searcher.time_up = False
                     searcher.set_depth(v_depth)
                 #endremove
 

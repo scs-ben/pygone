@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #  pygone - A Python Chess Engine
-#  Copyright (C) 2025 [Your Name/Handle]
+#  Copyright (C) 2026 scs-ben
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -232,6 +232,7 @@ def main():
     # 4. Final Cleanup (Tabs/Blank Lines)
     print("Performing final cleanup...")
     
+    minified_code = minified_code.replace('import time,time', 'import time')
     minified_code = minified_code.replace('import random', '')
     minified_code = minified_code.replace('import time', 'import time,random')
     minified_code = minified_code.replace('__init__(A,fen=None)', '__init__(A)')

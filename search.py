@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #  pygone - A Python Chess Engine
-#  Copyright (C) 2025 [Your Name/Handle]
+#  Copyright (C) 2026 scs-ben
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -27,10 +27,6 @@ class Search:
         self.end_time = 0
         self.s_depth = 50
         self.killers = [[None, None] for _ in range(64)]
-
-    def set_time_limit(self, seconds): 
-        self.end_time = time.time() + seconds
-        self.time_up = False
 
     #UNITremove
     def set_depth(self, depth): 
@@ -261,14 +257,16 @@ class Search:
                         if move != k0:
                             self.killers[ply] = [move, k0]
 
-                    self.tt[tt_idx] = [self.board.hash, alpha, s_depth, 1, move]
+                    if not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5]):
+                        self.tt[tt_idx] = [self.board.hash, alpha, s_depth, 1, move, ply]
                     return alpha
         
         if moves_played == 0:
             return -320000 + ply if in_check else 0
 
         flag = 0 if alpha > original_alpha else 2
-        self.tt[tt_idx] = [self.board.hash, alpha, s_depth, flag, best_move]
+        if not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5]):
+            self.tt[tt_idx] = [self.board.hash, alpha, s_depth, flag, best_move, ply]
         
         return alpha
 
