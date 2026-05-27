@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #  pygone - A Python Chess Engine
-#  Copyright (C) 2025 [Your Name/Handle]
+#  Copyright (C) 2026 scs-ben
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
