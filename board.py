@@ -66,14 +66,11 @@ CENTER_SCORE = [
 ]
 
 # direction offsets in square index (used for ray walking)
-N, S, E, W, NE, NW, SE, SW = 8, -8, 1, -1, 9, 7, -7, -9
-DIRS_ROOK = (N,S,E,W)
-DIRS_BISHOP = (NE,NW,SE,SW)
+DIRS_ROOK = (8, -8, 1, -1)
+DIRS_BISHOP = (9, 7, -7, -9)
 
-KNIGHT_ATK = [0]*64
-KING_ATK   = [0]*64
-PAWN_ATK_WHITE = [0]*64
-PAWN_ATK_BLACK = [0]*64
+
+KNIGHT_ATK, KING_ATK, PAWN_ATK_WHITE, PAWN_ATK_BLACK = [[0]*64 for _ in range(4)]
 
 for sq in range(64):
     r = sq//8; f = sq%8
@@ -132,10 +129,9 @@ class Board:
     
     def __init__(self, fen = None):
         # piece bitboards: WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK
-        self.P = [0]*12
-        self.piece_map = [-1] * 64
+        self.piece_map = [3, 1, 2, 4, 5, 2, 1, 3] + [0]*8 + [-1]*32 + [6]*8 + [9, 7, 8, 10, 11, 8, 7, 9]
         self.white_to_move = True
-        self.castle = 0  # bits: wk(1), wq(2), bk(4), bq(8)
+        self.castle = 15  # bits: wk(1), wq(2), bk(4), bq(8)
         self.ep = -1
         self.halfmove_clock = 0
         self.eval_score = 0
@@ -199,8 +195,7 @@ class Board:
     def all_occupied(self):
         return sum(self.P)
 
-    def side_index(self, white, piece_idx):
-        return piece_idx if white else piece_idx+6
+
 
     #UNITremove
     def set_fen(self, fen):
@@ -239,6 +234,8 @@ class Board:
         self.P[i] ^= (1 << s)
         self.hash ^= PIECE_KEYS[i][s]
 
+
+
     # make/unmake minimal for legality checking
     def make_move(self, mv):
         # 1. CACHE OLD STATE
@@ -272,7 +269,7 @@ class Board:
         moved_piece_idx = -1
         
         for p in range(6):
-            idx = self.side_index(us, p)
+            idx = p if us else p + 6
             if self.P[idx] & from_mask:
                 moved_piece_type = p
                 moved_piece_idx = idx
@@ -296,7 +293,7 @@ class Board:
             self.piece_map[cap_sq] = -1
         else:
             for p in range(6):
-                e_idx = self.side_index(not us, p)
+                e_idx = p if not us else p + 6
                 if self.P[e_idx] & to_mask:
                     captured_idx = e_idx
                     
@@ -319,7 +316,7 @@ class Board:
         target_idx = moved_piece_idx
         if promo:
             # promo is now an int (1-4) if you updated gen_legal, or use map
-            target_idx = self.side_index(us, 'nbrq'.index(promo)+1)
+            target_idx = 'nbrq'.index(promo) + (1 if us else 7)
             
         # USE HELPER: Place on 'to'
         self._x(target_idx, to)
@@ -361,6 +358,7 @@ class Board:
             
         self.white_to_move = not self.white_to_move
 
+
     def unmake_move(self):
         if not self.stack: return
         # Pop all state. Note: We handle 'is_ep' logic inside the index check now to save vars
@@ -400,6 +398,7 @@ class Board:
             r_idx = 3 if self.white_to_move else 9
             self.P[r_idx] ^= (1 << r_new) | (1 << r_old) # Toggle both rook squares at once
             self.piece_map[r_new], self.piece_map[r_old] = -1, r_idx
+
 
     # attack detection
     def attacked(self, sq, by_white):
@@ -567,7 +566,7 @@ class Board:
         ]
         
         for p_type, dirs, _, p_char in sliders:
-            pieces = self.P[self.side_index(us, p_type)]
+            pieces = self.P[p_type if us else p_type + 6]
             while pieces:
                 lsb = pieces & -pieces
                 sq = lsb.bit_length() - 1

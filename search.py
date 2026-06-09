@@ -139,7 +139,7 @@ class Search:
         h = self.board.halfmove_clock
         if h >= 100: return True
         s = self.board.stack
-        return sum(1 for i in range(2, min(h, len(s)) + 1, 2) if s[-i][6] == self.board.hash) >= 2
+        return sum(1 for i in range(2, min(h, len(s)) + 1, 2) if s[-i][6] == self.board.hash) >= 1
 
     def search(self, s_depth, alpha, beta, ply):
         if self.time_up or ((self.s_nodes & 1023) == 0 and time.time() > self.end_time):
