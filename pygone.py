@@ -132,8 +132,6 @@ def main():
                         side_time = int(args[k + 1]) / 1e3
                     elif a == ('winc' if us else 'binc'):
                         side_inc = int(args[k + 1]) / 1e3
-                    elif a == 'movestogo':
-                        movestogo = int(args[k + 1])
                     #remove
                     elif a == 'depth':
                         v_depth = int(args[k + 1])
