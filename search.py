@@ -103,21 +103,13 @@ class Search:
                 current_best_move = entry[4]
 
             if current_best_move:
-                is_legal_tt = False
-                # Quick check: is it in our pseudo-legal list?
-                # (Re-generating is cheap compared to losing the game)
-                pms = self.board.gen_pseudo_legal()
-                for _, pm in pms:
+                for _, pm in self.board.gen_pseudo_legal():
                     if pm == current_best_move:
                         self.board.make_move(pm)
                         if not self.board.in_check(False):
-                            is_legal_tt = True
+                            best_move = pm
                         self.board.unmake_move()
-                        best_move = pm
                         break
-                
-                if is_legal_tt:
-                    best_move = current_best_move
             
             # elapsed = max(1, int((time.time() - start_time) * 1000))
             # nps = int(self.s_nodes * 1000 / elapsed)
@@ -166,16 +158,15 @@ class Search:
         return False
 
     def search(self, s_depth, alpha, beta, ply):
-        # Check time every 2048 nodes
-        if time.time() > self.end_time:
+        if self.time_up or ((self.s_nodes & 1023) == 0 and time.time() > self.end_time):
             self.time_up = True
             return 0
             
         if self.drawn(): 
             return 0
-
+ 
         in_check = self.board.in_check()
-
+ 
         # --- CHECK EXTENSION ---
         if in_check and s_depth < 4: 
              s_depth += 1
@@ -188,31 +179,35 @@ class Search:
         # --- TT PROBE ---
         tt_idx = self.board.hash % (2**27)
         entry = self.tt[tt_idx]
-        if entry and entry[0]==self.board.hash and entry[2] >= s_depth:
-            if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
-                return entry[1]
-
+        hash_move = None
+        if entry and entry[0] == self.board.hash:
+            hash_move = entry[4]
+            if entry[2] >= s_depth:
+                if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
+                    return entry[1]
+ 
         # --- NULL MOVE PRUNING ---
-        # Disable NMP if in check
-        if s_depth >= 3 and not in_check:
+        # Disable NMP if in check or if we have no non-pawn material (zugzwang risk)
+        us = self.board.white_to_move; p = self.board.P
+        if s_depth >= 3 and not in_check and (p[1]|p[2]|p[3]|p[4] if us else p[7]|p[8]|p[9]|p[10]):
             self.board.make_move(None)
             score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
             self.board.unmake_move()
             
             if self.time_up: return 0
             if score >= beta: return score
-
+ 
         # --- REVERSE FUTILITY PRUNING ---
         # Disable RFP if in check
         stand_pat = self.board.evaluate()
         if s_depth < 4 and not in_check and stand_pat >= beta + s_depth * 80:
             return stand_pat
-
+ 
         best_score = -320000
         best_move = None
         
         # Generate and sort moves
-        moves = self.board.gen_pseudo_legal(killers=self.killers[ply]); moves.sort(reverse=True)
+        moves = self.board.gen_pseudo_legal(killers=self.killers[ply], hash_move=hash_move); moves.sort(reverse=True)
 
         moves_played = 0
         original_alpha = alpha
@@ -236,7 +231,7 @@ class Search:
             
             if moves_played > 1:
                 score = -self.search(new_depth, -alpha - 1, -alpha, ply + 1)
-                if score > alpha and (score < beta or new_depth != s_depth - 1):
+                if not self.time_up and score > alpha and (score < beta or new_depth != s_depth - 1):
                     score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
             else:
                 score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
@@ -257,7 +252,7 @@ class Search:
                         if move != k0:
                             self.killers[ply] = [move, k0]
 
-                    if not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5]):
+                    if not self.time_up and (not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5])):
                         self.tt[tt_idx] = [self.board.hash, alpha, s_depth, 1, move, ply]
                     return alpha
         
@@ -265,13 +260,13 @@ class Search:
             return -320000 + ply if in_check else 0
 
         flag = 0 if alpha > original_alpha else 2
-        if not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5]):
+        if not self.time_up and (not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5])):
             self.tt[tt_idx] = [self.board.hash, alpha, s_depth, flag, best_move, ply]
         
         return alpha
 
     def q_search(self, alpha, beta):
-        if time.time() > self.end_time:
+        if self.time_up or ((self.s_nodes & 1023) == 0 and time.time() > self.end_time):
             self.time_up = True
             return 0
         
@@ -280,12 +275,6 @@ class Search:
 
         self.s_nodes += 1
         
-        # TT Probe (Q-Search)
-        entry = self.tt[self.board.hash % (2**27)]
-        if entry and entry[0]==self.board.hash:
-            if entry[3]==0 or entry[3]==1 and entry[1]>=beta or entry[3]==2 and entry[1]<=alpha:
-                return entry[1]
-
         in_check = self.board.in_check()
 
         stand_pat = self.board.evaluate()
@@ -310,6 +299,7 @@ class Search:
             score = -self.q_search(-beta, -alpha)
             self.board.unmake_move()
             
+            if self.time_up: return 0
             if score >= beta: return beta
             if score > alpha: alpha = score
         

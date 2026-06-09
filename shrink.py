@@ -34,7 +34,6 @@ REPLACEMENTS = {
     "CR_MASK": "J",
     "UNIFIED_PST": "K",
     "PAWN_PST": "L",
-    "PST_WEIGHTS": "M",
     # N
     "CENTER_SCORE": "O",
     "DIRS_ROOK": "P",
@@ -109,6 +108,8 @@ REPLACEMENTS = {
     "piece_char": "Al",  
     "cap_char": "Am",  
     "active": "An",  
+    "has_non_pawn_material": "Ao0",
+    "hash_move": "Ap0",
 
     # Built-ins / keywords
     "True": "1",
@@ -233,8 +234,8 @@ def main():
     print("Performing final cleanup...")
     
     minified_code = minified_code.replace('import time,time', 'import time')
-    minified_code = minified_code.replace('import random', '')
-    minified_code = minified_code.replace('import time', 'import time,random')
+    minified_code = minified_code.replace('\nimport random', '')\
+        .replace('import time', 'import random,time', 1)
     minified_code = minified_code.replace('__init__(A,fen=None)', '__init__(A)')
 
     final_code = minified_code.replace('\t', ' ')

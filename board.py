@@ -22,8 +22,7 @@ import random
 # Move = Tuple[int,int,str,str,str,int]  # from, to, promotion or None, capture or None, piece moving, castling
 
 # --- helpers --------------------------------------------------------------
-IDX_TO_PIECE = ['p','n','b','r','q','k']
-PROMO_MAP = {'q': 4, 'r': 3, 'b': 2, 'n': 1}
+IDX_TO_PIECE = list("pnbrqk")
 FILE_MASK = [0x0101010101010101 << i for i in range(8)]
 
 CR_MASK = [15] * 64
@@ -106,12 +105,15 @@ for sq in range(64):
     if f<7 and r>0: bm_b |= (1 << (sq-7))
     PAWN_ATK_BLACK[sq] = bm_b
 
+
+
 random.seed(2025)  # deterministic
 
 PIECE_KEYS = [[random.getrandbits(64) for _ in range(64)] for _ in range(12)]
 CASTLING_KEYS = [random.getrandbits(64) for _ in range(16)]
 EP_KEYS = [random.getrandbits(64) for _ in range(8)]
 SIDE_KEY = random.getrandbits(64)
+
 
 # --- board class ----------------------------------------------------------
 class Board:
@@ -321,7 +323,7 @@ class Board:
         target_idx = moved_piece_idx
         if promo:
             # promo is now an int (1-4) if you updated gen_legal, or use map
-            target_idx = self.side_index(us, PROMO_MAP[promo])
+            target_idx = self.side_index(us, 'nbrq'.index(promo)+1)
             
         # USE HELPER: Place on 'to'
         self._x(target_idx, to)
@@ -455,7 +457,7 @@ class Board:
         return victim_val - attacker_val
 
     # --- move generation -------------------------------------------------
-    def gen_pseudo_legal(self, active=False, killers=None):
+    def gen_pseudo_legal(self, active=False, killers=None, hash_move=None):
         moves = []
         us = self.white_to_move
         occ = self.all_occupied()
@@ -642,11 +644,12 @@ class Board:
                         if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
                             moves.append((500, (60, 58, None, None, 'k', True)))
         
-        if killers:
-            k0, k1 = killers
+        if killers or hash_move:
+            k0, k1 = killers or [None, None]
             new_moves = []
             for score, move in moves:
-                if move == k0: score += 1000000
+                if move == hash_move: score += 2000000
+                elif move == k0: score += 1000000
                 elif move == k1: score += 900000
                 new_moves.append((score, move))
             moves = new_moves
@@ -736,29 +739,14 @@ class Board:
 
         def eval_king(white):
             k = self.king_square(white)
-            # f, r = k % 8, k // 8
-            # d, bb = (1, 0) if white else (-1, 6) 
             
-            # 1. Pawn Shield (Defending pawns in front of King)
-            # Using generator to save space
-            # pawn_shield = 10 * sum(
-            #     1 for df in (-1, 0, 1) 
-            #     if 0 <= (nf := f + df) < 8 
-            #     and 0 <= (nr := r + d) < 8
-            #     and (self.P[bb] & (1 << (nr * 8 + nf)))
-            # )
-            
-            # 2. Castling Bonus (Huge incentive to castle)
-            # King on g/c file (castled positions) gets +60
-            castle_pos_score = 0
-            if (white and k in (6, 2)) or (not white and k in (62, 58)):
-                castle_pos_score += 60
+            # Castling Bonus: King on g/c file (castled positions) gets +60
+            castle_pos_score = 60 if k % 56 in (2, 6) else 0
                 
             # Penalties for losing rights (remains small)
             if not (self.castle & (1 if white else 4)): castle_pos_score -= 10
             if not (self.castle & (2 if white else 8)): castle_pos_score -= 5
             
-            # return pawn_shield + castle_pos_score
             return castle_pos_score
             
         if self.halfmove_clock >= 100: return 0
