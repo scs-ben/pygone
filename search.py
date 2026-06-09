@@ -78,8 +78,7 @@ class Search:
         self.s_nodes = 0
         best_move = None
 
-        moves = self.board.gen_pseudo_legal()
-        for _, mv in moves:
+        for _, mv in self.board.gen_pseudo_legal():
             self.board.make_move(mv)
             if not self.board.in_check(False):
                 best_move = mv
@@ -97,14 +96,9 @@ class Search:
             # Retrieve Best Move from TT using current hash
             entry = self.tt[self.board.hash % (2**27)]
 
-            current_best_move = None
-
             if entry and entry[0] == self.board.hash and entry[4]:
-                current_best_move = entry[4]
-
-            if current_best_move:
                 for _, pm in self.board.gen_pseudo_legal():
-                    if pm == current_best_move:
+                    if pm == entry[4]:
                         self.board.make_move(pm)
                         if not self.board.in_check(False):
                             best_move = pm
@@ -142,20 +136,10 @@ class Search:
         print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
 
     def drawn(self):
-        if self.board.halfmove_clock >= 100: # or self.board.is_insufficient_material():
-            return True
-        # Check every 2nd ply up to the halfmove clock (irreversible move) limit
-        current_hash = self.board.hash
-        limit = min(self.board.halfmove_clock, len(self.board.stack))
-        
-        count = 0
-        for i in range(2, limit + 1, 2):
-            if self.board.stack[-i][6] == current_hash: 
-                count += 1
-                # We need 2 past occurrences + current one = 3 total
-                if count >= 2: return True
-                
-        return False
+        h = self.board.halfmove_clock
+        if h >= 100: return True
+        s = self.board.stack
+        return sum(1 for i in range(2, min(h, len(s)) + 1, 2) if s[-i][6] == self.board.hash) >= 2
 
     def search(self, s_depth, alpha, beta, ply):
         if self.time_up or ((self.s_nodes & 1023) == 0 and time.time() > self.end_time):
@@ -179,6 +163,7 @@ class Search:
         # --- TT PROBE ---
         tt_idx = self.board.hash % (2**27)
         entry = self.tt[tt_idx]
+        w = not self.time_up and (not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5]))
         hash_move = None
         if entry and entry[0] == self.board.hash:
             hash_move = entry[4]
@@ -189,7 +174,7 @@ class Search:
         # --- NULL MOVE PRUNING ---
         # Disable NMP if in check or if we have no non-pawn material (zugzwang risk)
         us = self.board.white_to_move; p = self.board.P
-        if s_depth >= 3 and not in_check and (p[1]|p[2]|p[3]|p[4] if us else p[7]|p[8]|p[9]|p[10]):
+        if s_depth >= 3 and not in_check and (sum(p[1:5]) if us else sum(p[7:11])):
             self.board.make_move(None)
             score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
             self.board.unmake_move()
@@ -247,12 +232,12 @@ class Search:
             if score > alpha:
                 alpha = score
                 if alpha >= beta:
-                    if move[3] is None and not move[2]: # If it's a quiet move
+                    if not (move[3] or move[2]):
                         _, k0 = self.killers[ply]
                         if move != k0:
                             self.killers[ply] = [move, k0]
 
-                    if not self.time_up and (not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5])):
+                    if w:
                         self.tt[tt_idx] = [self.board.hash, alpha, s_depth, 1, move, ply]
                     return alpha
         
@@ -260,7 +245,7 @@ class Search:
             return -320000 + ply if in_check else 0
 
         flag = 0 if alpha > original_alpha else 2
-        if not self.time_up and (not entry or s_depth > entry[2] or (s_depth == entry[2] and ply > entry[5])):
+        if w:
             self.tt[tt_idx] = [self.board.hash, alpha, s_depth, flag, best_move, ply]
         
         return alpha
@@ -287,7 +272,7 @@ class Search:
 
         # Active Moves Only (Captures/Promotions)
         for _, move in moves:
-            if not in_check and move[3] and (stand_pat + self.board.PIECE_VALUES[move[3]] + 50) < alpha and not move[2]: continue
+            if not in_check and move[3] and stand_pat + self.board.PIECE_VALUES[move[3]] + 50 < alpha and not move[2]: continue
 
             self.board.make_move(move)
             

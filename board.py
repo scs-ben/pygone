@@ -193,15 +193,11 @@ class Board:
     #UNITendremove
 
     def pieces_of(self, side_white):
-        if side_white:
-            return self.P[0]|self.P[1]|self.P[2]|self.P[3]|self.P[4]|self.P[5]
-        else:
-            return self.P[6]|self.P[7]|self.P[8]|self.P[9]|self.P[10]|self.P[11]
+        s = 0 if side_white else 6
+        return sum(self.P[s:s+6])
 
     def all_occupied(self):
-        occ = 0
-        for bb in self.P: occ |= bb
-        return occ
+        return sum(self.P)
 
     def side_index(self, white, piece_idx):
         return piece_idx if white else piece_idx+6
@@ -291,7 +287,7 @@ class Board:
         if moved_piece_type == 0 and to == self.ep:
             is_ep_capture = True
             cap_sq = to - 8 if us else to + 8
-            captured_idx = self.side_index(not us, 0)
+            captured_idx = 6 if us else 0
             
             self.eval_score -= self._get_piece_val(captured_idx, cap_sq)
             
@@ -347,7 +343,7 @@ class Board:
             if to > frm: r_from, r_to = (frm + 3, frm + 1)
             else:        r_from, r_to = (frm - 4, frm - 1)
             
-            rook_idx = self.side_index(us, 3)
+            rook_idx = 3 if us else 9
             
             self.eval_score -= self._get_piece_val(rook_idx, r_from)
             self.eval_score += self._get_piece_val(rook_idx, r_to)
@@ -414,8 +410,8 @@ class Board:
         else:
             if PAWN_ATK_WHITE[sq] & self.P[6]: return True
             
-        if KNIGHT_ATK[sq] & self.P[self.side_index(by_white, 1)]: return True
-        if KING_ATK[sq] & self.P[self.side_index(by_white, 5)]: return True
+        if KNIGHT_ATK[sq] & self.P[1 if by_white else 7]: return True
+        if KING_ATK[sq] & self.P[5 if by_white else 11]: return True
         
         # 2. Sliders (Merged Logic)
         occ = self.all_occupied()
@@ -424,8 +420,8 @@ class Board:
         # Rooks (3) + Queens (4) use Rook Dirs
         # Bishops (2) + Queens (4) use Bishop Dirs
         sliders = [
-            (DIRS_ROOK, self.P[self.side_index(by_white, 3)] | self.P[self.side_index(by_white, 4)]),
-            (DIRS_BISHOP, self.P[self.side_index(by_white, 2)] | self.P[self.side_index(by_white, 4)])
+            (DIRS_ROOK, self.P[3 if by_white else 9] | self.P[4 if by_white else 10]),
+            (DIRS_BISHOP, self.P[2 if by_white else 8] | self.P[4 if by_white else 10])
         ]
 
         for dirs, attackers in sliders:
@@ -445,16 +441,13 @@ class Board:
         return False
 
     def king_square(self, white):
-        bb = self.P[self.side_index(white,5)]
-        return (bb & -bb).bit_length()-1 if bb else -1
+        return self.P[5 if white else 11].bit_length() - 1
     
     def in_check(self, white=True):
         return self.attacked(self.king_square(self.white_to_move), not self.white_to_move) if white else self.attacked(self.king_square(not self.white_to_move), self.white_to_move)
 
-    def static_exchange_evaluation(self, cap_char, piece_char):
-        victim_val = self.PIECE_VALUES[cap_char] if cap_char else 0
-        attacker_val = self.PIECE_VALUES[piece_char] if piece_char else 0
-        return victim_val - attacker_val
+    def see(self, cap_char, piece_char):
+        return self.PIECE_VALUES[cap_char] - self.PIECE_VALUES[piece_char]
 
     # --- move generation -------------------------------------------------
     def gen_pseudo_legal(self, active=False, killers=None, hash_move=None):
@@ -468,7 +461,7 @@ class Board:
         step_targets = their if active else ~our
         
         # --- PAWNS ---
-        pawns = self.P[self.side_index(us, 0)]
+        pawns = self.P[0 if us else 6]
         
         # Direction & Promotion Rank
         push = 8 if us else -8
@@ -525,7 +518,7 @@ class Board:
                     # Capture
                     victim_char = self.piece_on(tgt)
                     
-                    score = self.static_exchange_evaluation(victim_char, 'p')
+                    score = self.see(victim_char, 'p')
                     
                     if rank == promo_rank:
                         moves.append((score + 20000 + self.PIECE_VALUES['q'] + CENTER_SCORE[tgt], (sq, tgt, 'q', victim_char, 'p', False)))
@@ -543,7 +536,7 @@ class Board:
                     moves.append((score, (sq, tgt, None, 'p', 'p', False)))
 
         # --- KNIGHTS ---
-        knights = self.P[self.side_index(us, 1)]
+        knights = self.P[1 if us else 7]
         while knights:
             lsb = knights & -knights
             sq = lsb.bit_length() - 1
@@ -557,7 +550,7 @@ class Board:
                 
                 victim_char = self.piece_on(tgt)
                 if victim_char:
-                    score = self.static_exchange_evaluation(victim_char, 'n')
+                    score = self.see(victim_char, 'n')
                     
                     score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
@@ -594,7 +587,7 @@ class Board:
                         victim_char = self.piece_on(curr)
                         if victim_char:
                             # Capture
-                            score = self.static_exchange_evaluation(victim_char, p_char)
+                            score = self.see(victim_char, p_char)
                     
                             score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[curr]
 
@@ -619,7 +612,7 @@ class Board:
                 
                 victim_char = self.piece_on(tgt)
                 if victim_char:
-                    score = self.static_exchange_evaluation(victim_char, 'k')
+                    score = self.see(victim_char, 'k')
                     
                     score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
