@@ -12,3 +12,5 @@ build/*
 test/cutechess-cli
 test/debug.log
 test/games.pgn
+tcec_games/*
+tcec_games*

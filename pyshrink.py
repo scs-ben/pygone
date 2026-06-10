@@ -65,7 +65,7 @@ code = input_file.read_text()
 processed = remove_block(code)
 processed = remove_block(processed, start_marker="#UNITremove", end_marker="#UNITendremove")
 output_file.write_text(processed)
-print(f"Processed {input_file} → {output_file}")
+print(f"Processed {input_file} -> {output_file}")
 
 with open("pygone-combined.py") as f:
     code = f.read()

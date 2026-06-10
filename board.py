@@ -22,8 +22,7 @@ import random
 # Move = Tuple[int,int,str,str,str,int]  # from, to, promotion or None, capture or None, piece moving, castling
 
 # --- helpers --------------------------------------------------------------
-IDX_TO_PIECE = ['p','n','b','r','q','k']
-PROMO_MAP = {'q': 4, 'r': 3, 'b': 2, 'n': 1}
+IDX_TO_PIECE = list("pnbrqk")
 FILE_MASK = [0x0101010101010101 << i for i in range(8)]
 
 CR_MASK = [15] * 64
@@ -67,14 +66,11 @@ CENTER_SCORE = [
 ]
 
 # direction offsets in square index (used for ray walking)
-N, S, E, W, NE, NW, SE, SW = 8, -8, 1, -1, 9, 7, -7, -9
-DIRS_ROOK = (N,S,E,W)
-DIRS_BISHOP = (NE,NW,SE,SW)
+DIRS_ROOK = (8, -8, 1, -1)
+DIRS_BISHOP = (9, 7, -7, -9)
 
-KNIGHT_ATK = [0]*64
-KING_ATK   = [0]*64
-PAWN_ATK_WHITE = [0]*64
-PAWN_ATK_BLACK = [0]*64
+
+KNIGHT_ATK, KING_ATK, PAWN_ATK_WHITE, PAWN_ATK_BLACK = [[0]*64 for _ in range(4)]
 
 for sq in range(64):
     r = sq//8; f = sq%8
@@ -106,12 +102,15 @@ for sq in range(64):
     if f<7 and r>0: bm_b |= (1 << (sq-7))
     PAWN_ATK_BLACK[sq] = bm_b
 
+
+
 random.seed(2025)  # deterministic
 
 PIECE_KEYS = [[random.getrandbits(64) for _ in range(64)] for _ in range(12)]
 CASTLING_KEYS = [random.getrandbits(64) for _ in range(16)]
 EP_KEYS = [random.getrandbits(64) for _ in range(8)]
 SIDE_KEY = random.getrandbits(64)
+
 
 # --- board class ----------------------------------------------------------
 class Board:
@@ -130,10 +129,9 @@ class Board:
     
     def __init__(self, fen = None):
         # piece bitboards: WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK
-        self.P = [0]*12
-        self.piece_map = [-1] * 64
+        self.piece_map = [3, 1, 2, 4, 5, 2, 1, 3] + [0]*8 + [-1]*32 + [6]*8 + [9, 7, 8, 10, 11, 8, 7, 9]
         self.white_to_move = True
-        self.castle = 0  # bits: wk(1), wq(2), bk(4), bq(8)
+        self.castle = 15  # bits: wk(1), wq(2), bk(4), bq(8)
         self.ep = -1
         self.halfmove_clock = 0
         self.eval_score = 0
@@ -191,18 +189,13 @@ class Board:
     #UNITendremove
 
     def pieces_of(self, side_white):
-        if side_white:
-            return self.P[0]|self.P[1]|self.P[2]|self.P[3]|self.P[4]|self.P[5]
-        else:
-            return self.P[6]|self.P[7]|self.P[8]|self.P[9]|self.P[10]|self.P[11]
+        s = 0 if side_white else 6
+        return sum(self.P[s:s+6])
 
     def all_occupied(self):
-        occ = 0
-        for bb in self.P: occ |= bb
-        return occ
+        return sum(self.P)
 
-    def side_index(self, white, piece_idx):
-        return piece_idx if white else piece_idx+6
+
 
     #UNITremove
     def set_fen(self, fen):
@@ -241,6 +234,8 @@ class Board:
         self.P[i] ^= (1 << s)
         self.hash ^= PIECE_KEYS[i][s]
 
+
+
     # make/unmake minimal for legality checking
     def make_move(self, mv):
         # 1. CACHE OLD STATE
@@ -274,7 +269,7 @@ class Board:
         moved_piece_idx = -1
         
         for p in range(6):
-            idx = self.side_index(us, p)
+            idx = p if us else p + 6
             if self.P[idx] & from_mask:
                 moved_piece_type = p
                 moved_piece_idx = idx
@@ -289,7 +284,7 @@ class Board:
         if moved_piece_type == 0 and to == self.ep:
             is_ep_capture = True
             cap_sq = to - 8 if us else to + 8
-            captured_idx = self.side_index(not us, 0)
+            captured_idx = 6 if us else 0
             
             self.eval_score -= self._get_piece_val(captured_idx, cap_sq)
             
@@ -298,7 +293,7 @@ class Board:
             self.piece_map[cap_sq] = -1
         else:
             for p in range(6):
-                e_idx = self.side_index(not us, p)
+                e_idx = p if not us else p + 6
                 if self.P[e_idx] & to_mask:
                     captured_idx = e_idx
                     
@@ -321,7 +316,7 @@ class Board:
         target_idx = moved_piece_idx
         if promo:
             # promo is now an int (1-4) if you updated gen_legal, or use map
-            target_idx = self.side_index(us, PROMO_MAP[promo])
+            target_idx = 'nbrq'.index(promo) + (1 if us else 7)
             
         # USE HELPER: Place on 'to'
         self._x(target_idx, to)
@@ -345,7 +340,7 @@ class Board:
             if to > frm: r_from, r_to = (frm + 3, frm + 1)
             else:        r_from, r_to = (frm - 4, frm - 1)
             
-            rook_idx = self.side_index(us, 3)
+            rook_idx = 3 if us else 9
             
             self.eval_score -= self._get_piece_val(rook_idx, r_from)
             self.eval_score += self._get_piece_val(rook_idx, r_to)
@@ -362,6 +357,7 @@ class Board:
         if self.ep != -1: self.hash ^= EP_KEYS[self.ep & 7]
             
         self.white_to_move = not self.white_to_move
+
 
     def unmake_move(self):
         if not self.stack: return
@@ -403,6 +399,7 @@ class Board:
             self.P[r_idx] ^= (1 << r_new) | (1 << r_old) # Toggle both rook squares at once
             self.piece_map[r_new], self.piece_map[r_old] = -1, r_idx
 
+
     # attack detection
     def attacked(self, sq, by_white):
         # 1. Pawns, Knights, Kings (Step Pieces)
@@ -412,8 +409,8 @@ class Board:
         else:
             if PAWN_ATK_WHITE[sq] & self.P[6]: return True
             
-        if KNIGHT_ATK[sq] & self.P[self.side_index(by_white, 1)]: return True
-        if KING_ATK[sq] & self.P[self.side_index(by_white, 5)]: return True
+        if KNIGHT_ATK[sq] & self.P[1 if by_white else 7]: return True
+        if KING_ATK[sq] & self.P[5 if by_white else 11]: return True
         
         # 2. Sliders (Merged Logic)
         occ = self.all_occupied()
@@ -422,8 +419,8 @@ class Board:
         # Rooks (3) + Queens (4) use Rook Dirs
         # Bishops (2) + Queens (4) use Bishop Dirs
         sliders = [
-            (DIRS_ROOK, self.P[self.side_index(by_white, 3)] | self.P[self.side_index(by_white, 4)]),
-            (DIRS_BISHOP, self.P[self.side_index(by_white, 2)] | self.P[self.side_index(by_white, 4)])
+            (DIRS_ROOK, self.P[3 if by_white else 9] | self.P[4 if by_white else 10]),
+            (DIRS_BISHOP, self.P[2 if by_white else 8] | self.P[4 if by_white else 10])
         ]
 
         for dirs, attackers in sliders:
@@ -443,19 +440,16 @@ class Board:
         return False
 
     def king_square(self, white):
-        bb = self.P[self.side_index(white,5)]
-        return (bb & -bb).bit_length()-1 if bb else -1
+        return self.P[5 if white else 11].bit_length() - 1
     
     def in_check(self, white=True):
         return self.attacked(self.king_square(self.white_to_move), not self.white_to_move) if white else self.attacked(self.king_square(not self.white_to_move), self.white_to_move)
 
-    def static_exchange_evaluation(self, cap_char, piece_char):
-        victim_val = self.PIECE_VALUES[cap_char] if cap_char else 0
-        attacker_val = self.PIECE_VALUES[piece_char] if piece_char else 0
-        return victim_val - attacker_val
+    def see(self, cap_char, piece_char):
+        return self.PIECE_VALUES[cap_char] - self.PIECE_VALUES[piece_char]
 
     # --- move generation -------------------------------------------------
-    def gen_pseudo_legal(self, active=False, killers=None):
+    def gen_pseudo_legal(self, active=False, killers=None, hash_move=None):
         moves = []
         us = self.white_to_move
         occ = self.all_occupied()
@@ -466,7 +460,7 @@ class Board:
         step_targets = their if active else ~our
         
         # --- PAWNS ---
-        pawns = self.P[self.side_index(us, 0)]
+        pawns = self.P[0 if us else 6]
         
         # Direction & Promotion Rank
         push = 8 if us else -8
@@ -523,7 +517,7 @@ class Board:
                     # Capture
                     victim_char = self.piece_on(tgt)
                     
-                    score = self.static_exchange_evaluation(victim_char, 'p')
+                    score = self.see(victim_char, 'p')
                     
                     if rank == promo_rank:
                         moves.append((score + 20000 + self.PIECE_VALUES['q'] + CENTER_SCORE[tgt], (sq, tgt, 'q', victim_char, 'p', False)))
@@ -541,7 +535,7 @@ class Board:
                     moves.append((score, (sq, tgt, None, 'p', 'p', False)))
 
         # --- KNIGHTS ---
-        knights = self.P[self.side_index(us, 1)]
+        knights = self.P[1 if us else 7]
         while knights:
             lsb = knights & -knights
             sq = lsb.bit_length() - 1
@@ -555,7 +549,7 @@ class Board:
                 
                 victim_char = self.piece_on(tgt)
                 if victim_char:
-                    score = self.static_exchange_evaluation(victim_char, 'n')
+                    score = self.see(victim_char, 'n')
                     
                     score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
@@ -572,7 +566,7 @@ class Board:
         ]
         
         for p_type, dirs, _, p_char in sliders:
-            pieces = self.P[self.side_index(us, p_type)]
+            pieces = self.P[p_type if us else p_type + 6]
             while pieces:
                 lsb = pieces & -pieces
                 sq = lsb.bit_length() - 1
@@ -592,7 +586,7 @@ class Board:
                         victim_char = self.piece_on(curr)
                         if victim_char:
                             # Capture
-                            score = self.static_exchange_evaluation(victim_char, p_char)
+                            score = self.see(victim_char, p_char)
                     
                             score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[curr]
 
@@ -617,7 +611,7 @@ class Board:
                 
                 victim_char = self.piece_on(tgt)
                 if victim_char:
-                    score = self.static_exchange_evaluation(victim_char, 'k')
+                    score = self.see(victim_char, 'k')
                     
                     score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
@@ -642,11 +636,12 @@ class Board:
                         if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
                             moves.append((500, (60, 58, None, None, 'k', True)))
         
-        if killers:
-            k0, k1 = killers
+        if killers or hash_move:
+            k0, k1 = killers or [None, None]
             new_moves = []
             for score, move in moves:
-                if move == k0: score += 1000000
+                if move == hash_move: score += 2000000
+                elif move == k0: score += 1000000
                 elif move == k1: score += 900000
                 new_moves.append((score, move))
             moves = new_moves
@@ -736,29 +731,14 @@ class Board:
 
         def eval_king(white):
             k = self.king_square(white)
-            # f, r = k % 8, k // 8
-            # d, bb = (1, 0) if white else (-1, 6) 
             
-            # 1. Pawn Shield (Defending pawns in front of King)
-            # Using generator to save space
-            # pawn_shield = 10 * sum(
-            #     1 for df in (-1, 0, 1) 
-            #     if 0 <= (nf := f + df) < 8 
-            #     and 0 <= (nr := r + d) < 8
-            #     and (self.P[bb] & (1 << (nr * 8 + nf)))
-            # )
-            
-            # 2. Castling Bonus (Huge incentive to castle)
-            # King on g/c file (castled positions) gets +60
-            castle_pos_score = 0
-            if (white and k in (6, 2)) or (not white and k in (62, 58)):
-                castle_pos_score += 60
+            # Castling Bonus: King on g/c file (castled positions) gets +60
+            castle_pos_score = 60 if k % 56 in (2, 6) else 0
                 
             # Penalties for losing rights (remains small)
             if not (self.castle & (1 if white else 4)): castle_pos_score -= 10
             if not (self.castle & (2 if white else 8)): castle_pos_score -= 5
             
-            # return pawn_shield + castle_pos_score
             return castle_pos_score
             
         if self.halfmove_clock >= 100: return 0

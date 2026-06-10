@@ -119,16 +119,19 @@ def main():
                     
                 searcher.set_board(game_board)
             elif line[:2]=="go":
-                side_time = 1e8
+                side_time, side_inc, = 1e8, 0
                 #remove
                 v_depth = 0
                 perft_depth = 0
                 #endremove
                 
                 args = line.split()
+                us = game_board.white_to_move
                 for k, a in enumerate(args):
-                    if a == 'wtime' and game_board.white_to_move or a == 'btime' and not game_board.white_to_move:
+                    if a == ('wtime' if us else 'btime'):
                         side_time = int(args[k + 1]) / 1e3
+                    elif a == ('winc' if us else 'binc'):
+                        side_inc = int(args[k + 1]) / 1e3
                     #remove
                     elif a == 'depth':
                         v_depth = int(args[k + 1])
@@ -145,12 +148,13 @@ def main():
                 #remove
                 searcher.set_depth(50)
                 #endremove
-
-                searcher.end_time = time.time() + (side_time // 50 + 3); searcher.time_up = False
+ 
+                m = 30 if len(game_board.stack) < 40 else 60
+                searcher.end_time = time.time() + max(0.1, side_time / m + side_inc - 0.5); searcher.time_up = False
                 
                 #remove
                 if v_depth > 0:
-                    searcher.end_time = time.time() + (side_time // 50 + 3)
+                    searcher.end_time = time.time() + max(0.1, side_time / m + side_inc - 0.5)
                     searcher.time_up = False
                     searcher.set_depth(v_depth)
                 #endremove

@@ -16,6 +16,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import sys
 
-source = open(sys.argv[1]).read()
-print(source)
+source = open(sys.argv[1], 'rb').read().replace(b'\r\n', b'\n')
+if len(sys.argv) > 2:
+    open(sys.argv[2], 'wb').write(source)
+else:
+    sys.stdout.buffer.write(source)
 

@@ -409,7 +409,7 @@ class Unit:
         # (FEN, Depth, Expected Move String)
         tests = [
             # Mate in 1: White Rook to a8 (The only winning move)
-            ("7k/R7/8/8/8/8/8/7K w - - 0 1", 2, "a7a8"),
+            ("7k/R5pp/8/8/8/8/8/7K w - - 0 1", 2, "a7a8"),
             
             # Mate in 1: Scholar's Mate (Qf7#)
             ("r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 4 4", 2, "f3f7")
