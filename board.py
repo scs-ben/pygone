@@ -139,9 +139,10 @@ EP_KEYS = [random.getrandbits(64) for _ in range(8)]
 SIDE_KEY = random.getrandbits(64)
 
 
+PIECE_VAL_BY_IDX = [100, 320, 330, 500, 900, 0, 100, 320, 330, 500, 900, 0]
+
 # --- board class ----------------------------------------------------------
 class Board:
-    PIECE_VAL_BY_IDX = [100, 320, 330, 500, 900, 0, 100, 320, 330, 500, 900, 0]
     
     #UNITremove
     START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -499,7 +500,7 @@ class Board:
                 if their & tgt_bit:
                     # Capture
                     cap_idx = self.piece_map[tgt]
-                    score = Board.PIECE_VAL_BY_IDX[cap_idx] - 100
+                    score = PIECE_VAL_BY_IDX[cap_idx] - 100
                     
                     if rank == promo_rank:
                         moves.append((score + 20900 + CENTER_SCORE[tgt], sq | (tgt << 6) | (4 << 12)))
@@ -531,7 +532,7 @@ class Board:
                 
                 cap_idx = self.piece_map[tgt]
                 if cap_idx != -1:
-                    score = Board.PIECE_VAL_BY_IDX[cap_idx] - 320
+                    score = PIECE_VAL_BY_IDX[cap_idx] - 320
                     score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
                     score = CENTER_SCORE[tgt]
@@ -560,7 +561,7 @@ class Board:
                         
                         cap_idx = self.piece_map[curr]
                         if cap_idx != -1:
-                            score = Board.PIECE_VAL_BY_IDX[cap_idx] - own_val
+                            score = PIECE_VAL_BY_IDX[cap_idx] - own_val
                             score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[curr]
                             moves.append((score, sq | (curr << 6)))
                             break
@@ -582,7 +583,7 @@ class Board:
                 
                 cap_idx = self.piece_map[tgt]
                 if cap_idx != -1:
-                    score = Board.PIECE_VAL_BY_IDX[cap_idx]
+                    score = PIECE_VAL_BY_IDX[cap_idx]
                     score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
                     score = CENTER_SCORE[tgt]
@@ -627,7 +628,7 @@ class Board:
         # (t >> 3 == 6) is the same as (t // 8 == 6)
         v = 20 * (t >> 3 == 6) if p == 3 else (PAWN_PST if p == 0 else UNIFIED_PST)[t]
         
-        m = Board.PIECE_VAL_BY_IDX[p] + v * [1, 2, 2, 1, 1, 0][p] // 2
+        m = PIECE_VAL_BY_IDX[p] + v * [1, 2, 2, 1, 1, 0][p] // 2
         
         # Return tuple with correct sign
         return m if i < 6 else -m

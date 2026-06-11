@@ -15,6 +15,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import time
+#remove
+from board import PIECE_VAL_BY_IDX
+#endremove
 
 class Search:
     def __init__(self, board):
@@ -254,7 +257,7 @@ class Search:
         for _, move in moves:
             to_sq = (move >> 6) & 63
             cap_idx = self.board.piece_map[to_sq] if to_sq != self.board.ep else (6 if self.board.white_to_move else 0)
-            if not in_check and cap_idx != -1 and stand_pat + self.board.PIECE_VAL_BY_IDX[cap_idx] + 50 < alpha and not ((move >> 12) & 7): continue
+            if not in_check and cap_idx != -1 and stand_pat + PIECE_VAL_BY_IDX[cap_idx] + 50 < alpha and not ((move >> 12) & 7): continue
 
             self.board.make_move(move)
             
