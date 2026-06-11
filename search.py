@@ -111,7 +111,7 @@ class Search:
         h = self.board.halfmove_clock
         if h >= 100: return True
         s = self.board.stack
-        return sum(1 for i in range(2, min(h, len(s)) + 1, 2) if s[-i][6] == self.board.hash) >= 2
+        return sum(s[-i][6] == self.board.hash for i in range(2, min(h, len(s)) + 1, 2)) >= 2
 
     def search(self, s_depth, alpha, beta, ply):
         if self.time_up or ((self.s_nodes & 1023) == 0 and time.time() > self.end_time):
@@ -124,8 +124,7 @@ class Search:
         in_check = self.board.in_check()
  
         # --- CHECK EXTENSION ---
-        if in_check and s_depth < 4: 
-             s_depth += 1
+        s_depth += in_check and s_depth < 4
             
         if s_depth <= 0: 
             return self.q_search(alpha, beta)

@@ -405,10 +405,7 @@ class Board:
     def attacked(self, sq, by_white):
         # 1. Pawns, Knights, Kings (Step Pieces)
         # Note: side_index(True, 0) is White Pawn (0), False is Black Pawn (6)
-        if by_white:
-            if PAWN_ATK_BLACK[sq] & self.P[0]: return True
-        else:
-            if PAWN_ATK_WHITE[sq] & self.P[6]: return True
+        if (PAWN_ATK_BLACK[sq] if by_white else PAWN_ATK_WHITE[sq]) & self.P[0 if by_white else 6]: return True
             
         if KNIGHT_ATK[sq] & self.P[1 if by_white else 7]: return True
         if KING_ATK[sq] & self.P[5 if by_white else 11]: return True
@@ -704,14 +701,10 @@ class Board:
 
         def eval_king(white):
             k = self.king_square(white)
-            
-            # Castling Bonus: King on g/c file (castled positions) gets +60
             castle_pos_score = 60 if k % 56 in (2, 6) else 0
-                
-            # Penalties for losing rights (remains small)
-            if not (self.castle & (1 if white else 4)): castle_pos_score -= 10
-            if not (self.castle & (2 if white else 8)): castle_pos_score -= 5
-            
+            c = self.castle >> (0 if white else 2)
+            if not (c & 1): castle_pos_score -= 10
+            if not (c & 2): castle_pos_score -= 5
             return castle_pos_score
             
         if self.halfmove_clock >= 100: return 0
@@ -722,14 +715,9 @@ class Board:
         if not (self.P[4] | self.P[10]):
             wk = self.king_square(True)
             bk = self.king_square(False)
-            # Add center score to White, subtract for Black
-            # Weight it (e.g., * 2) to make the King walk
-            score += (CENTER_SCORE[wk] * 2) - (CENTER_SCORE[bk] * 2)
+            score += 2 * (CENTER_SCORE[wk] - CENTER_SCORE[bk])
 		
-        # White bishop pair
-        if self.P[2].bit_count() >= 2: score += 50
-        # Black bishop pair
-        if self.P[8].bit_count() >= 2: score -= 50
+        score += 50 * (self.P[2].bit_count() >= 2) - 50 * (self.P[8].bit_count() >= 2)
 
         return score if self.white_to_move else -score
     def move_to_uci(self, mv):
