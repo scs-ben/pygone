@@ -2,11 +2,11 @@
     -debug \
     -engine \
         name=pygone-latest \
-        cmd=/home/ben/pygone/bin/pygone \
+        cmd=/home/ben/pygone/dist/pygone \
         proto=uci \
     -engine \
-        name=pygone2 \
-        cmd=/home/ben/pygone/historical/pygone2-11b142 \
+        name=pygone165 \
+        cmd=/home/ben/pygone/historical/pygone165 \
         proto=uci \
     -each \
         tc=0/30+2 \
