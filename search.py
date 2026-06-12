@@ -110,18 +110,18 @@ class Search:
 
         print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
 
-    def drawn(self):
+    def drawn(self, ply=0):
         h = self.board.halfmove_clock
         if h >= 100: return True
         s = self.board.stack
-        return sum(s[-i][6] == self.board.hash for i in range(2, min(h, len(s)) + 1, 2)) >= 2
+        return sum(s[-i][6] == self.board.hash for i in range(2, min(h, len(s)) + 1, 2)) >= (2 - bool(ply))
 
     def search(self, s_depth, alpha, beta, ply):
         if self.time_up or ((self.s_nodes & 1023) == 0 and time.time() > self.end_time):
             self.time_up = True
             return 0
             
-        if self.drawn(): 
+        if self.drawn(ply): 
             return 0
  
         in_check = self.board.in_check()
@@ -238,7 +238,7 @@ class Search:
             self.time_up = True
             return 0
         
-        if self.drawn(): 
+        if self.drawn(1): 
             return 0
 
         self.s_nodes += 1

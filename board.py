@@ -711,12 +711,7 @@ class Board:
         if self.halfmove_clock >= 100: return 0
         # if self.is_insufficient_material(): return 0
         
-        score = self.eval_score + eval_king(True) - eval_king(False) + eval_rooks(True) - eval_rooks(False)
-
-        if not (self.P[4] | self.P[10]):
-            wk = self.king_square(True)
-            bk = self.king_square(False)
-            score += 2 * (CENTER_SCORE[wk] - CENTER_SCORE[bk])
+        score = self.eval_score + (eval_king(True) - eval_king(False) if self.P[4] | self.P[10] else 2 * (CENTER_SCORE[self.king_square(True)] - CENTER_SCORE[self.king_square(False)])) + eval_rooks(True) - eval_rooks(False)
 		
         score += 50 * (self.P[2].bit_count() >= 2) - 50 * (self.P[8].bit_count() >= 2)
 
