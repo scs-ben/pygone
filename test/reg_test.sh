@@ -5,8 +5,8 @@
         cmd=/home/ben/pygone/dist/pygone \
         proto=uci \
     -engine \
-        name=pygone165 \
-        cmd=/home/ben/pygone/historical/pygone165 \
+        name=pygone2 \
+        cmd=/home/ben/pygone/historical/pygone2-11b142 \
         proto=uci \
     -each \
         tc=0/30+2 \
