@@ -1,4 +1,4 @@
-﻿[Event "?"]
+[Event "?"]
 
 1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 * {Italian Game – classical, balanced development}
 
@@ -36,15 +36,7 @@
 
 [Event "?"]
 
-1. d4 d5 2. Nf3 Nf6 3. Nc3 Nc6 * {Queen's Pawn Four Knights – solid, symmetrical}
-
-[Event "?"]
-
 1. d4 d5 2. c4 e6 3. e3 Nf6 * {Colle System – quiet, easy development}
-
-[Event "?"]
-
-1. d4 d5 2. Nf3 Nf6 3. Bf4 e6 * {Torre Attack – positional, low tactical risk}
 
 [Event "?"]
 
@@ -56,19 +48,15 @@
 
 [Event "?"]
 
-1. b1c3 Nf6 2. b2b3 e6 3. g2g3 Be7 * {Nimzowitsch-Larsen Attack – quiet flank setup}
+1. b3 Nf6 2. Bb2 e6 3. Nf3 d5 * {Nimzowitsch-Larsen Attack – quiet flank setup}
 
 [Event "?"]
 
-1. f2f4 d5 2. Nf3 Nf6 3. e2e3 c5 * {Bird's Opening – solid, flexible}
+1. f4 d5 2. Nf3 Nf6 3. e3 c5 * {Bird's Opening – solid, flexible}
 
 [Event "?"]
 
-1. d4 d5 2. c4 c6 3. Nc3 Nf6 * {Queen's Pawn Classical – quiet and balanced}
-
-[Event "?"]
-
-1. d4 Nf6 2. c4 g6 3. Nf3 Bg7 * {King's Indian Defense setup – quiet, solid}
+1. d4 Nf6 2. c4 g6 3. Nf3 Bg7 * {King's Indian Defense – quiet fianchetto setup}
 
 [Event "?"]
 
@@ -76,7 +64,7 @@
 
 [Event "?"]
 
-1. d4 d5 2. c4 e6 3. g3 Bb4 * {Catalan Opening – positional, low tactics}
+1. d4 d5 2. c4 e6 3. g3 Nf6 4. Bg2 Be7 * {Catalan Opening – positional, long-range bishop}
 
 [Event "?"]
 
@@ -84,16 +72,64 @@
 
 [Event "?"]
 
-1. d4 Nf6 2. g3 g6 3. Bg2 Bg7 * {King's Indian Fianchetto – quiet, balanced}
-
-[Event "?"]
-
 1. d4 d5 2. c4 c6 3. cxd5 cxd5 4. Nf3 Nf6 * {Slav Exchange Variation – symmetrical, safe}
 
 [Event "?"]
 
-1. d4 d5 2. Nc3 Nf6 3. Bf4 e6 * {London Barry Attack – quiet, flexible}
+1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Nf3 c6 * {Semi-Slav Defense – solid, slightly complex}
 
 [Event "?"]
 
-1. d4 d5 2. c4 e6 3. Nc3 Bd6 4. Nf3 Nf6 * {Colle-Zukertort – solid development, balanced}
+1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 * {Sicilian Najdorf – sharp, fighting chess}
+
+[Event "?"]
+
+1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 g6 * {Sicilian Dragon – sharp, tactical}
+
+[Event "?"]
+
+1. e4 c5 2. Nf3 e6 3. d4 cxd4 4. Nxd4 a6 * {Sicilian Kan – flexible, fighting}
+
+[Event "?"]
+
+1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 * {Ruy Lopez Open – classical, strategic}
+
+[Event "?"]
+
+1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 * {Petroff Defense – solid, counterattacking}
+
+[Event "?"]
+
+1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Nf6 * {Scotch Game – open, tactical}
+
+[Event "?"]
+
+1. e4 e6 2. d4 d5 3. Nc3 Bb4 * {French Winawer – sharp, asymmetrical}
+
+[Event "?"]
+
+1. e4 e6 2. d4 d5 3. Nc3 Nf6 * {French Classical – solid, slightly cramped}
+
+[Event "?"]
+
+1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 * {Nimzo-Indian Defense – dynamic, imbalanced}
+
+[Event "?"]
+
+1. d4 Nf6 2. c4 g6 3. Nc3 d5 * {Grünfeld Defense – sharp, counterattacking}
+
+[Event "?"]
+
+1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 * {King's Indian Defense – sharp, kingside attack}
+
+[Event "?"]
+
+1. d4 Nf6 2. c4 c5 3. d5 e6 4. Nc3 exd5 * {Modern Benoni – sharp, imbalanced}
+
+[Event "?"]
+
+1. e4 d6 2. d4 Nf6 3. Nc3 g6 * {Pirc Defense – flexible, counterattacking}
+
+[Event "?"]
+
+1. d4 f5 2. Nf3 Nf6 3. g3 e6 4. Bg2 d5 * {Dutch Stonewall – solid, strategic}

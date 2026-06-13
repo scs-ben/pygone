@@ -18,5 +18,5 @@
         -recover \
         -wait 1000 \
         -concurrency 1 \
-        -resign movecount=6 score=800 \
-        -games 2 -rounds 100 > debug.log
+        -resign movecount=6 score=2000 \
+        -games 2 -rounds 50 > debug.log
