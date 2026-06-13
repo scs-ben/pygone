@@ -79,8 +79,6 @@ REPLACEMENTS = {
     "bm_w": "ay",
     "bm_b": "az",
     "side_white": "A0",
-    "pieces_of": "A1",
-    "all_occupied": "A2",
     "idx": "A3",
     "side_index": "A4",
     "piece_idx": "A5",

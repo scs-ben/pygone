@@ -41,7 +41,7 @@ class Search:
     def get_pv_line(self, max_depth):
         pv_moves = []
         for _ in range(max_depth):
-            tt_idx = 3 * (self.board.hash % (2**20))
+            tt_idx = 3 * (self.board.hash & 0xFFFFF)
             if self.tt[tt_idx] != self.board.hash:
                 break
             move = self.tt[tt_idx + 2]
@@ -78,7 +78,7 @@ class Search:
             score = self.search(depth, -320000, 320000, 0)
             if self.time_up: break
             
-            tt_idx = 3 * (self.board.hash % (2**20))
+            tt_idx = 3 * (self.board.hash & 0xFFFFF)
             if self.tt[tt_idx] == self.board.hash:
                 entry_move = self.tt[tt_idx + 2]
                 if entry_move:
@@ -113,8 +113,15 @@ class Search:
     def drawn(self, ply=0):
         h = self.board.halfmove_clock
         if h >= 100: return True
+        if not h: return False
         s = self.board.stack
-        return sum(s[-i][6] == self.board.hash for i in range(2, min(h, len(s)) + 1, 2)) >= (2 - bool(ply))
+        hsh = self.board.hash
+        n = 2 - bool(ply)
+        for i in range(2, min(h, len(s)) + 1, 2):
+            if s[-i][6] == hsh:
+                n -= 1
+                if not n: return True
+        return False
 
     def search(self, s_depth, alpha, beta, ply):
         if self.time_up or ((self.s_nodes & 1023) == 0 and time.time() > self.end_time):
@@ -135,7 +142,7 @@ class Search:
         self.s_nodes += 1
         
         # --- TT PROBE ---
-        tt_idx = 3 * (self.board.hash % (2**20))
+        tt_idx = 3 * (self.board.hash & 0xFFFFF)
         h = self.tt[tt_idx]
         hash_move = None
         w = False
