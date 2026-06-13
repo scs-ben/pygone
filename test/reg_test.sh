@@ -6,7 +6,7 @@
         proto=uci \
     -engine \
         name=pygone2 \
-        cmd=/home/ben/pygone/historical/pygone2-11b142 \
+        cmd=/home/ben/pygone/historical/pygone2-279d61 \
         proto=uci \
     -each \
         tc=0/30+2 \
