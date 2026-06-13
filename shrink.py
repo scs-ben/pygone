@@ -88,9 +88,9 @@ REPLACEMENTS = {
     "_get_piece_val": "A9",
     "attacked": "Aa",
     "king_square": "Ab",
-    "killers": "Aj",  
-    "active": "An",  
-    "hash_move": "Ap0",
+    "killers": "Aj",
+    "active": "An",
+    "hash_move": "Ap",
 
     # Built-ins / keywords
     "True": "1",

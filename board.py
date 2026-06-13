@@ -518,17 +518,17 @@ class Board:
             
             attacks = KNIGHT_ATK[sq] & step_targets
             while attacks:
-                lsb_atk = attacks & -attacks
-                tgt = lsb_atk.bit_length() - 1
-                attacks ^= lsb_atk
-                
+                lsb = attacks & -attacks
+                tgt = lsb.bit_length() - 1
+                attacks ^= lsb
+
                 cap_idx = self.piece_map[tgt]
                 if cap_idx != -1:
                     score = PIECE_VAL_BY_IDX[cap_idx] - 320
                     score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
                     score = CENTER_SCORE[tgt]
-                
+
                 moves.append((score, sq | (tgt << 6)))
 
         # --- SLIDERS (Bishops, Rooks, Queens) ---
@@ -547,39 +547,36 @@ class Board:
                 pieces ^= lsb
                 
                 for ray in rays_table[sq]:
-                    for curr in ray:
-                        bit = 1 << curr
+                    for s in ray:
+                        bit = 1 << s
                         if our & bit: break
-                        
-                        cap_idx = self.piece_map[curr]
+
+                        cap_idx = self.piece_map[s]
                         if cap_idx != -1:
                             score = PIECE_VAL_BY_IDX[cap_idx] - own_val
-                            score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[curr]
-                            moves.append((score, sq | (curr << 6)))
+                            score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[s]
+                            moves.append((score, sq | (s << 6)))
                             break
                         elif not active:
-                            score = CENTER_SCORE[curr]
-                            moves.append((score, sq | (curr << 6)))
-                        # If active (QSearch) and empty, we continue ray but don't add move
-                        elif active:
-                            continue
+                            score = CENTER_SCORE[s]
+                            moves.append((score, sq | (s << 6)))
 
         # --- KING ---
         ksq = self.king_square(us)
         if 0 <= ksq < 64:
             attacks = KING_ATK[ksq] & step_targets
             while attacks:
-                lsb_atk = attacks & -attacks
-                tgt = lsb_atk.bit_length() - 1
-                attacks ^= lsb_atk
-                
+                lsb = attacks & -attacks
+                tgt = lsb.bit_length() - 1
+                attacks ^= lsb
+
                 cap_idx = self.piece_map[tgt]
                 if cap_idx != -1:
                     score = PIECE_VAL_BY_IDX[cap_idx]
                     score = (100000 if score >= 0 else 0) + score + CENTER_SCORE[tgt]
                 else:
                     score = CENTER_SCORE[tgt]
-                
+
                 moves.append((score, ksq | (tgt << 6)))
 
             # --- CASTLING ---
@@ -697,8 +694,9 @@ class Board:
 
         if self.halfmove_clock >= 100: return 0
         score = self.eval_score + (eval_king(True) - eval_king(False) if self.P[4] | self.P[10] else 2 * (CENTER_SCORE[self.king_square(True)] - CENTER_SCORE[self.king_square(False)])) + eval_rooks(True) - eval_rooks(False)
-        score += 50 * (self.P[2].bit_count() >= 2) - 50 * (self.P[8].bit_count() >= 2)
+        score += 50 * (self.P[2].bit_count() >= 2) - 50 * (self.P[8].bit_count() >= 2) + 10 * ((self.P[6] >> 8 & self.P[6]).bit_count() - (self.P[0] >> 8 & self.P[0]).bit_count())
         return score if self.white_to_move else -score
+    
     def move_to_uci(self, mv):
         f = mv & 63
         t = (mv >> 6) & 63
@@ -802,14 +800,39 @@ class Board:
             print(' '.join(board[rank*8:(rank+1)*8]))
         
         score = self.evaluate()
-        
+
         mat_score = self.eval_score
-        mob_score = 0
-        king_score = 0 # self.eval_king(True) - self.eval_king(False)
-        
-        pawn_score = 0 # self.pawn_structure_score(self.P[0]) - self.pawn_structure_score(self.P[6])
+
+        def eval_rooks(white):
+            rooks = self.P[3 if white else 9]
+            my_pawns = self.P[0 if white else 6]
+            their_pawns = self.P[6 if white else 0]
+            s = 0
+            while rooks:
+                lsb = rooks & -rooks
+                sq = lsb.bit_length() - 1
+                rooks ^= lsb
+                m = 0x0101010101010101 << (sq % 8)
+                if not (my_pawns & m):
+                    s += 10
+                    if not (their_pawns & m):
+                        s += 15
+            return s
+
+        def eval_king(white):
+            k = self.king_square(white)
+            s = 60 if k % 56 in (2, 6) else 0
+            c = self.castle >> (0 if white else 2)
+            if not (c & 1): s -= 10
+            if not (c & 2): s -= 5
+            return s
+
+        rook_score = eval_rooks(True) - eval_rooks(False)
+        king_score = eval_king(True) - eval_king(False)
+        bishop_pair_score = 50 * (self.P[2].bit_count() >= 2) - 50 * (self.P[8].bit_count() >= 2)
+        doubled_pawn_score = 10 * ((self.P[6] >> 8 & self.P[6]).bit_count() - (self.P[0] >> 8 & self.P[0]).bit_count())
 
         print(f"Turn: {('W' if self.white_to_move else 'B')} 50c: {self.halfmove_clock} Score: {score} Check: {self.in_check()}  Rev: Check: {self.in_check(False)}")
-        print(f"Mat: {mat_score} Mob: {mob_score} King: {king_score} Pawn: {pawn_score}")
+        print(f"Mat: {mat_score} Rook: {rook_score} King: {king_score} BishPair: {bishop_pair_score} DblPawn: {doubled_pawn_score}")
         print(f"Fen: {self.get_fen()}")
     #endremove

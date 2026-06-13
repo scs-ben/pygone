@@ -74,7 +74,7 @@ class Search:
 
         for depth in range(1, self.s_depth + 1):
             if self.time_up: break
-            
+
             score = self.search(depth, -320000, 320000, 0)
             if self.time_up: break
             
@@ -184,18 +184,18 @@ class Search:
         moves_played = 0
         original_alpha = alpha
         
-        for _, move in moves:
+        for ms, move in moves:
             self.board.make_move(move)
-            
+
             if self.board.in_check(False):
                 self.board.unmake_move()
                 continue
-            
+
             moves_played += 1
-            
+
             # --- LMR + PVS LOGIC ---
             reduction = 0
-            if s_depth > 2 and moves_played > 4 and not (in_check or ((move >> 12) & 7) or self.board.piece_map[(move >> 6) & 63] != -1 or ((move >> 6) & 63) == self.board.ep):
+            if s_depth > 2 and moves_played > 4 and not in_check and ms < 0 and not ((move >> 12) & 7):
                 reduction = 1 + (moves_played > 15)
             
             new_depth = s_depth - 1 - reduction
