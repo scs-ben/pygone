@@ -53,7 +53,9 @@ class Unit:
     def parse_move(self, mv, b):
         from_sq = b.algebraic_to_sq(mv[:2])
         to_sq = b.algebraic_to_sq(mv[2:4])
-        return (from_sq, to_sq, None, None, None, False)
+        promo = mv[4] if len(mv) == 5 else ''
+        promo_code = ('', 'n', 'b', 'r', 'q').index(promo)
+        return from_sq | (to_sq << 6) | (promo_code << 12)
 
     def unit_perft(self, perft, b):
         print("Testing Perft (Extended Suite)...", end="", flush=True)
@@ -155,7 +157,7 @@ class Unit:
         orig_hash = b.hash
         
         # Move: White Castles Queenside (e1 -> c1)
-        mv = (4, 2, None, None, None, None)
+        mv = 4 | (2 << 6)
         b.make_move(mv)
         
         # Checks:
@@ -183,7 +185,7 @@ class Unit:
         orig_hash = b.hash
         
         # Move: e5 -> d6 (En Passant Capture)
-        mv = (36, 43, None, None, None, None)
+        mv = 36 | (43 << 6)
         b.make_move(mv)
         
         # Checks:
@@ -209,7 +211,7 @@ class Unit:
         moves = b.gen_pseudo_legal()
         promo_move = None
         for _, m in moves:
-            if m[0] == 48 and m[1] == 56 and m[2] == 'q':
+            if (m & 63) == 48 and ((m >> 6) & 63) == 56 and ((m >> 12) & 7) == 4:
                 promo_move = m
                 break
         
@@ -417,7 +419,7 @@ class Unit:
 
         for fen, depth, expected in tests:
             b.set_fen(fen)
-            s.set_board(b)
+            s.board = b
             s.set_depth(depth)
             s.end_time = time.time() + 1000; s.time_up = False
 
@@ -458,7 +460,7 @@ class Unit:
         # Make a quiet king move: e1 -> f1
         f = b.algebraic_to_sq("e1")
         t = b.algebraic_to_sq("f1")
-        b.make_move((f, t, None, None, 'k', False))
+        b.make_move(f | (t << 6))
         
         if b.halfmove_clock != 100:
             self._fail(f"Clock did not increment to 100. Got {b.halfmove_clock}")
@@ -477,7 +479,7 @@ class Unit:
         # Move pawn: e2 -> e4
         f = b.algebraic_to_sq("e2")
         t = b.algebraic_to_sq("e4")
-        b.make_move((f, t, None, None, 'p', False))
+        b.make_move(f | (t << 6))
         
         if b.halfmove_clock != 0:
             self._fail(f"Clock did not reset on pawn move. Got {b.halfmove_clock}")
@@ -495,7 +497,7 @@ class Unit:
         # Try to move the pinned Rook (e2 -> d2)
         f = b.algebraic_to_sq("e2")
         t = b.algebraic_to_sq("d2")
-        illegal_move = (f, t, None, None, 'r', False)
+        illegal_move = f | (t << 6)
         
         b.make_move(illegal_move)
         
@@ -513,7 +515,7 @@ class Unit:
         # Try moving King into check (e1 -> d1)
         f = b.algebraic_to_sq("e1")
         t = b.algebraic_to_sq("d1")
-        illegal_king_move = (f, t, None, None, 'k', False)
+        illegal_king_move = f | (t << 6)
         
         b.make_move(illegal_king_move)
         

@@ -38,7 +38,8 @@ class Perft:
         checks = 0
         
         for _, move in self.board.gen_pseudo_legal():
-            is_capture = move[3]
+            to_sq = (move >> 6) & 63
+            is_capture = self.board.piece_map[to_sq] != -1 or (to_sq == self.board.ep and self.board.piece_map[move & 63] % 6 == 0)
             
             self.board.make_move(move)
             
@@ -81,7 +82,8 @@ class Perft:
         total_nodes = 0
 
         for _, move in self.board.gen_pseudo_legal():
-            is_capture = move[3]
+            to_sq = (move >> 6) & 63
+            is_capture = self.board.piece_map[to_sq] != -1 or (to_sq == self.board.ep and self.board.piece_map[move & 63] % 6 == 0)
             
             self.board.make_move(move)
             
