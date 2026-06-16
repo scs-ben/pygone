@@ -117,8 +117,7 @@ def main():
                 for position_move in moves[3:]:                    
                     from_sq = game_board.algebraic_to_sq(position_move[:2])
                     to_sq = game_board.algebraic_to_sq(position_move[2:4])
-                    promo = position_move[4] if len(position_move) == 5 else ''
-                    promo_code = ('', 'n', 'b', 'r', 'q').index(promo)
+                    promo_code = ('', 'n', 'b', 'r', 'q').index(position_move[4:])
                     game_board.make_move(from_sq | (to_sq << 6) | (promo_code << 12))
                 searcher.board = game_board
             elif line[:2]=="go":
@@ -152,7 +151,7 @@ def main():
                 searcher.set_depth(50)
                 #endremove
  
-                m = 14 + len(game_board.stack)
+                m = max(10, 45 - len(game_board.stack) // 2)
                 searcher.end_time = time.time() + max(0.1, side_time / m + side_inc - 0.5); searcher.time_up = False
                 
                 #remove

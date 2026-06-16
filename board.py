@@ -35,12 +35,9 @@ UNIFIED_PST = [
     -50,-40,-30,-30,-30,-30,-40,-50,
     -40,-20,  0,  0,  0,  0,-20,-40,
     -30,  0, 10, 15, 15, 10,  0,-30,
-    -30,  5, 15, 30, 30, 15,  5,-30,
-    -30,  5, 15, 30, 30, 15,  5,-30,
-    -30,  0, 10, 15, 15, 10,  0,-30,
-    -40,-20,  0,  0,  0,  0,-20,-40,
-    -50,-40,-30,-30,-30,-30,-40,-50 
+    -30,  5, 15, 30, 30, 15,  5,-30
 ]
+UNIFIED_PST += UNIFIED_PST[::-1]
 PAWN_PST = [
      0,  0,  0,  0,  0,  0,  0,  0,   # Rank 1
      5, 10, 10,-20,-20, 10, 10,  5,   # Rank 2
@@ -56,12 +53,9 @@ CENTER_SCORE = [
     -17,-17,-17,-17,-17,-17,-17,-17,
     -17,-12,-12,-12,-12,-12,-17,-17,
     -17,-12, -7, -7, -7, -7,-12,-17,
-    -17,-12, -7, -2, -2, -7,-12,-17,
-    -17,-12, -7, -2, -2, -7,-12,-17,
-    -17,-12, -7, -7, -7, -7,-12,-17,
-    -17,-12,-12,-12,-12,-12,-17,-17,
-    -17,-17,-17,-17,-17,-17,-17,-17
+    -17,-12, -7, -2, -2, -7,-12,-17
 ]
+CENTER_SCORE += CENTER_SCORE[::-1]
 
 # direction offsets in square index (used for ray walking)
 DIRS_ROOK = (8, -8, 1, -1)
@@ -87,17 +81,19 @@ for sq in range(64):
     for d in (1,-1,8,-8,9,7,-7,-9):
         ns = sq + d
         if 0 <= ns < 64:
-            rr = ns//8; ff = ns%8
-            if max(abs(rr-r), abs(ff-f)) == 1: bm |= (1 << ns)
+            ff = ns%8
+            if abs(ff-f) <= 1: bm |= (1 << ns)
     KING_ATK[sq] = bm
     # pawn attacks
     bm_w = 0
-    if f>0 and r<7: bm_w |= (1 << (sq+7))
-    if f<7 and r<7: bm_w |= (1 << (sq+9))
+    if r<7:
+        if f>0: bm_w |= (1 << (sq+7))
+        if f<7: bm_w |= (1 << (sq+9))
     PAWN_ATK_WHITE[sq] = bm_w
     bm_b = 0
-    if f>0 and r>0: bm_b |= (1 << (sq-9))
-    if f<7 and r>0: bm_b |= (1 << (sq-7))
+    if r>0:
+        if f>0: bm_b |= (1 << (sq-9))
+        if f<7: bm_b |= (1 << (sq-7))
     PAWN_ATK_BLACK[sq] = bm_b
 
 
@@ -139,7 +135,8 @@ EP_KEYS = [random.getrandbits(64) for _ in range(8)]
 SIDE_KEY = random.getrandbits(64)
 
 
-PIECE_VAL_BY_IDX = [100, 320, 330, 500, 900, 0, 100, 320, 330, 500, 900, 0]
+PIECE_VAL_BY_IDX = [100, 320, 330, 500, 900, 0] * 2
+FILE_MASKS = [0x0101010101010101 << i for i in range(8)]
 
 # --- board class ----------------------------------------------------------
 class Board:
@@ -240,8 +237,8 @@ class Board:
         self.recompute_evaluation()
     #UNITendremove
 
-    def algebraic_to_sq(self, s:str):
-        return "abcdefgh".index(s[0]) + 8*int(s[1])-8
+    def algebraic_to_sq(self, s):
+        return ord(s[0]) + 8 * ord(s[1]) - 489
 
     def _x(self, i, s):
         self.P[i] ^= (1 << s)
@@ -289,7 +286,7 @@ class Board:
         if moved_piece_type == 0 and to == self.ep:
             is_ep_capture = True
             cap_sq = to - 8 if us else to + 8
-            captured_idx = 6 if us else 0
+            captured_idx = 6 * us
 
             self.eval_score -= self._get_piece_val(captured_idx, cap_sq)
 
@@ -313,7 +310,7 @@ class Board:
         # Determine target piece (handle promotion)
         target_idx = moved_piece_idx
         if promo_code:
-            target_idx = promo_code + (0 if us else 6)
+            target_idx = promo_code + 6 - 6 * us
 
         # USE HELPER: Place on 'to'
         self._x(target_idx, to)
@@ -374,15 +371,14 @@ class Board:
         self.P[pc] ^= (1 << t)                  # Remove from 'to'
         self.piece_map[t] = -1
 
-        # If promo, the piece landing on 'f' is a Pawn (0/6), otherwise it's 'pc'
-        real_p = pc if not pr else (0 if self.white_to_move else 6)
+        real_p = pc if not pr else 6 - 6 * self.white_to_move
         self.P[real_p] |= (1 << f)              # Place on 'from'
         self.piece_map[f] = real_p
 
         # 2. Restore Capture
         if c_idx != -1:
             # If En Passant, capture is shifted. Else it's at 't'
-            c_sq = t if not is_ep else (t - 8 if self.white_to_move else t + 8)
+            c_sq = t if not is_ep else t + 8 - 16 * self.white_to_move
             self.P[c_idx] |= (1 << c_sq)
             self.piece_map[c_sq] = c_idx
 
@@ -677,7 +673,7 @@ class Board:
                 lsb = rooks & -rooks
                 sq = lsb.bit_length() - 1
                 rooks ^= lsb
-                m = 0x0101010101010101 << (sq % 8)
+                m = FILE_MASKS[sq % 8]
                 if not (my_pawns & m):
                     score += 10
                     if not (their_pawns & m):
@@ -694,15 +690,14 @@ class Board:
 
         if self.halfmove_clock >= 100: return 0
         score = self.eval_score + (eval_king(True) - eval_king(False) if self.P[4] | self.P[10] else 2 * (CENTER_SCORE[self.king_square(True)] - CENTER_SCORE[self.king_square(False)])) + eval_rooks(True) - eval_rooks(False)
-        score += 50 * (self.P[2].bit_count() >= 2) - 50 * (self.P[8].bit_count() >= 2) + 10 * ((self.P[6] >> 8 & self.P[6]).bit_count() - (self.P[0] >> 8 & self.P[0]).bit_count())
+        score += 50 * ((self.P[2].bit_count() > 1) - (self.P[8].bit_count() > 1)) + 10 * ((self.P[6] >> 8 & self.P[6]).bit_count() - (self.P[0] >> 8 & self.P[0]).bit_count())
         return score if self.white_to_move else -score
     
     def move_to_uci(self, mv):
         f = mv & 63
         t = (mv >> 6) & 63
         pr = (mv >> 12) & 7
-        base = ("abcdefgh"[f % 8] + "12345678"[f // 8]) + ("abcdefgh"[t % 8] + "12345678"[t // 8])
-        return base + ('', 'n', 'b', 'r', 'q')[pr] if pr else base
+        return chr(97+f%8)+chr(49+f//8)+chr(97+t%8)+chr(49+t//8)+('', 'n', 'b', 'r', 'q')[pr]
     
     #UNITremove
     def get_fen(self):

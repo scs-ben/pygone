@@ -149,6 +149,7 @@ class Search:
         if h == self.board.hash:
             packed = self.tt[tt_idx + 1]
             score = (packed & 0xFFFFF) - 320000
+            score -= ply if score > 310000 else -ply if score < -310000 else 0
             depth = (packed >> 20) & 0x7F
             flag = (packed >> 27) & 3
             entry_ply = (packed >> 29) & 0x7F
@@ -195,7 +196,7 @@ class Search:
 
             # --- LMR + PVS LOGIC ---
             reduction = 0
-            if s_depth > 2 and moves_played > 4 and not in_check and ms < 0 and not ((move >> 12) & 7):
+            if s_depth > 2 and moves_played > 4 and not in_check and not self.board.in_check() and ms < 0:
                 reduction = 1 + (moves_played > 15)
             
             new_depth = s_depth - 1 - reduction
@@ -225,7 +226,7 @@ class Search:
 
                     if w:
                         self.tt[tt_idx] = self.board.hash
-                        self.tt[tt_idx + 1] = (alpha + 320000) | (s_depth << 20) | (1 << 27) | (ply << 29)
+                        self.tt[tt_idx + 1] = (alpha + (ply if alpha > 310000 else -ply if alpha < -310000 else 0) + 320000) | (s_depth << 20) | (1 << 27) | (ply << 29)
                         self.tt[tt_idx + 2] = move or 0
                     return alpha
         
@@ -235,7 +236,7 @@ class Search:
         flag = 0 if alpha > original_alpha else 2
         if w:
             self.tt[tt_idx] = self.board.hash
-            self.tt[tt_idx + 1] = (alpha + 320000) | (s_depth << 20) | (flag << 27) | (ply << 29)
+            self.tt[tt_idx + 1] = (alpha + (ply if alpha > 310000 else -ply if alpha < -310000 else 0) + 320000) | (s_depth << 20) | (flag << 27) | (ply << 29)
             self.tt[tt_idx + 2] = best_move or 0
         
         return alpha
@@ -263,7 +264,7 @@ class Search:
         # Active Moves Only (Captures/Promotions)
         for _, move in moves:
             to_sq = (move >> 6) & 63
-            cap_idx = self.board.piece_map[to_sq] if to_sq != self.board.ep else (6 if self.board.white_to_move else 0)
+            cap_idx = self.board.piece_map[to_sq] if to_sq != self.board.ep else 6 * self.board.white_to_move
             if not in_check and cap_idx != -1 and stand_pat + PIECE_VAL_BY_IDX[cap_idx] + 50 < alpha and not ((move >> 12) & 7): continue
 
             self.board.make_move(move)
