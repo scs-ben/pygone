@@ -91,6 +91,7 @@ REPLACEMENTS = {
     "killers": "Aj",
     "active": "An",
     "hash_move": "Ap",
+    "FILE_MASKS": "W",
 
     # Built-ins / keywords
     "True": "1",

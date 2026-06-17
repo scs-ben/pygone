@@ -72,10 +72,14 @@ class Search:
             self.board.unmake_move()
             if best_move: break
 
+        score = 0
         for depth in range(1, self.s_depth + 1):
             if self.time_up: break
 
-            score = self.search(depth, -320000, 320000, 0)
+            lo = score - 50; hi = score + 50
+            score = self.search(depth, lo, hi, 0)
+            if not self.time_up and (score <= lo or score >= hi):
+                score = self.search(depth, -320000, 320000, 0)
             if self.time_up: break
             
             tt_idx = 3 * (self.board.hash & 0xFFFFF)
@@ -113,7 +117,6 @@ class Search:
     def drawn(self, ply=0):
         h = self.board.halfmove_clock
         if h >= 100: return True
-        if not h: return False
         s = self.board.stack
         hsh = self.board.hash
         n = 2 - bool(ply)
@@ -127,20 +130,20 @@ class Search:
         if self.time_up or ((self.s_nodes & 1023) == 0 and time.time() > self.end_time):
             self.time_up = True
             return 0
-            
-        if self.drawn(ply): 
+
+        if self.drawn(ply):
             return 0
- 
+
         in_check = self.board.in_check()
- 
+
         # --- CHECK EXTENSION ---
         s_depth += in_check and s_depth < 4
-            
-        if s_depth <= 0: 
+
+        if s_depth <= 0:
             return self.q_search(alpha, beta)
-        
+
         self.s_nodes += 1
-        
+
         # --- TT PROBE ---
         tt_idx = 3 * (self.board.hash & 0xFFFFF)
         h = self.tt[tt_idx]
@@ -149,6 +152,7 @@ class Search:
         if h == self.board.hash:
             packed = self.tt[tt_idx + 1]
             score = (packed & 0xFFFFF) - 320000
+            score -= ply if score > 310000 else -ply if score < -310000 else 0
             depth = (packed >> 20) & 0x7F
             flag = (packed >> 27) & 3
             entry_ply = (packed >> 29) & 0x7F
@@ -159,31 +163,31 @@ class Search:
                     return score
         else:
             w = not self.time_up
- 
+
         # --- NULL MOVE PRUNING ---
         us = self.board.white_to_move; p = self.board.P
         if s_depth >= 3 and not in_check and (sum(p[1:5]) if us else sum(p[7:11])):
             self.board.make_move(None)
             score = -self.search(s_depth - 3, -beta, -beta + 1, ply + 1)
             self.board.unmake_move()
-            
+
             if self.time_up: return 0
             if score >= beta: return score
- 
+
         # --- REVERSE FUTILITY PRUNING ---
         stand_pat = self.board.evaluate()
         if s_depth < 4 and not in_check and stand_pat >= beta + s_depth * 80:
             return stand_pat
- 
+
         best_score = -320000
         best_move = None
-        
+
         # Generate and sort moves
         moves = self.board.gen_pseudo_legal(killers=self.killers[ply], hash_move=hash_move); moves.sort(reverse=True)
 
         moves_played = 0
         original_alpha = alpha
-        
+
         for ms, move in moves:
             self.board.make_move(move)
 
@@ -195,11 +199,11 @@ class Search:
 
             # --- LMR + PVS LOGIC ---
             reduction = 0
-            if s_depth > 2 and moves_played > 4 and not in_check and ms < 0 and not ((move >> 12) & 7):
+            if s_depth > 2 and moves_played > 4 and not in_check and not self.board.in_check() and ms < 0:
                 reduction = 1 + (moves_played > 15)
-            
+
             new_depth = s_depth - 1 - reduction
-            
+
             if moves_played > 1:
                 score = -self.search(new_depth, -alpha - 1, -alpha, ply + 1)
                 if not self.time_up and score > alpha and (score < beta or new_depth != s_depth - 1):
@@ -208,36 +212,35 @@ class Search:
                 score = -self.search(s_depth - 1, -beta, -alpha, ply + 1)
 
             self.board.unmake_move()
-            
+
             if self.time_up: return 0
-            
+
             if score > best_score:
                 best_score = score
                 best_move = move
-                
+
             if score > alpha:
                 alpha = score
                 if alpha >= beta:
-                    if not (((move >> 12) & 7) or self.board.piece_map[(move >> 6) & 63] != -1 or ((move >> 6) & 63) == self.board.ep):
-                        _, k0 = self.killers[ply]
-                        if move != k0:
-                            self.killers[ply] = [move, k0]
+                    _, k0 = self.killers[ply]
+                    if move != k0:
+                        self.killers[ply] = [move, k0]
 
                     if w:
                         self.tt[tt_idx] = self.board.hash
-                        self.tt[tt_idx + 1] = (alpha + 320000) | (s_depth << 20) | (1 << 27) | (ply << 29)
+                        self.tt[tt_idx + 1] = (alpha + (ply if alpha > 310000 else -ply if alpha < -310000 else 0) + 320000) | (s_depth << 20) | (1 << 27) | (ply << 29)
                         self.tt[tt_idx + 2] = move or 0
                     return alpha
-        
+
         if moves_played == 0:
             return -320000 + ply if in_check else 0
 
         flag = 0 if alpha > original_alpha else 2
         if w:
             self.tt[tt_idx] = self.board.hash
-            self.tt[tt_idx + 1] = (alpha + 320000) | (s_depth << 20) | (flag << 27) | (ply << 29)
+            self.tt[tt_idx + 1] = (alpha + (ply if alpha > 310000 else -ply if alpha < -310000 else 0) + 320000) | (s_depth << 20) | (flag << 27) | (ply << 29)
             self.tt[tt_idx + 2] = best_move or 0
-        
+
         return alpha
 
     def q_search(self, alpha, beta):
@@ -263,7 +266,7 @@ class Search:
         # Active Moves Only (Captures/Promotions)
         for _, move in moves:
             to_sq = (move >> 6) & 63
-            cap_idx = self.board.piece_map[to_sq] if to_sq != self.board.ep else (6 if self.board.white_to_move else 0)
+            cap_idx = self.board.piece_map[to_sq] if to_sq != self.board.ep else 6 * self.board.white_to_move
             if not in_check and cap_idx != -1 and stand_pat + PIECE_VAL_BY_IDX[cap_idx] + 50 < alpha and not ((move >> 12) & 7): continue
 
             self.board.make_move(move)
