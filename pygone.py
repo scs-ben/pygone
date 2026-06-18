@@ -123,6 +123,7 @@ def main():
             elif line[:2]=="go":
                 side_time, side_inc = 1e8, 0
                 #remove
+                move_time = None
                 v_depth = 0
                 perft_depth = 0
                 #endremove
@@ -135,6 +136,8 @@ def main():
                     elif a == ('winc' if us else 'binc'):
                         side_inc = int(args[k + 1]) / 1e3
                     #remove
+                    elif a == 'movetime':
+                        move_time = int(args[k + 1]) / 1e3
                     elif a == 'depth':
                         v_depth = int(args[k + 1])
                     elif a == 'perft':
@@ -159,6 +162,8 @@ def main():
                     searcher.end_time = time.time() + max(0.1, side_time / m + side_inc - 0.5)
                     searcher.time_up = False
                     searcher.set_depth(v_depth)
+                elif move_time is not None:
+                    searcher.end_time = time.time() + move_time
                 #endremove
 
                 searcher.iterative_search()
