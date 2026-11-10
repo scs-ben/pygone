@@ -155,11 +155,12 @@ def main():
                 #endremove
  
                 m = max(10, 45 - len(game_board.stack) // 2)
-                searcher.end_time = time.time() + max(0.1, side_time / m + side_inc - 0.5); searcher.time_up = False
+                reserve = max(0.1, min(0.5, side_inc))
+                searcher.end_time = time.time() + max(0.1, side_time / m + side_inc - reserve); searcher.time_up = False
                 
                 #remove
                 if v_depth > 0:
-                    searcher.end_time = time.time() + max(0.1, side_time / m + side_inc - 0.5)
+                    searcher.end_time = time.time() + max(0.1, side_time / m + side_inc - reserve)
                     searcher.time_up = False
                     searcher.set_depth(v_depth)
                 elif move_time is not None:

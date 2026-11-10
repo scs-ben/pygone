@@ -20,7 +20,7 @@ import time
 
 class Unit:
     def _fail(self, msg):
-        print(f"\nFAILED: {msg}")
+        raise AssertionError(msg)
 
     def unit_hash(self, b):
         print("Testing Hashing...", end="", flush=True)
@@ -145,6 +145,19 @@ class Unit:
         if score_r + score_br != 0:
             self._fail(f"Symmetry Error: White {score_r} + Black {score_br} != 0")
             return
+
+        # A castled king earns 20 points for each pawn still in its shield.
+        b.set_fen("3q2k1/5ppp/8/8/8/8/5PPP/3Q2K1 w - - 0 1")
+        covered = b.evaluate() - b.eval_score
+        b.set_fen("3q2k1/5ppp/8/8/8/5PPP/8/3Q2K1 w - - 0 1")
+        exposed = b.evaluate() - b.eval_score
+        if covered - exposed != 60:
+            self._fail(f"King Shield Error: covered {covered}, exposed {exposed}")
+            return
+
+        # A black king reaching g1 in an endgame is not on a castled square.
+        b.set_fen("K7/8/8/8/8/8/Q7/6k1 w - - 0 1")
+        b.evaluate()
 
         print(" Passed!", flush=True)
 
@@ -407,7 +420,7 @@ class Unit:
         print("Testing Mate Search...", end="", flush=True)
         import io
         import sys
-        
+
         # (FEN, Depth, Expected Move String)
         tests = [
             # Mate in 1: White Rook to a8 (The only winning move)
