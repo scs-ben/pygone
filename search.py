@@ -24,9 +24,11 @@ class Search:
         self.board = board
         # Pre-allocated flat list: 3 integers per slot
         self.tt = [0] * (3 * 2**20) 
+        #remove
         self.s_nodes = 0
         self.time_up = False
         self.end_time = 0
+        #endremove
         self.s_depth = 50
         self.killers = [[None, None] for _ in range(64)]
 
@@ -61,7 +63,9 @@ class Search:
     #endremove
 
     def iterative_search(self):
+        #remove
         start_time = time.time()
+        #endremove
         self.s_nodes = 0
         best_move = None
 
@@ -94,9 +98,8 @@ class Search:
                             self.board.unmake_move()
                             break
             
-            output = f"info depth {depth} score cp {score}"
-
             #remove
+            output = f"info depth {depth} score cp {score}"
             elapsed = max(1, int((time.time() - start_time) * 1000))
             nps = int(self.s_nodes * 1000 / elapsed)
             pv_moves = self.get_pv_line(depth)
@@ -108,9 +111,8 @@ class Search:
                 pv_str = ""
 
             output = f"info depth {depth} score cp {int(score)} time {elapsed} nodes {self.s_nodes} nps {nps} pv {pv_str}"
-            #endremove
-
             print(output, flush=True)
+            #endremove
 
         print(f"bestmove {self.board.move_to_uci(best_move)}", flush=True)
 
@@ -148,21 +150,19 @@ class Search:
         tt_idx = 3 * (self.board.hash & 0xFFFFF)
         h = self.tt[tt_idx]
         hash_move = None
-        w = False
         if h == self.board.hash:
             packed = self.tt[tt_idx + 1]
             score = (packed & 0xFFFFF) - 320000
             score -= ply if score > 310000 else -ply if score < -310000 else 0
             depth = (packed >> 20) & 0x7F
             flag = (packed >> 27) & 3
-            entry_ply = (packed >> 29) & 0x7F
             hash_move = self.tt[tt_idx + 2] or None
-            w = not self.time_up and (s_depth > depth or (s_depth == depth and ply > entry_ply))
+            w = s_depth >= depth
             if depth >= s_depth:
                 if flag == 0 or (flag == 1 and score >= beta) or (flag == 2 and score <= alpha):
                     return score
         else:
-            w = not self.time_up
+            w = True
 
         # --- NULL MOVE PRUNING ---
         us = self.board.white_to_move; p = self.board.P
@@ -175,9 +175,10 @@ class Search:
             if score >= beta: return score
 
         # --- REVERSE FUTILITY PRUNING ---
-        stand_pat = self.board.evaluate()
-        if s_depth < 4 and not in_check and stand_pat >= beta + s_depth * 80:
-            return stand_pat
+        if s_depth < 4 and not in_check:
+            stand_pat = self.board.evaluate()
+            if stand_pat >= beta + s_depth * 80:
+                return stand_pat
 
         best_score = -320000
         best_move = None
@@ -199,8 +200,8 @@ class Search:
 
             # --- LMR + PVS LOGIC ---
             reduction = 0
-            if s_depth > 2 and moves_played > 4 and not in_check and not self.board.in_check() and ms < 0:
-                reduction = 1 + (moves_played > 15)
+            if s_depth > 2 and moves_played > 4 and not in_check and ms < 0 and not self.board.in_check():
+                reduction = 1 + (moves_played > 10)
 
             new_depth = s_depth - 1 - reduction
 
@@ -222,13 +223,13 @@ class Search:
             if score > alpha:
                 alpha = score
                 if alpha >= beta:
-                    _, k0 = self.killers[ply]
+                    k0, _ = self.killers[ply]
                     if move != k0:
                         self.killers[ply] = [move, k0]
 
                     if w:
                         self.tt[tt_idx] = self.board.hash
-                        self.tt[tt_idx + 1] = (alpha + (ply if alpha > 310000 else -ply if alpha < -310000 else 0) + 320000) | (s_depth << 20) | (1 << 27) | (ply << 29)
+                        self.tt[tt_idx + 1] = (alpha + (ply if alpha > 310000 else -ply if alpha < -310000 else 0) + 320000) | (s_depth << 20) | (1 << 27)
                         self.tt[tt_idx + 2] = move or 0
                     return alpha
 
@@ -238,7 +239,7 @@ class Search:
         flag = 0 if alpha > original_alpha else 2
         if w:
             self.tt[tt_idx] = self.board.hash
-            self.tt[tt_idx + 1] = (alpha + (ply if alpha > 310000 else -ply if alpha < -310000 else 0) + 320000) | (s_depth << 20) | (flag << 27) | (ply << 29)
+            self.tt[tt_idx + 1] = (alpha + (ply if alpha > 310000 else -ply if alpha < -310000 else 0) + 320000) | (s_depth << 20) | (flag << 27)
             self.tt[tt_idx + 2] = best_move or 0
 
         return alpha
@@ -255,7 +256,7 @@ class Search:
         
         in_check = self.board.in_check()
 
-        stand_pat = self.board.evaluate()
+        stand_pat = not in_check and self.board.evaluate()
         if not in_check and stand_pat >= beta: return beta
         if not in_check and stand_pat > alpha: alpha = stand_pat
         
@@ -264,7 +265,7 @@ class Search:
         moves_played = 0
 
         # Active Moves Only (Captures/Promotions)
-        for _, move in moves:
+        for ms, move in moves:
             to_sq = (move >> 6) & 63
             cap_idx = self.board.piece_map[to_sq] if to_sq != self.board.ep else 6 * self.board.white_to_move
             if not in_check and cap_idx != -1 and stand_pat + PIECE_VAL_BY_IDX[cap_idx] + 50 < alpha and not ((move >> 12) & 7): continue

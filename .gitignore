@@ -12,5 +12,8 @@ build/*
 test/cutechess-cli
 test/debug.log
 test/games.pgn
+test/regression-*
+test/stockfish-*
+test/baselines/
 tcec_games/*
 tcec_games*

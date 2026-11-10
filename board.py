@@ -592,7 +592,7 @@ class Board:
                         if not self.attacked(60,True) and not self.attacked(59,True) and not self.attacked(58,True):
                             moves.append((500, 60 | (58 << 6)))
         
-        if killers or hash_move:
+        if hash_move or (killers and killers[0]):
             k0, k1 = killers or [None, None]
             new_moves = []
             for score, move in moves:
@@ -664,7 +664,7 @@ class Board:
 
         def eval_king(white):
             k = self.king_square(white)
-            castle_pos_score = 60 if k % 56 in (2, 6) else 0
+            castle_pos_score = 20 * (self.P[0 if white else 6] & 7 << (k + (7 if white else -9))).bit_count() if k in ((2, 6) if white else (58, 62)) else 0
             c = self.castle >> (0 if white else 2)
             if not (c & 1): castle_pos_score -= 10
             if not (c & 2): castle_pos_score -= 5
@@ -798,7 +798,7 @@ class Board:
 
         def eval_king(white):
             k = self.king_square(white)
-            s = 60 if k % 56 in (2, 6) else 0
+            s = 20 * (self.P[0 if white else 6] & 7 << (k + (7 if white else -9))).bit_count() if k in ((2, 6) if white else (58, 62)) else 0
             c = self.castle >> (0 if white else 2)
             if not (c & 1): s -= 10
             if not (c & 2): s -= 5
