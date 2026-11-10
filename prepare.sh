@@ -1,6 +1,6 @@
 cat > ./dist/pygone <<'EOF'
 #!/bin/sh
-tail -n+3 $0|xz -d>_$$;pypy3 _$$;rm _$$
+tail -n+3 $0|xz -d>_$$;pypy3 _$$;rm _$$;exit
 EOF
 
 # Append the binary xz payload
